@@ -12,9 +12,6 @@ library(ggnewscale)
 library(DDSQLtools)
 library(ggforce)
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f"))
-
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0"))
 
@@ -24,23 +21,13 @@ dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_both
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_weighted_hmean_f_no0.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_weighted_hmean_f_no0"))
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_ARIMA_f.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_ARIMA_f"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_ARIMAk_f_no0.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_ARIMAk_f_no0"))
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_MVN_f_noDHS.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_MVN_f_noDHS"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_VAR_f_no0.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_VAR_f_no0"))
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_noDHS.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_noDHS"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_MVN_f.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_MVN_f"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/just_DHS_f.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/just_DHS_f"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/just_DHS_f_no_prior.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/just_DHS_f_no_prior"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/trial.cpp")
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -116,7 +103,7 @@ bf_census <- get_recorddata(dataProcessTypeIds = "Census",
                             locAreaTypeIds = "Whole Area",
                             subGroupIds = "Total or All groups",
                             isComplete = "Abridged")
-open.age <- 80
+open.age <- 85
 
 bf_census_f <- bf_census %>% filter(SexName=="Female",!AgeLabel %in% c("Total", "Unknown")) %>%
   select(AgeLabel, TimeMid, TimeLabel, StatisticalConceptName, DataValue) %>%
@@ -414,12 +401,10 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
                  open_idx = bf.idx5$n_ages, #open age starting at 70
                  LQ_baseline_mx_DX_f = LQ.baseline.DX.ax,
                  h_DX_f = LQ.baseline.DX.bx,
-                   h2_DX_f = LQ.baseline.DX.cx,
+                 h2_DX_f = LQ.baseline.DX.cx,
                  k_DX_f = LQ.baseline.DX.vx,
                  tp_DX_f = tips.DX,
-                 LQ_baseline_0 = LQ.baseline.0,
-                 tp_DX_f_0 = tips.DX.0,
-                 
+
                  penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
                  null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
                  penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
@@ -427,8 +412,11 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
                  LQ_baseline_f = as.matrix(LQcoef.f[,1:4]),
                  df = bf5.f.no0$event,
                  Ef = bf5.f.no0$pyears,
-                 df0 = bf5.f.0$event,
-                 Ef0 = bf5.f.0$pyears,
+                 
+                 #LQ_baseline_0 = LQ.baseline.0,
+                 #tp_DX_f_0 = tips.DX.0,
+                 #df0 = bf5.f.0$event,
+                 #Ef0 = bf5.f.0$pyears,
                  
                  h_mean_f = igme.5q0.5 %>% filter(Sex=="Female", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log(),
                  
@@ -468,12 +456,12 @@ data.vec.smooth <- list(log_basepop_mean_f = log_basepop_mean,
                         
                         h_mean_f = igme.5q0.5 %>% filter(Sex=="Female", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log(),
                         
-                        pop_start = 1, pop_end = 45/5 + 1
+                        pop_start = 1, pop_end = open.age / 5 + 1
 )
 
 par.vec <- list(log_tau2_logpop_f = 2,
-                log_tau2_fx = 5,
-                log_tau2_gx_f = 0,
+                log_tau2_fx = 1,
+                log_tau2_gx_f = 1,
                 log_marginal_var_h = 2,
                 log_marginal_var_k = 2,
                 log_marginal_prec_h = 2,
@@ -498,7 +486,11 @@ par.vec <- list(log_tau2_logpop_f = 2,
                 k_constant_f = 0,
                 
                 logit_rho_g_x = 0,
-                logit_rho_g_t = 0
+                logit_rho_g_t = 0,
+                
+                logit_eigens = c(1,1),
+                angles = c(0,pi/2),
+                hk_err_corr = c(0)
 )
 
 
@@ -522,6 +514,20 @@ system.time(AR.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c
 
 
 
+system.time(hmean.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+                                                                                    "log_fx",
+                                                                                    "gx_f",
+                                                                                    "h_params_f",
+                                                                                    "k_params_f",
+                                                                                    "h_constant_f",
+                                                                                    "k_constant_f",
+                                                                                    "tp_params"), 
+                                   DLL="ccmpp_LQuad_bothsexes_weighted_hmean_f_no0",
+                                   map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods)),
+                                              k_constant_f = factor(NA)
+                                   ))
+) 
+
 system.time(MVN.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
                                                                                  "log_fx",
                                                                                  "gx_f",
@@ -537,7 +543,19 @@ system.time(MVN.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = 
 ) 
 
 
-system.time(AR.f.no0.fixh <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+system.time(ARIMAk.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+                                                                                    "log_fx",
+                                                                                    "gx_f",
+                                                                                    "h_params_f",
+                                                                                    "k_params_f",
+                                                                                    "h_constant_f",
+                                                                                    "tp_params"), 
+                                   DLL="ccmpp_LQuad_bothsexes_ARIMAk_f_no0",
+                                   map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
+                                   ))
+) 
+
+system.time(VAR.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
                                                                                  "log_fx",
                                                                                  "gx_f",
                                                                                  "h_params_f",
@@ -545,49 +563,31 @@ system.time(AR.f.no0.fixh <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, rando
                                                                                  "h_constant_f",
                                                                                  "k_constant_f",
                                                                                  "tp_params"), 
-                                DLL="ccmpp_LQuad_bothsexes_AR_f_no0",
+                                DLL="ccmpp_LQuad_bothsexes_VAR_f_no0",
                                 map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods)),
-                                           k_constant_f = factor(NA),
-                                           h_params_f = factor(rep(NA,bf.idx5$n_periods)),
-                                           log_marginal_prec_h = factor(NA),
-                                           logit_rho_h = factor(NA)
+                                           k_constant_f = factor(NA)
                                 ))
 ) 
 
 
-
-system.time(MVN.f.no0.fixh <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                  "log_fx",
-                                                                                  "gx_f",
-                                                                                  "h_params_f",
-                                                                                  "k_params_f",
-                                                                                  "h_constant_f",
-                                                                                  "k_constant_f",
-                                                                                  "tp_params"), 
-                                 DLL="ccmpp_LQuad_bothsexes_MVN_f_no0",
-                                 map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods)),
-                                            k_constant_f = factor(NA),
-                                            h_params_f = factor(rep(NA,bf.idx5$n_periods)),
-                                            log_marginal_prec_h = factor(NA)
-                                 ))
-) 
-
-
 #45q15####
-q4515.func <- function(haha){
-  apply(haha$mode$mx_mat_f[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})
+q4515.func <- function(x){
+  as_tibble(apply(x$mode$mx_mat_f[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+    mutate(sex="female", year = bf.idx5$periods)
 }
 
-#q4515.func(ARh.MVNk.f)
-#q4515.func(MVN.f.noDHS)
 wpp.bf.q4515<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP_BF_45q15.csv")
 
-as_tibble(q4515.func(AR.f)) %>% mutate(model="ARh ARk", year=bf.idx5$periods) %>%
+q4515.df <- lapply(models.list, q4515.func) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
   bind_rows(
-    as_tibble(q4515.func(ARIMA.f)) %>% mutate(model="ARh ARIMAk", year=bf.idx5$periods),
-    as_tibble(q4515.func(ARh.MVNk.f)) %>% mutate(model="ARh MVNk", year=bf.idx5$periods),
     as_tibble(reshape2::melt(wpp.bf.q4515[1,-c(1:5)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL)
   ) %>%
+  mutate(model = fct_relevel(model, "WPP Estimates"))
+
+
+q4515.df %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(""[45]*q[15])) +
   theme(text = element_text(size=25))
 
@@ -597,122 +597,105 @@ get.h <- function(x) {
   x$par.full %>% split(names(.)) %>% .$h_params_f %>% as_tibble() %>% mutate(sex="female", year = bf.idx5$periods)
 }
 
-bind_rows(mutate(get.h(AR.f), model="ARh ARk"),
-          mutate(get.h(ARIMA.f), model="ARh ARIMAk"),
-          mutate(get.h(ARh.MVNk.f), model="ARh MVNk"),
-          filter(igme.5q0.5, year5 %in% bf.idx5$periods, Sex=="Female") %>%
-            mutate(model="IGME Estimates", value=log(child.mort), year=year5, year5=NULL, child.mort=NULL, Sex=NULL)
-          ) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote("log("[5]*q[0]*") or LogQuad h")) +
-  theme(text = element_text(size=25))
+models.list <- list("AR-h AR-k" = AR.f.no0, "hmean AR-k" = hmean.f.no0, "MVN-h MVN-k" = MVN.f.no0, "AR-h ARIMA-k" = ARIMAk.f.no0)
 
+h.df <- lapply(models.list, get.h) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    filter(igme.5q0.5, year5 %in% bf.idx5$periods, Sex=="Female") %>%
+      mutate(model="IGME Estimates", value=log(child.mort), year=year5, year5=NULL, child.mort=NULL, Sex=NULL)
+  ) %>%
+  mutate(model = fct_relevel(model, "IGME Estimates"))
+
+ggplot(h.df) + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote("log("[5]*q[0]*") or LogQuad h")) + 
+  theme(text = element_text(size=25))
 
 #k params####
 get.k <- function(x) {
   x$par.full %>% split(names(.)) %>% .$k_params_f %>% as_tibble() %>% mutate(sex="female", year = bf.idx5$periods)
 }
-bind_rows(mutate(get.k(AR.f), model="ARh ARk"),
-          mutate(get.k(ARIMA.f), model="ARh ARIMAk"),
-          mutate(get.k(ARh.MVNk.f), model="ARh MVNk")
-) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(k)) +
-  theme(text = element_text(size=25))
 
+k.df <- lapply(models.list, get.k) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows()
+
+ggplot(k.df) + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("LogQuad k") +
+  theme(text = element_text(size=25))
 
 #population####
 mf5 <- projection_model_frames(bf.idx5)
 get.pop<- function(x){
   pop.mat <- matrix(x$mode$population_f, bf.idx5$n_ages, bf.idx5$n_periods+1)
-  pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
-  rownames(pop.mat) <- c(bf.idx5$ages, "All")
+  #pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
+  #rownames(pop.mat) <- c(bf.idx5$ages, "All")
+  rownames(pop.mat) <- c(bf.idx5$ages)
   colnames(pop.mat) <- bf.idx5$periods_out
   reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
 }
 
-pop.df <- bind_rows(bf_census_f, apply(bf_census_f,2,sum)) %>%
-  mutate(age = c(bf_census_f$age, "All"), model="UNPD Census") %>%
-  pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL) %>%
-  
+pop.df <- lapply(models.list, get.pop) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
   bind_rows(
-    bind_rows(bf.pop.aggr.f[,-1], apply(bf.pop.aggr.f[,-1],2,sum)) %>%
-      mutate(age = c(bf_census_f$age, "All"), model="WPP Estimates") %>%
+    bf_census_f %>%
+      mutate(age = c(bf_census_f$age), model="UNPD Census") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
-  ) %>%
-  
+    ) %>%
   bind_rows(
-    mutate(get.pop(AR.f.no0), model="ARh ARk"),
-  )
+      mutate(bf.pop.aggr.f[,-1], age = bf_census_f$age, model="WPP Estimates") %>%
+      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
+  ) %>% 
+  mutate(cohort = year - age,
+         cohort = 5 * floor(cohort / 5),
+         model = fct_relevel(model, "UNPD Census"))
 
-pop.df %>% mutate(cohort = year - age)
 
-pop.df %>% filter(year >= 1960, age == "All") %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("Total Population") +
-  theme(text = element_text(size=25))
+pop.df %>% filter(year %in% c(1960, 1975, 1985, 1995, 2005, 2015)) %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 3, page=1)
 
-pop.df %>% filter(year >= 1960, age %in% 15:59) %>%
-  group_by(model, year) %>% summarise_at(vars(value),sum) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("15-59 Population") +
-  theme(text = element_text(size=25))
+pop.df %>% filter(model != "WPP Estimates") %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 3, page=3)
 
-pop.df %>% filter(year >= 1960, age == 0) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("0-4 Population") +
-  theme(text = element_text(size=25))
-
-pop.df %>% filter(year >= 1960, age >=60 & age != "All") %>%
-  group_by(model, year) %>% summarise_at(vars(value),sum) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("60+ Population") +
-  theme(text = element_text(size=25))
-
-pop.df %>% filter(year >= 1960, age == 5) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("5-9 Population") +
-  theme(text = element_text(size=25))
-
-pop.df %>% mutate(age = factor(age, levels = c(seq(0, open.age, by = 5), "All"))) %>%
+pop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
-  facet_wrap_paginate( ~ age, scales = "free", nrow = 2, ncol = 3, page = 1)
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~age, scale="free", nrow = 2, ncol = 3, page=1)
 
-pop.df %>% filter(year >= 1960, age == 10) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab("5-9 Population") +
-  theme(text = element_text(size=25))
 
 #migration####
 get.mig<- function(x){
   pop.mat <- matrix(x$mode$migrations_f, bf.idx5$n_ages, bf.idx5$n_periods)
-  pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
-  rownames(pop.mat) <- c(bf.idx5$ages, "All")
+  #pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
+  #rownames(pop.mat) <- c(bf.idx5$ages, "All")
+  rownames(pop.mat) <- c(bf.idx5$ages)
   colnames(pop.mat) <- bf.idx5$periods
   reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, mig = value)
 }
 
-mig.df <- bind_rows(
-    mutate(get.mig(AR.f), model="ARh ARk"),
-    mutate(get.mig(ARIMA.f), model="ARh ARIMAk"),
-    mutate(get.mig(ARh.MVNk.f), model="ARh MVNk")
-  )
+mig.df <- lapply(models.list, get.mig) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows()
 
-full_join(mig.df, pop.df) %>% filter(age %in% 15:59) %>% 
-  group_by(year, model) %>% summarise_at(vars(mig, value), sum) %>%
-  mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) + ylab(bquote(""[45]*g[15])) +
-  theme(text = element_text(size=25))
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
+  filter(year %in% c(1960, 1975, 1985, 1995, 2005, 2015)) %>%
+  ggplot() + geom_line(aes(x = age, y = gx, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~ year, nrow=2, ncol=3, page=1)
 
-full_join(mig.df, pop.df) %>% filter(age == 0) %>%
-  mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) + ylab(bquote(""[5]*g[0])) +
-  theme(text = element_text(size=25))
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
+  ggplot() + geom_line(aes(x = age, y = gx, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~ cohort, nrow=2, ncol=3, page=3)
 
-full_join(mig.df, pop.df) %>% filter(age >= 60 & age != "All") %>% 
-  group_by(year, model) %>% summarise_at(vars(mig, value), sum) %>%
-  mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) + ylab(bquote(""[infinity]*g[60])) +
-  theme(text = element_text(size=25))
-
-
-full_join(mig.df, pop.df) %>% filter(age >= 80 & age != "All") %>% 
-  group_by(year, model) %>% summarise_at(vars(mig, value), sum) %>%
-  mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) + ylab(bquote(""[infinity]*g[80])) +
-  theme(text = element_text(size=25))
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
+  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~ age, scales="free_y", nrow=2, ncol=3, page=3)
 
 
 #fertility####
@@ -723,30 +706,25 @@ get.fert<- function(x){
   reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
 }
 
-fx.df <- reshape2::melt(fx_init %>% `rownames<-`(bf.idx5$fertility_ages)) %>%
-  select(age = Var1, year = Var2, value = value) %>%
-  mutate(model = "Initial Values") %>%
+fx.df <- lapply(models.list, get.fert) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
   bind_rows(
-    mutate(get.fert(AR.f), model="ARh ARk"),
-    mutate(get.fert(ARIMA.f), model="ARh ARIMAk"),
-    mutate(get.fert(ARh.MVNk.f), model="ARh MVNk")
-  )
-  
-fx.df %>% filter(age == 20) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(""[5]*f[20])) +
-  theme(text = element_text(size=25))
+  reshape2::melt(fx_init %>% `rownames<-`(bf.idx5$fertility_ages)) %>%
+  select(age = Var1, year = Var2, value = value) %>%
+  mutate(model = "Initial Values")
+  ) %>%
+  mutate(model = fct_relevel(model, "Initial Values"))
 
-fx.df %>% filter(age == 25) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(""[5]*f[25])) +
-  theme(text = element_text(size=25))
+fx.df %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 3, page=2)
 
-fx.df %>% filter(age == 30) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(""[5]*f[30])) +
-  theme(text = element_text(size=25))
-
-fx.df %>% filter(age == 35) %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) + ylab(bquote(""[5]*f[35])) +
-  theme(text = element_text(size=25))
+fx.df %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~age, scale="free_y", nrow = 2, ncol = 3, page=1)
 
 #births####
 get.births<- function(x){
@@ -851,94 +829,41 @@ AR.f$mode$infants_f*(1-matrix(AR.f$mode$sx_mat_f, bf.idx5$n_ages+1, bf.idx5$n_pe
 matrix(AR.f$mode$cohort_deaths_f, bf.idx5$n_ages+1, bf.idx5$n_periods)[1,]
 
 #mx####
-bf5.f.no0.smooth %>% mutate(raw.mort = adjusted / pyears2) %>%
-  filter(tips==2) %>%
-  pivot_wider(names_from = period5, values_from = raw.mort, id_cols = age5)
+get.mx<- function(x){
+  pop.mat <- matrix(x$mode$mx_mat_f, nrow(LQcoef.f)+1, bf.idx5$n_periods)
+  rownames(pop.mat) <- seq(0, 110, by = 5)
+  colnames(pop.mat) <- bf.idx5$periods
+  reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
+}
 
-AR.f.no0$mode$mx_mat_f
-
-
-
-system.time(AR.f.noDHS <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                   "log_fx",
-                                                                                   "gx_f",
-                                                                                   "h_params_f",
-                                                                                   "k_params_f",
-                                                                                   "h_constant_f"), 
-                                  DLL="ccmpp_LQuad_bothsexes_AR_f_noDHS",
-                                  map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
-                                  ))
-)
+mx.df <- lapply(models.list, get.mx) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows()
 
 
-system.time(just.dhs.f <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("h_params_f",
-                                                                                   "k_params_f",
-                                                                                   "h_constant_f",
-                                                                                   "k_constant_f",
-                                                                                   "tp_params"), 
-                                  DLL="just_DHS_f",
-                                  map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
-                                  ))
-)
+bf5.f.plot <- bf5.f.no0 %>% select(year = period5, age = age5, tips = tips, event = event, pyears = pyears) %>%
+  mutate(year = as.numeric(as.character(year)), raw.mort = event/pyears)
 
-system.time(AR.f <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                             "log_fx",
-                                                                             "gx_f",
-                                                                             "h_params_f",
-                                                                             "k_params_f",
-                                                                             "h_constant_f",
-                                                                             "k_constant_f",
-                                                                             "tp_params"), 
-                            DLL="ccmpp_LQuad_bothsexes_AR_f",
-                            map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods)),
-                                       k_constant_f = factor(NA)
-                            ))
-)
 
-system.time(ARh.MVNk.f <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                   "log_fx",
-                                                                                   "gx_f",
-                                                                                   "h_params_f",
-                                                                                   "k_params_f",
-                                                                                   "h_constant_f",
-                                                                                   "tp_params"), 
-                                  DLL="ccmpp_LQuad_bothsexes_AR_MVN_f",
-                                  map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
-                                  ))
-)
-
-system.time(ARIMA.f <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                "log_fx",
-                                                                                "gx_f",
-                                                                                "h_params_f",
-                                                                                "k_params_f",
-                                                                                "h_constant_f",
-                                                                                "tp_params"), 
-                               DLL="ccmpp_LQuad_bothsexes_ARIMA_f",
-                               map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
-                               ))
-)
+mx.df %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0), aes(x = age, y = raw.mort, shape = tips), alpha = 0) + 
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0, tips %in% 1:3), aes(x = age, y = raw.mort, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0, !tips %in% 1:3), aes(x = age, y = raw.mort, shape = tips), size=2, alpha = 0.15) +
+  scale_shape_manual(values = 0:14) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~year, nrow = 2, ncol = 3, page=2)
 
 
 
-
-
-system.time(just.dhs.f.no.prior <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("tp_params"), 
-                                           DLL="just_DHS_f_no_prior"
-))
-
-
-
-
-
-system.time(MVN.f.noDHS <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                    "log_fx",
-                                                                                    "gx_f",
-                                                                                    "h_params_f",
-                                                                                    "k_params_f",
-                                                                                    "h_constant_f"), 
-                                   DLL="ccmpp_LQuad_bothsexes_MVN_f_noDHS",
-                                   map = list(h_constant_f = factor(rep(NA,bf.idx5$n_periods))
-                                   ))
-)
+mx.df %>% filter(age %in% 15:55) %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0), aes(x = year, y = raw.mort, shape = tips), alpha = 0) + 
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0, tips %in% 1:3), aes(x = year, y = raw.mort, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(bf5.f.plot, raw.mort!=0, !tips %in% 1:3), aes(x = year, y = raw.mort, shape = tips), size=2, alpha = 0.15) +
+  scale_shape_manual(values = 0:14) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~age, scales = "free_y", nrow = 2, ncol = 3, page=1)
 
