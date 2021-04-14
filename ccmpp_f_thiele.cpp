@@ -28,8 +28,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(pop_end);
   DATA_INTEGER(open_idx);
 
-  PARAMETER(log_tau2_logpop_f);
-  PARAMETER(log_tau2_logpop_f_base);
+  PARAMETER_VECTOR(log_tau2_logpop_f);
   PARAMETER(log_tau2_fx);
   PARAMETER(log_tau2_gx_f);
   PARAMETER(logit_rho_g_x);
@@ -92,11 +91,11 @@ Type objective_function<Type>::operator() ()
   Type nll(0.0);
 
   //inverse gamma prior for variance with shape=1 and scale=0.0109
-  nll -= dlgamma(log_tau2_logpop_f, Type(1.0), Type(1.0 / 0.0109), true);
-  Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop_f));
+  nll -= dlgamma(log_tau2_logpop_f(0), Type(1.0), Type(1.0 / 0.0109), true);
+  Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop_f(0)));
 
-  nll -= dlgamma(log_tau2_logpop_f_base, Type(1.0), Type(1.0 / 0.0109), true);
-  Type sigma_logpop_f_base(exp(-0.5 * log_tau2_logpop_f_base));
+  nll -= dlgamma(log_tau2_logpop_f(1), Type(1.0), Type(1.0 / 0.0109), true);
+  Type sigma_logpop_f_base(exp(-0.5 * log_tau2_logpop_f(1)));
 
   nll -= dlgamma(log_tau2_fx, Type(1.0), Type(1.0 / 0.0109), true);
   Type sigma_fx(exp(-0.5 * log_tau2_fx));
@@ -108,7 +107,7 @@ Type objective_function<Type>::operator() ()
   nll -= dnorm(logit_rho_g_t, Type(0.0), Type(10.0), 1);
   
   nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
-  vector<Type> basepop_f(exp(log_basepop_f_base));
+  vector<Type> basepop_f(exp(log_basepop_f));
   
   nll -= dlgamma(log_marginal_prec_phi, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_phi(exp(-0.5 * log_marginal_prec_phi));
