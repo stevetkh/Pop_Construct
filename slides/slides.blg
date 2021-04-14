@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: slides.aux
+Reallocating 'name_of_file' (item size: 1) to 8 items.
+The style file: apalike.bst
+Reallocating 'name_of_file' (item size: 1) to 4 items.
+Database file #1: Ref.bib
+Warning--empty journal in coale1990defects
+Warning--there's a number but no volume in gompertz1825on
+You've used 16 entries,
+            1935 wiz_defined-function locations,
+            581 strings with 6748 characters,
+and the built_in function-call counts, 6171 in all, are:
+= -- 621
+> -- 204
+< -- 14
++ -- 74
+- -- 66
+* -- 528
+:= -- 1069
+add.period$ -- 48
+call.type$ -- 16
+change.case$ -- 113
+chr.to.int$ -- 16
+cite$ -- 18
+duplicate$ -- 235
+empty$ -- 452
+format.name$ -- 88
+if$ -- 1194
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 16
+newline$ -- 83
+num.names$ -- 48
+pop$ -- 80
+preamble$ -- 2
+purify$ -- 113
+quote$ -- 0
+skip$ -- 182
+stack$ -- 0
+substring$ -- 496
+swap$ -- 25
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 96
+warning$ -- 2
+while$ -- 60
+width$ -- 0
+write$ -- 209
+(There were 2 warnings)

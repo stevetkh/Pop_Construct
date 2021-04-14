@@ -1,0 +1,101 @@
+ \newcommand{\noop}[1]{}
+\begin{thebibliography}{}
+
+\bibitem[Beard, 1959]{beard1959note}
+Beard, R.~E. (1959).
+\newblock Note on some mathematical mortality models.
+\newblock In {\em Ciba Foundation Symposium-The Lifespan of Animals (Colloquia
+  on Ageing)}, volume~5, pages 302--311. Wiley Online Library.
+
+\bibitem[Carriere, 1992]{carriere1992parametric}
+Carriere, J.~F. (1992).
+\newblock Parametric models for life tables.
+\newblock {\em Transactions of the Society of Actuaries}, 44:77--99.
+
+\bibitem[Coale and Demeny, 1966]{coale1966regional}
+Coale, A. and Demeny, P. (1966).
+\newblock Regional model life tables and stable populations{\guillemotright}
+  princeton university press.
+\newblock {\em Pr{\'\i}nceton, New Jersey}.
+
+\bibitem[Coale and Kisker, 1990]{coale1990defects}
+Coale, A.~J. and Kisker, E.~E. (1990).
+\newblock Defects in data on old-age mortality in the united states: new
+  procedures for calculating mortality schedules and life tables at the highest
+  ages.
+
+\bibitem[Dodd et~al., 2018]{dodd2018smoothing}
+Dodd, E., Forster, J.~J., Bijak, J., and Smith, P.~W. (2018).
+\newblock Smoothing mortality data: the english life tables, 2010--2012.
+\newblock {\em Journal of the Royal Statistical Society: Series A (Statistics
+  in Society)}, 181(3):717--735.
+
+\bibitem[Gompertz, 1825]{gompertz1825on}
+Gompertz, B. (1825).
+\newblock On the nature of the function expressive of the law of human
+  mortality, and on a new mode of determining the value of life contingencies.
+  in a letter to francis baily, esq. frs \&c.
+\newblock {\em Philosophical transactions of the Royal Society of London},
+  (115):513--583.
+
+\bibitem[Heligman and Pollard, 1980]{heligman1980age}
+Heligman, L. and Pollard, J.~H. (1980).
+\newblock The age pattern of mortality.
+\newblock {\em Journal of the Institute of Actuaries}, 107(01):49--80.
+
+\bibitem[Lindbergson, 2001]{lindbergson2001mortality}
+Lindbergson, M. (2001).
+\newblock Mortality among the elderly in sweden 1988--1997.
+\newblock {\em Scandinavian Actuarial Journal}, 2001(1):79--94.
+
+\bibitem[Makeham, 1860]{makeham1860law}
+Makeham, W.~M. (1860).
+\newblock On the law of mortality and the construction of annuity tables.
+\newblock {\em Journal of the Institute of Actuaries}, 8(6):301--310.
+
+\bibitem[Perks, 1932]{perks1932some}
+Perks, W. (1932).
+\newblock On some experiments in the graduation of mortality statistics.
+\newblock {\em Journal of the Institute of Actuaries}, 63(1):12--57.
+
+\bibitem[Sharrow et~al., 2013]{sharrow2013age}
+Sharrow, D.~J., Clark, S.~J., Collinson, M.~A., Kahn, K., and Tollman, S.~M.
+  (2013).
+\newblock The age pattern of increases in mortality affected by hiv: Bayesian
+  fit of the heligman-pollard model to data from the agincourt hdss field site
+  in rural northeast south africa.
+\newblock {\em Demographic research}, 29:1039.
+
+\bibitem[Siler, 1983]{siler1983parameters}
+Siler, W. (1983).
+\newblock Parameters of mortality in human populations with widely varying life
+  spans.
+\newblock {\em Statistics in medicine}, 2(3):373--380.
+
+\bibitem[Thatcher, 1999]{thatcher1999long}
+Thatcher, A.~R. (1999).
+\newblock The long-term pattern of adult mortality and the highest attained
+  age.
+\newblock {\em Journal of the Royal Statistical Society: Series A (Statistics
+  in Society)}, 162(1):5--43.
+
+\bibitem[Thiele, 1871]{thiele1871mathematical}
+Thiele, T.~N. (1871).
+\newblock On a mathematical formula to express the rate of mortality throughout
+  the whole of life, tested by a series of observations made use of by the
+  danish life insurance company of 1871.
+\newblock {\em Journal of the Institute of Actuaries}, 16(5):313--329.
+
+\bibitem[Wheldon et~al., 2016]{wheldon2016bayesian}
+Wheldon, M.~C., Raftery, A.~E., Clark, S.~J., and Gerland, P. (2016).
+\newblock Bayesian population reconstruction of female populations for less
+  developed and more developed countries.
+\newblock {\em Population studies}, 70(1):21--37.
+
+\bibitem[Wilmoth et~al., 2012]{wilmoth2012flexible}
+Wilmoth, J., Zureick, S., Canudas-Romo, V., Inoue, M., and Sawyer, C. (2012).
+\newblock A flexible two-dimensional mortality model for use in indirect
+  estimation.
+\newblock {\em Population studies}, 66(1):1--28.
+
+\end{thebibliography}

@@ -1,4 +1,4 @@
-#include <TMB.hpp>                                
+	#include <TMB.hpp>                                
 #include "ccmpp.h"
 
 template<class Type>
@@ -26,6 +26,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_INTEGER(open_idx);
   DATA_VECTOR(LQ_baseline_mx_DX_f);
+  DATA_VECTOR(h_constant_f);
   DATA_SPARSE_MATRIX(h_DX_f);
   DATA_SPARSE_MATRIX(h2_DX_f);
   DATA_SPARSE_MATRIX(k_DX_f);
@@ -39,7 +40,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(pop_start);
   DATA_INTEGER(pop_end);
 
-  PARAMETER(log_tau2_logpop_f);
+  PARAMETER_VECTOR(log_tau2_logpop_f);
   PARAMETER(log_tau2_fx);
   PARAMETER(log_tau2_gx_f);
   PARAMETER(log_marginal_prec_h);
@@ -58,16 +59,17 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(k_params_f);
   PARAMETER(logit_rho_h);
   PARAMETER(logit_rho_k);
-  PARAMETER_VECTOR(h_constant_f);
-  PARAMETER(k_constant_f);
   PARAMETER_VECTOR(tp_params);
   vector<Type> h2_params_f = h_params_f*h_params_f;
 
   Type nll(0.0);
 
   //inverse gamma prior for variance with shape=1 and scale=0.0109
-  nll -= dlgamma(log_tau2_logpop_f, Type(1.0), Type(1.0 / 0.0109), true);
-  Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop_f));
+  nll -= dlgamma(log_tau2_logpop_f(0), Type(1.0), Type(1.0 / 0.0109), true);
+  Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop_f(0)));
+
+  nll -= dlgamma(log_tau2_logpop_f(1), Type(1.0), Type(1.0 / 0.0109), true);
+  Type sigma_logpop_f_base(exp(-0.5 * log_tau2_logpop_f(1)));
 
   nll -= dlgamma(log_tau2_fx, Type(1.0), Type(1.0 / 0.0109), true);
   Type sigma_fx(exp(-0.5 * log_tau2_fx));
@@ -87,16 +89,12 @@ Type objective_function<Type>::operator() ()
   nll -= dnorm(logit_rho_h, Type(0.0), Type(10.0), 1);
   nll -= dnorm(logit_rho_k, Type(0.0), Type(10.0), 1);
 
-  nll -= dnorm(h_constant_f, Type(-2.0), Type(10.0), 1).sum();
-
-  nll -= dnorm(k_constant_f, Type(0.0), Type(10.0), 1);
-
   nll -= dnorm(log_lambda_tp, Type(0.0), Type(10.0), 1);
   nll -= dnorm(log_lambda_tp_0_inflated_sd, Type(0.0), Type(10.0), 1);
   
   nll -= dnorm(log_dispersion, Type(0.0), Type(10.0), 1);
 
-  nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f, true).sum();
+  nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
   vector<Type> basepop_f(exp(log_basepop_f));
   
   Type rho_h = 2.0 * invlogit(logit_rho_h) - 1.0;
@@ -105,7 +103,7 @@ Type objective_function<Type>::operator() ()
   Type rho_gt = 2.0 * invlogit(logit_rho_g_t) - 1.0;
 
   nll += SCALE(AR1(rho_h), sigma_h)(h_params_f - h_constant_f);
-  nll += SCALE(AR1(rho_k), sigma_k)(k_params_f - k_constant_f);
+  nll += SCALE(AR1(rho_k), sigma_k)(k_params_f);
 
   SparseMatrix<Type> QQ_tp = exp(log_lambda_tp)*penal_tp + exp(-2*log_lambda_tp_0_inflated_sd)*penal_tp_0 + null_penal_tp;
   nll += GMRF(QQ_tp)(tp_params);

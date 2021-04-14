@@ -1,0 +1,127 @@
+```{r, echo=FALSE}
+##males
+h <- just.DHS.m$par.full %>% split(names(.)) %>% .$h_params_f
+k <- just.DHS.m$par.full %>% split(names(.)) %>% .$k_params_f
+fixh.k <- just.DHS.fixh.m$par.full %>% split(names(.)) %>% .$k_params_f
+h.DEF <-just.DHS.m.DEF$par.full %>% split(names(.)) %>% .$h_params_f
+k.DEF <-just.DHS.m.DEF$par.full %>% split(names(.)) %>% .$k_params_f
+
+LQ <- as.matrix(LQcoef.m)[,1:4] %*% rbind(rep(1, length(unique(bf5.m.no0.smooth$period5))),
+                                          h,
+                                          h^2,
+                                          k) %>% 
+  `colnames<-`(unique(bf5.m.no0.smooth$period5)) %>%
+  `rownames<-`(seq(5, 110, by = 5)) %>%
+  reshape2::melt() %>%
+  mutate(value = exp(value),
+         model="LQ") %>%
+  setNames(c("age5", "period5", "value", "model")) %>%
+  bind_rows(
+    as.matrix(LQcoef.m)[,1:4] %*% rbind(rep(1, length(unique(bf5.m.no0.smooth$period5))),
+                                        data.vec.m$h_mean_f,
+                                        data.vec.m$h_mean_f^2,
+                                        fixh.k) %>% 
+      `colnames<-`(unique(bf5.m.no0.smooth$period5)) %>%
+      `rownames<-`(seq(5, 110, by = 5)) %>%
+      reshape2::melt() %>%
+      mutate(value = exp(value),
+             model="LQ fixh") %>%
+      setNames(c("age5", "period5", "value", "model"))
+  ) %>%
+  mutate(period5 = sprintf("%d-%d",period5, period5+4)) %>%
+  bind_rows(
+    reshape2::melt(more.countries.avg[[country]]$mort.m) %>% 
+      mutate(age5 = 5 * floor(Var1 / 5),
+             period5 = 5 * floor(Var2 / 5)) %>% 
+      group_by(age5, period5) %>%
+      summarise_at(vars(value), mean) %>%
+      mutate(value = exp(value),
+             period5 = sprintf("%d-%d",period5, period5+4),
+             model = "Spline average")
+  )
+
+as.matrix(LQcoef.m)[,1:4] %*% rbind(rep(1, length(unique(bf5.m.no0.smooth$period5))),
+                                    h.DEF,
+                                    h.DEF^2,
+                                    k.DEF)
+
+t(seq(5, 110, by = 5) + 2) %x% rep(1, length(unique(bf5.m.no0.smooth$period5))) - just.DHS.m.DEF$par %>% split(names(.)) %>% .$log_F
+  
+  
+
+
+DHS.plot <- bf5.m.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
+  select(tips, age5, period5, value) %>%
+  mutate(period5 = sprintf("%d-%d", period5, period5 + 4))
+
+ggplot(LQ %>% filter(age5 %in% 10:70)) + geom_line(aes(x = age5, y = value, linetype = model), lwd=1.2, col="blue") +
+  geom_line(data = LQ %>% filter(model == "Spline average"), aes(x = age5, y = value, linetype = model), col = "green3", lwd = 1.2) +
+  geom_point(data = filter(DHS.plot, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+  scale_shape_manual(values = 0:14) +
+  scale_linetype_manual(values = c("solid", "dashed", "twodash"), guide = guide_legend(override.aes = list(col = c("blue", "blue", "green3")))) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  facet_wrap(~period5) + 
+  ggtitle(country) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+
+##females
+h <- just.DHS.f$par.full %>% split(names(.)) %>% .$h_params_f
+k <- just.DHS.f$par.full %>% split(names(.)) %>% .$k_params_f
+fixh.k <- just.DHS.fixh.f$par.full %>% split(names(.)) %>% .$k_params_f
+
+LQ <- as.matrix(LQcoef.f)[,1:4] %*% rbind(rep(1, length(unique(bf5.f.no0.smooth$period5))),
+                                          h,
+                                          h^2,
+                                          k) %>% 
+  `colnames<-`(unique(bf5.f.no0.smooth$period5)) %>%
+  `rownames<-`(seq(5, 110, by = 5)) %>%
+  reshape2::melt() %>%
+  mutate(value = exp(value),
+         model="LQ") %>%
+  setNames(c("age5", "period5", "value", "model")) %>%
+  bind_rows(
+    as.matrix(LQcoef.f)[,1:4] %*% rbind(rep(1, length(unique(bf5.f.no0.smooth$period5))),
+                                        data.vec.f$h_mean_f,
+                                        data.vec.f$h_mean_f^2,
+                                        fixh.k) %>% 
+      `colnames<-`(unique(bf5.f.no0.smooth$period5)) %>%
+      `rownames<-`(seq(5, 110, by = 5)) %>%
+      reshape2::melt() %>%
+      mutate(value = exp(value),
+             model="LQ fixh") %>%
+      setNames(c("age5", "period5", "value", "model"))
+  ) %>%
+  mutate(period5 = sprintf("%d-%d",period5, period5+4)) %>%
+  bind_rows(
+    reshape2::melt(more.countries.avg[[country]]$mort.f) %>% 
+      mutate(age5 = 5 * floor(Var1 / 5),
+             period5 = 5 * floor(Var2 / 5)) %>% 
+      group_by(age5, period5) %>%
+      summarise_at(vars(value), mean) %>%
+      mutate(value = exp(value),
+             period5 = sprintf("%d-%d",period5, period5+4),
+             model = "Spline average")
+  )
+
+
+DHS.plot <- bf5.f.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
+  select(tips, age5, period5, value) %>%
+  mutate(period5 = sprintf("%d-%d", period5, period5 + 4))
+
+ggplot(LQ %>% filter(age5 %in% 10:70)) + geom_line(aes(x = age5, y = value, linetype = model), lwd=1.2, col="red") +
+  geom_line(data = LQ %>% filter(model == "Spline average"), aes(x = age5, y = value, linetype = model), col = "green3", lwd = 1.2) +
+  geom_point(data = filter(DHS.plot, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+  scale_shape_manual(values = 0:14) +
+  scale_linetype_manual(values = c("solid", "dashed", "twodash"), guide = guide_legend(override.aes = list(col = c("blue", "blue", "green3")))) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  facet_wrap(~period5) + 
+  ggtitle(country) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+```
