@@ -10,6 +10,7 @@ library(TMB)
 library(ggnewscale)
 library(DDSQLtools)
 library(ggforce)
+library(stringr)
 
 require(devtools)
 require(httr)
@@ -191,7 +192,7 @@ wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Uganda"
+country <- "Burkina Faso"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -218,7 +219,7 @@ census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
 ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total") %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
   filter(SexID == 1) %>%
@@ -230,7 +231,7 @@ ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalC
   ungroup()
 
 ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total") %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
   filter(SexID == 2) %>%
@@ -310,7 +311,7 @@ pop <- wpp.pop %>% filter(Name == country) %>%
   setNames(c(names(wpp.pop)[1:3], seq(0, 100, by = 5))) %>%
   reshape2::melt(id.vars=c("Name", "Sex", "Reference")) %>% 
   mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
-         value = as.numeric(value) * 1000,
+         value = as.numeric(str_replace_all(value, "\\s", "")) * 1000,
          age = variable) %>%
   select(Sex, year, age, value) %>%
   pivot_wider(values_from = value, names_from = year)
@@ -328,7 +329,7 @@ pop.m.aggr[n_ages, -1] <- t(pop.m %>% slice(-(1:(n_ages-1))) %>% select(-1) %>% 
 #data(burkina_faso_females)
 
 bf.idx5<-projection_indices(period_start = 1960,
-                            period_end = 2015,
+                            period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
                             interval = 5,
                             n_ages = n_ages,
                             fx_idx = 4L,

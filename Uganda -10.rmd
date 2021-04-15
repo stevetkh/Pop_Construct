@@ -202,7 +202,7 @@ wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Benin"
+country <- "Uganda"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
