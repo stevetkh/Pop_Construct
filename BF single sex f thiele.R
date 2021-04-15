@@ -127,7 +127,9 @@ fit_tmb <- function(tmb_input,
                     max_iter = 250,
                     random,
                     DLL = "leapfrog_TMBExports",
-                    map = list()
+                    map = list(),
+                    stepmin = 1,
+                    stepmax = 1
 ) {
   
   ## stopifnot(inherits(tmb_input, "tmb_input"))
@@ -148,7 +150,9 @@ fit_tmb <- function(tmb_input,
   f <- withCallingHandlers(
     stats::nlminb(obj$par, obj$fn, obj$gr,
                   control = list(trace = trace,
-                                 iter.max = max_iter)),
+                                 iter.max = max_iter,
+                                 step.min = stepmin,
+                                 step.max = stepmax)),
     warning = function(w) {
       if(grepl("NA/NaN function evaluation", w$message))
         invokeRestart("muffleWarning")
@@ -183,13 +187,17 @@ fit_tmb <- function(tmb_input,
 
 igme.5q0.f<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.csv")
 igme.5q0.m<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
+wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
+wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
+wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Burkina Faso"
+country <- "Benin"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
 
-open.age <- 75
+open.age <- 65
+n_ages = open.age / 5 + 1
 
 ##IGME priors
 igme.5q0.df <- igme.5q0.f %>% filter(Country.Name == country) %>% reshape2::melt() %>% 
@@ -205,24 +213,33 @@ igme.5q0.5 <- igme.5q0.df %>% mutate(year5 = 5 * floor(year/5)) %>% group_by(Sex
   summarise_at(vars(child.mort),mean) %>% ungroup()
 
 #DDHarmonized smoothed
-census_pop_counts <- DDharmonize_validate_PopCounts(locid = "Burkina Faso",       
+census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,       
                                                     times = 1950:2020) # time frame for censuses to extract
 
-ddharm_bf_census_m <-  census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1962) %>%
+#####################MIXING DE-FACTO AND DE-JURE HERE
+ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total") %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  arrange(AgeStart) %>%
   filter(SexID == 1) %>%
-  select(AgeStart, AgeLabel, '1975':'2006') 
+  group_by(AgeStart, AgeLabel, AgeSpan) %>%
+  arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
+  select(-c(StatisticalConceptName, SexID)) %>%
+  summarise_all(function(y){first(na.omit(y))}) %>%
+  select(-AgeSpan) %>%
+  ungroup()
 
-ddharm_bf_census_f <-  census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1962) %>%
+ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total") %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  arrange(AgeStart) %>%
   filter(SexID == 2) %>%
-  select(AgeStart, AgeLabel, '1975':'2006') 
+  group_by(AgeStart, AgeLabel, AgeSpan) %>%
+  arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
+  select(-c(StatisticalConceptName, SexID)) %>%
+  summarise_all(function(y){first(na.omit(y))}) %>%
+  select(-AgeSpan) %>%
+  ungroup()
 
 ddharm_smoothed <- tibble()
 
@@ -257,64 +274,58 @@ ddharm_census_m_smoothed <- ddharm_smoothed_mat %>% filter(sex=="male") %>% sele
 ddharm_bf_census_f_smoothed_aggr <- ddharm_census_f_smoothed %>%
   arrange(AgeLabel) %>%
   mutate(age.aggr = ifelse(AgeLabel %in% c("0","0-4","1-4"),"0-4", 
-                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
+                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "90+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
   group_by(age.aggr) %>%
   summarise_at(vars(-AgeLabel),sum,na.rm=T) %>%
   mutate(age = as.numeric(regmatches(age.aggr, regexpr("\\d+",age.aggr))), .before = 1) %>%
-  arrange(age) %>% select(-age.aggr) %>%
-  setNames(c("age",1975,1985,1996,2006))
+  arrange(age) %>% select(-age.aggr)
 
 ddharm_bf_census_m_smoothed_aggr <- ddharm_census_m_smoothed %>%
   arrange(AgeLabel) %>%
   mutate(age.aggr = ifelse(AgeLabel %in% c("0","0-4","1-4"),"0-4", 
-                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
+                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "90+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
   group_by(age.aggr) %>%
   summarise_at(vars(-AgeLabel),sum,na.rm=T) %>%
   mutate(age = as.numeric(regmatches(age.aggr, regexpr("\\d+",age.aggr))), .before = 1) %>%
-  arrange(age) %>% select(-age.aggr) %>%
-  setNames(c("age",1975,1985,1996,2006))
+  arrange(age) %>% select(-age.aggr)
 
-
-ddharm_bf_census_m_raw <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1962) %>%
-  distinct() %>%
-  pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  arrange(AgeStart) %>%
-  filter(SexID == 1) %>%
-  select(AgeStart, AgeLabel, '1975':'2006') %>%
+ddharm_bf_census_m_raw <- ddharm_bf_census_m %>%
   mutate(age.aggr = ifelse(AgeLabel %in% c("0","0-4","1-4"),"0-4", 
-                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
+                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "90+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
   group_by(age.aggr) %>%
   summarise_at(vars(-(AgeStart:AgeLabel)),sum,na.rm=T) %>%
   mutate(age = as.numeric(regmatches(age.aggr, regexpr("\\d+",age.aggr))), .before = 1) %>%
   arrange(age) %>% select(-age.aggr)
 
-ddharm_bf_census_f_raw <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1962) %>%
-  distinct() %>%
-  pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  arrange(AgeStart) %>%
-  filter(SexID == 2) %>%
-  select(AgeStart, AgeLabel, '1975':'2006') %>%
+ddharm_bf_census_f_raw <- ddharm_bf_census_f %>%
   mutate(age.aggr = ifelse(AgeLabel %in% c("0","0-4","1-4"),"0-4", 
-                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
+                           ifelse(AgeLabel %in% c(sprintf("%i-%i", seq(open.age, 90, by=5), seq(open.age+4, 94, by=5)), "80+", "85+", "90+", "95+", "98+"), paste0(open.age,"+"), AgeLabel))) %>%
   group_by(age.aggr) %>%
   summarise_at(vars(-(AgeStart:AgeLabel)),sum,na.rm=T) %>%
   mutate(age = as.numeric(regmatches(age.aggr, regexpr("\\d+",age.aggr))), .before = 1) %>%
   arrange(age) %>% select(-age.aggr)
 
 ##WPP Pop Estimates
-bf.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/Burkina Faso Pop.csv")
-colnames(bf.pop) <- c("Name", "Sex", "Year", sprintf("%d-%d", seq(0, 95, by=5), seq(4, 99, by=5)), "100+")
+pop <- wpp.pop %>% filter(Name == country) %>% 
+  setNames(c(names(wpp.pop)[1:3], seq(0, 100, by = 5))) %>%
+  reshape2::melt(id.vars=c("Name", "Sex", "Reference")) %>% 
+  mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
+         value = as.numeric(value) * 1000,
+         age = variable) %>%
+  select(Sex, year, age, value) %>%
+  pivot_wider(values_from = value, names_from = year)
 
-bf.pop.f <- bf.pop %>% filter(Sex=="Female") %>% select(-c("Name", "Sex")) %>% apply(2,function(x)as.numeric(gsub(" ","",x))) %>% as_tibble() %>%
-  pivot_longer(!Year,names_to="Age",values_to="counts") %>% pivot_wider(names_from=Year,values_from="counts")
-bf.pop.f[,-1] <- bf.pop.f[,-1]*1000
+pop.f <- filter(pop, Sex=="female") %>% select(-Sex)
+pop.m <- filter(pop, Sex=="male") %>% select(-Sex)
+
+pop.f.aggr <- pop.f[1:n_ages,]
+pop.m.aggr <- pop.m[1:n_ages,]
+
+pop.f.aggr[n_ages, -1] <- t(pop.f %>% slice(-(1:(n_ages-1))) %>% select(-1) %>% colSums())
+pop.m.aggr[n_ages, -1] <- t(pop.m %>% slice(-(1:(n_ages-1))) %>% select(-1) %>% colSums())
 
 ##Pop data from Mark's package
-data(burkina_faso_females)
-
-n_ages = open.age / 5 + 1
+#data(burkina_faso_females)
 
 bf.idx5<-projection_indices(period_start = 1960,
                             period_end = 2015,
@@ -324,11 +335,8 @@ bf.idx5<-projection_indices(period_start = 1960,
                             n_fx = 7L,
                             n_sexes = 1)
 
-bf.pop.aggr.f <- bf.pop.f[1:bf.idx5$n_ages,]
-bf.pop.aggr.f[bf.idx5$n_ages,-1] <- t(bf.pop.f %>% slice(-(1:(bf.idx5$n_ages-1))) %>% select(-1) %>% colSums())
-
 ##DHS data cohort smoothed
-bf5.smooth <- aggr.mat.cohort.0$`Burkina Faso` %>%
+bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
   mutate(age5 = 5 * floor(agegr / 5),
          period5 = 5 * floor(period / 5)) %>%
   group_by(mm1, tips, DHS, age5, period5) %>%
@@ -365,17 +373,28 @@ LQ.baseline.DX.vx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>%
   slice(-1) %>% select(-n) %>%
   as.matrix() %>% as("sparseMatrix")
 
-basepop_init <- as.numeric(bf.pop.aggr.f$'1960') %>% ifelse(.==0, 0.5, .)
+basepop_init <- as.numeric(pop.f.aggr$'1960') %>% ifelse(.==0, 0.5, .)
 
-fx_init <- burkina.faso.females$fertility.rates[4:10, ]
-fx_init <- reshape2::melt(fx_init) %>% 
-  slice(c(rep(0:(ncol(fx_init)-1) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init),
-          rep((ncol(fx_init)-1) * nrow(fx_init) + 1:nrow(fx_init), max(bf.idx5$periods - 2004)) )) %>%
-  mutate(year = rep(1960:max(bf.idx5$periods), each = nrow(fx_init))) %>%
-  select(-2) %>%
-  pivot_wider(names_from = year, values_from = value) %>%
-  select(num_range("",bf.idx5$periods)) %>%
-  as.matrix()
+#fx_init <- burkina.faso.females$fertility.rates[4:10, ]
+#fx_init <- reshape2::melt(fx_init) %>% 
+#  slice(c(rep(0:(ncol(fx_init)-1) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init),
+#          rep((ncol(fx_init)-1) * nrow(fx_init) + 1:nrow(fx_init), max(bf.idx5$periods - 2004)) )) %>%
+#  mutate(year = rep(1960:max(bf.idx5$periods), each = nrow(fx_init))) %>%
+#  select(-2) %>%
+#  pivot_wider(names_from = year, values_from = value) %>%
+#  select(num_range("",bf.idx5$periods)) %>%
+#  as.matrix()
+
+##WPP fx
+fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>% 
+  mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
+         fx = value/1000,
+         age = as.numeric(str_extract(variable,"\\d{2}"))) %>%
+  select(year,age, fx)
+
+fx_init <-  fx %>% filter(year %in% bf.idx5$periods) %>%
+  pivot_wider(names_from=year, values_from=fx) %>% 
+  select(-age) %>% as.matrix()
 
 log_basepop_mean <- as.vector(log(basepop_init))
 log_fx_mean <- as.vector(log(fx_init))
@@ -481,12 +500,12 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
 par.vec <- list(log_tau2_logpop_f = c(1,0),
                 #log_tau2_logpop_f_base=0,
                 log_tau2_fx = 2,
-                log_tau2_gx_f = 2,
+                log_tau2_gx_f = 4,
                 log_basepop_f = log_basepop_mean,
                 log_fx = log_fx_mean,
                 gx_f = rep(0, bf.idx5$n_ages * bf.idx5$n_periods),
-                logit_rho_g_x = 3,
-                logit_rho_g_t = 3,
+                logit_rho_g_x = 4,
+                logit_rho_g_t = 2,
                 
                 log_lambda_tp = 0,
                 log_lambda_tp_0_inflated_sd = 0.3,
@@ -502,13 +521,13 @@ par.vec <- list(log_tau2_logpop_f = c(1,0),
                 log_A_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
                 log_B_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
                 
-                log_marginal_prec_phi = 2,
-                log_marginal_prec_psi = 2,
-                log_marginal_prec_lambda = 2,
-                log_marginal_prec_delta = 2,
-                log_marginal_prec_epsilon = 2,
-                log_marginal_prec_A = 2,
-                log_marginal_prec_B = 2,
+                log_marginal_prec_phi = 0,
+                log_marginal_prec_psi = 0,
+                log_marginal_prec_lambda = 0,
+                log_marginal_prec_delta = 0,
+                log_marginal_prec_epsilon = 0,
+                log_marginal_prec_A = 0,
+                log_marginal_prec_B = 0,
                 
                 logit_rho_phi = 1,
                 logit_rho_psi = 1,
@@ -627,14 +646,16 @@ q4515.func <- function(x){
   #      mutate(sex="male", year = bf.idx5$periods)
   #  )
 }
-wpp.bf.q4515<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP_BF_45q15.csv")
+#wpp.bf.q4515<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP_BF_45q15.csv")
+
+wpp.bf.q4515 <- filter(wpp.q4515, Name==country)
 
 q4515.df <- lapply(models.list, q4515.func) %>% 
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
   bind_rows() %>%
   bind_rows(
-    as_tibble(reshape2::melt(wpp.bf.q4515[1,-c(1:5)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
-    as_tibble(reshape2::melt(wpp.bf.q4515[2,-c(1:5)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male")
+    as_tibble(reshape2::melt(wpp.bf.q4515[2,-c(1:4)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(reshape2::melt(wpp.bf.q4515[1,-c(1:4)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male")
   ) %>%
   mutate(model = fct_relevel(model, "WPP Estimates"))
 
@@ -845,11 +866,11 @@ ggplot(par.deviation) + geom_line(aes(x = period5, y = value, col = par), lwd = 
 
 #populaton counts####
 #ADD AR.f$mode$census_proj
-ddharm_bf_census_f_smoothed_aggr$'1995' <- ddharm_bf_census_f_smoothed_aggr$'1985'^(1-10/11) *  ddharm_bf_census_f_smoothed_aggr$'1996'^(10/11)
-ddharm_bf_census_f_smoothed_aggr$'2005' <- ddharm_bf_census_f_smoothed_aggr$'1996'^(1-9/10) *  ddharm_bf_census_f_smoothed_aggr$'2006'^(9/10)
+#ddharm_bf_census_f_smoothed_aggr$'1995' <- ddharm_bf_census_f_smoothed_aggr$'1985'^(1-10/11) *  ddharm_bf_census_f_smoothed_aggr$'1996'^(10/11)
+#ddharm_bf_census_f_smoothed_aggr$'2005' <- ddharm_bf_census_f_smoothed_aggr$'1996'^(1-9/10) *  ddharm_bf_census_f_smoothed_aggr$'2006'^(9/10)
 
-ddharm_bf_census_f_raw$'1995' <- ddharm_bf_census_f_raw$'1985'^(1-10/11) *  ddharm_bf_census_f_raw$'1996'^(10/11)
-ddharm_bf_census_f_raw$'2005' <- ddharm_bf_census_f_raw$'1996'^(1-9/10) *  ddharm_bf_census_f_raw$'2006'^(9/10)
+#ddharm_bf_census_f_raw$'1995' <- ddharm_bf_census_f_raw$'1985'^(1-10/11) *  ddharm_bf_census_f_raw$'1996'^(10/11)
+#ddharm_bf_census_f_raw$'2005' <- ddharm_bf_census_f_raw$'1996'^(1-9/10) *  ddharm_bf_census_f_raw$'2006'^(9/10)
 
 
 mf5 <- projection_model_frames(bf.idx5)
@@ -874,7 +895,7 @@ pop.df <- lapply(models.list, get.pop) %>%
       mutate(age = c(ddharm_bf_census_f_raw$age), model="UNPD Census smoothed") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
     
-    mutate(bf.pop.aggr.f[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
+    mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
   ) %>%
   mutate(cohort = year - age,
@@ -911,7 +932,7 @@ censpop.df <- lapply(models.list, get.census.pop) %>%
       mutate(age = c(ddharm_bf_census_f_smoothed_aggr$age), model="UNPD Census smoothed") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
     
-    mutate(bf.pop.aggr.f[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
+    mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
   ) %>%
   mutate(cohort = year - age,
@@ -929,7 +950,7 @@ allpop.df %>% filter(year %in% c(1960,colnames(data.f))) %>%
 allpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 2, page=4)
+  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 2, page=2)
 
 censpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +

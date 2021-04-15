@@ -103,8 +103,8 @@ Type objective_function<Type>::operator() ()
   nll -= dlgamma(log_tau2_gx_f, Type(1.0), Type(1.0 / 0.0436), true);
   Type sigma_gx_f(exp(-0.5 * log_tau2_gx_f));
 
-  nll -= dnorm(logit_rho_g_x, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_g_t, Type(0.0), Type(10.0), 1);
+  nll -= dnorm(logit_rho_g_x, Type(0.0), Type(5.0), 1);
+  nll -= dnorm(logit_rho_g_t, Type(0.0), Type(5.0), 1);
   
   nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
   vector<Type> basepop_f(exp(log_basepop_f));
