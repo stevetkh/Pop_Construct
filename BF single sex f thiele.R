@@ -29,6 +29,9 @@ rm(req, filelist, filename)
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele"))
 
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS"))
+
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0"))
 
@@ -420,7 +423,7 @@ thiele.prior.f <- sapply(igme.h.mean.f, thiele.prior, sex="female")
 thiele_age <- seq(2, 112, by = 5)
 
 data.f <- as.matrix(log(ddharm_bf_census_f_smoothed_aggr[,-1]))
-#data.f <- as.matrix(log(ddharm_bf_census_f[,-1]))
+#data.f <- as.matrix(log(ddharm_bf_census_f_raw[,-1]))
 #data.f <- as.matrix(log(bf_census_f[,-1]))
 #data.f <- as.matrix(log(bf.pop.aggr.f %>% select('1975', '1985', '1995', '2005', '2015')))
 
@@ -436,7 +439,7 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
                  census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
 
                  open_idx = bf.idx5$n_ages,
-                 pop_start = 1, pop_end = open.age / 5,
+                 pop_start = 3, pop_end = open.age / 5,
                 
                  df = bf5.f.no0.smooth$adjusted,
                  Ef = bf5.f.no0.smooth$pyears2,
@@ -475,15 +478,15 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
                  h_constant_f = igme.h.mean.f
 )
 
-par.vec <- list(log_tau2_logpop_f = 1,
-                log_tau2_logpop_f_base=0,
+par.vec <- list(log_tau2_logpop_f = c(1,0),
+                #log_tau2_logpop_f_base=0,
                 log_tau2_fx = 2,
                 log_tau2_gx_f = 2,
                 log_basepop_f = log_basepop_mean,
                 log_fx = log_fx_mean,
                 gx_f = rep(0, bf.idx5$n_ages * bf.idx5$n_periods),
-                logit_rho_g_x = 1,
-                logit_rho_g_t = 1,
+                logit_rho_g_x = 3,
+                logit_rho_g_t = 3,
                 
                 log_lambda_tp = 0,
                 log_lambda_tp_0_inflated_sd = 0.3,
@@ -578,8 +581,41 @@ system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, ra
             ) 
 
 
+system.time(thiele.f.noDHS <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+                                                                                     "log_fx",
+                                                                                     "gx_f",
+                                                                                     "log_phi_innov",
+                                                                                     "log_psi_innov",
+                                                                                     "log_lambda_innov",
+                                                                                     "log_delta_innov",
+                                                                                     "log_epsilon_innov",
+                                                                                     "log_A_innov",
+                                                                                     "log_B_innov"
+                                                                                     ),
+                                    DLL="ccmpp_f_thiele_noDHS"
+                                    )
+            ) 
 
-models.list <- list("LQ" = LQ.f.no0, "Thiele" = thiele.f.no0, "Thiele MVN" = thiele.f.no0.MVN)
+input.LQ.both.vec$par_init$logit_rho_g_t <- 0
+system.time(thiele.f.fixgt <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+                                                                                       "log_fx",
+                                                                                       "gx_f",
+                                                                                       "tp_params",
+                                                                                       "log_phi_innov",
+                                                                                       "log_psi_innov",
+                                                                                       "log_lambda_innov",
+                                                                                       "log_delta_innov",
+                                                                                       "log_epsilon_innov",
+                                                                                       "log_A_innov",
+                                                                                       "log_B_innov"
+                                                                                       ),
+                                      DLL="ccmpp_f_thiele",
+                                      map=list(logit_rho_g_t = factor(NA))
+                                      )
+            ) 
+
+models.list <- list("LQ" = LQ.f.no0, "Thiele" = thiele.f.no0, "Thiele MVN" = thiele.f.no0.MVN, "Thiele no DHS" = thiele.f.noDHS,
+                     "Thiele fixgt" = thiele.f.fixgt)
 
 #q4515####
 q4515.func <- function(x){
@@ -626,23 +662,7 @@ q50.df <- lapply(models.list, q50.func) %>%
   mutate(model = fct_relevel(model, "IGME Estimates"))
 
 q50.df %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model, linetype = sex), lwd = 1.2) + ylab(bquote(""[45]*q[15])) +
-  theme(text = element_text(size=25))
-
-#h params####
-h.df <- lapply(models.list, function(y){j <- y$mode$mx_mat_f[1,]; as_tibble(5*j/(1+2.5*j)) %>% mutate(year = bf.idx5$periods, sex="female")}) %>% 
-  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
-  bind_rows() %>%
-  bind_rows(
-    filter(igme.5q0.5, year5 %in% bf.idx5$periods, Sex=="Female") %>%
-      mutate(model="IGME Estimates", value=child.mort, year=year5, year5=NULL, child.mort=NULL, sex="female"),
-    filter(igme.5q0.5, year5 %in% bf.idx5$periods, Sex=="Male") %>%
-      mutate(model="IGME Estimates", value=child.mort, year=year5, year5=NULL, child.mort=NULL, sex="male")
-    
-  ) %>%
-  mutate(model = fct_relevel(model, "IGME Estimates"))
-
-ggplot(h.df) + geom_line(aes(x = year, y = value, col = model, linetype=sex), lwd = 1.2) + ylab(bquote("log("[5]*q[0]*") or LogQuad h")) + 
+  ggplot() + geom_line(aes(x = year, y = value, col = model, linetype = sex), lwd = 1.2) + ylab(bquote(""[5]*q[0])) +
   theme(text = element_text(size=25))
 
 ##Comparison to DHS-spline####
@@ -793,8 +813,6 @@ ggplot(thiele %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, c
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 
-
-
 par.deviation <- bind_rows(
   as_tibble(log(thiele.f.no0$mode$phi) - data.vec$log_phi_mean) %>% 
     mutate(par = "phi", period5 = bf.idx5$periods),
@@ -827,6 +845,13 @@ ggplot(par.deviation) + geom_line(aes(x = period5, y = value, col = par), lwd = 
 
 #populaton counts####
 #ADD AR.f$mode$census_proj
+ddharm_bf_census_f_smoothed_aggr$'1995' <- ddharm_bf_census_f_smoothed_aggr$'1985'^(1-10/11) *  ddharm_bf_census_f_smoothed_aggr$'1996'^(10/11)
+ddharm_bf_census_f_smoothed_aggr$'2005' <- ddharm_bf_census_f_smoothed_aggr$'1996'^(1-9/10) *  ddharm_bf_census_f_smoothed_aggr$'2006'^(9/10)
+
+ddharm_bf_census_f_raw$'1995' <- ddharm_bf_census_f_raw$'1985'^(1-10/11) *  ddharm_bf_census_f_raw$'1996'^(10/11)
+ddharm_bf_census_f_raw$'2005' <- ddharm_bf_census_f_raw$'1996'^(1-9/10) *  ddharm_bf_census_f_raw$'2006'^(9/10)
+
+
 mf5 <- projection_model_frames(bf.idx5)
 get.pop<- function(x){
   pop.mat <- matrix(x$mode$population_f, bf.idx5$n_ages, bf.idx5$n_periods+1)
@@ -849,30 +874,21 @@ pop.df <- lapply(models.list, get.pop) %>%
       mutate(age = c(ddharm_bf_census_f_raw$age), model="UNPD Census smoothed") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
     
-    mutate(bf.pop.aggr.f[,-1], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
+    mutate(bf.pop.aggr.f[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
   ) %>%
   mutate(cohort = year - age,
          cohort = 5 * floor(cohort / 5),
-         model = fct_relevel(model, "UNPD Census")
+         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
          )
 
-pop.df %>% filter(year %in% c(1960, 1975, 1985, 1995, 2005, 2015)) %>%
-  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 3, page=1)
 
-pop.df %>% filter(model != "WPP Estimates") %>%
+pop.df %>% filter(year%%5==0) %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 3, page=3)
 
-pop.df %>% filter(model != "WPP Estimates") %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~age, scale="free", nrow = 2, ncol = 3, page=1)
 
-#census years
 mf5 <- projection_model_frames(bf.idx5)
 get.census.pop<- function(x){
   pop.mat <- matrix(x$mode$census_proj_mat_f, bf.idx5$n_ages, ncol(data.f))
@@ -892,30 +908,38 @@ censpop.df <- lapply(models.list, get.census.pop) %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
     
     ddharm_bf_census_f_smoothed_aggr %>%
-      mutate(age = c(ddharm_bf_census_f_smoothed_aggr$age), model="UNPD Census") %>%
+      mutate(age = c(ddharm_bf_census_f_smoothed_aggr$age), model="UNPD Census smoothed") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
     
-    mutate(bf.pop.aggr.f[,-1], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
+    mutate(bf.pop.aggr.f[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
       pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
   ) %>%
   mutate(cohort = year - age,
-         model = fct_relevel(model, "UNPD Census")
-         )
+         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
+  )
 
-censpop.df %>% filter(year %in% colnames(data.f)) %>%
+allpop.df <- full_join(pop.df, censpop.df) %>% mutate(model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")))
+
+
+allpop.df %>% filter(year %in% c(1960,colnames(data.f))) %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) + ylab("Population counts") + 
+  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 3, page=1)
+
+allpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 2, page=1)
-
-censpop.df %>% filter(model != "WPP Estimates") %>%
-  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 4, page=2)
+  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 2, page=4)
 
 censpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) + ylab("Population counts") +
+  facet_wrap_paginate(~age, scale="free", nrow = 4, ncol = 3, page=1)
+
+allpop.df %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~age, scale="free", nrow = 2, ncol = 2, page=2)
+  facet_wrap_paginate(~age, scale="free", nrow = 4, ncol = 3, page=1)
 
 #migration####
 get.mig<- function(x){
@@ -938,11 +962,41 @@ inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
   facet_wrap_paginate(~ year, nrow=2, ncol=3, page=1, scales = "free_y")
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
+  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~ age, scales="free_y", nrow=2, ncol=3, page=2)
+
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
   ggplot() + geom_line(aes(x = age, y = gx, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   facet_wrap_paginate(~ cohort, nrow=2, ncol=3, page=3)
 
-inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) +
+
+
+#fertility####
+get.fert<- function(x){
+  pop.mat <- matrix(x$mode$fx, bf.idx5$n_fx, bf.idx5$n_periods)
+  rownames(pop.mat) <- c(bf.idx5$fertility_ages)
+  colnames(pop.mat) <- bf.idx5$periods
+  reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
+}
+
+fx.df <- lapply(models.list, get.fert) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    reshape2::melt(fx_init %>% `rownames<-`(bf.idx5$fertility_ages)) %>%
+      select(age = Var1, year = Var2, value = value) %>%
+      mutate(model = "Initial Values")
+  ) %>%
+  mutate(model = fct_relevel(model, "Initial Values")) 
+
+fx.df %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~ age, scales="free_y", nrow=2, ncol=3, page=3)
+  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 4, page=1)
+
+fx.df %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_wrap_paginate(~age, scale="free_y", nrow = 2, ncol = 4, page=1)
