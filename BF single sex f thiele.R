@@ -572,7 +572,8 @@ system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random
                                                                                  "log_A_innov",
                                                                                  "log_B_innov"
                                                                                  ),
-                                DLL="ccmpp_f_thiele"
+                                DLL="ccmpp_f_thiele",
+                                map = list(log_tau2_logpop_f = factor(c(1,1)))
                                 )
             ) 
 
