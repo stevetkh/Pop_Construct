@@ -191,12 +191,12 @@ wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Benin"
+country <- "Uganda"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
 
-open.age <- 65
+open.age <- 75
 n_ages = open.age / 5 + 1
 
 ##IGME priors
@@ -243,7 +243,7 @@ ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalC
 
 ddharm_smoothed <- tibble()
 
-for(i in 3:6){
+for(i in 3:ncol(ddharm_bf_census_f)){
   dat.f <- ddharm_bf_census_f %>% select(1:2,i) %>% filter(!is.na(ddharm_bf_census_f[[i]])) %>% arrange(AgeStart)
   dat.m <- ddharm_bf_census_m %>% select(1:2,i) %>% filter(!is.na(ddharm_bf_census_m[[i]])) %>% arrange(AgeStart)
   
