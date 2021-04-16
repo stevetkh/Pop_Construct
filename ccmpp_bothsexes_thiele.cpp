@@ -51,12 +51,12 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(dm);
   DATA_VECTOR(Ef);
   DATA_VECTOR(Em);
-  DATA_IVECTOR(df_age_f);
-  DATA_IVECTOR(df_age_m);
-  DATA_IVECTOR(df_time_f);
-  DATA_IVECTOR(df_time_m);
-  DATA_IVECTOR(df_tp_f);
-  DATA_IVECTOR(df_tp_m);
+  DATA_IVECTOR(df_age);
+  DATA_IVECTOR(dm_age);
+  DATA_IVECTOR(df_time);
+  DATA_IVECTOR(dm_time);
+  DATA_IVECTOR(df_tp);
+  DATA_IVECTOR(dm_tp);
   DATA_VECTOR(thiele_age);
 
   DATA_VECTOR(log_phi_mean_f);
@@ -357,10 +357,10 @@ Type objective_function<Type>::operator() ()
   vector<Type> mum(dm.size());
   vector<Type> varm(dm.size());
   for(int i = 0; i < df.size(); i++){
-    muf(i) = mx_mat_f(df_age_f(i)-1, df_time_f(i)-1) * exp(tp_params(df_tp_f(i))) * Ef(i);
+    muf(i) = mx_mat_f(df_age(i)-1, df_time(i)-1) * exp(tp_params(df_tp(i))) * Ef(i);
   }
   for(int i = 0; i < dm.size(); i++){
-    mum(i) = mx_mat_m(df_age_m(i)-1, df_time_m(i)-1) * exp(tp_params(df_tp_m(i))) * Em(i);
+    mum(i) = mx_mat_m(dm_age(i)-1, dm_time(i)-1) * exp(tp_params(dm_tp(i))) * Em(i);
   }
 
   varf = muf * (1 + muf / exp(log_dispersion_f));

@@ -27,14 +27,8 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele"))
 
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
@@ -335,7 +329,7 @@ bf.idx5<-projection_indices(period_start = 1960,
                             n_ages = n_ages,
                             fx_idx = 4L,
                             n_fx = 7L,
-                            n_sexes = 1)
+                            n_sexes = 2)
 
 ##DHS data cohort smoothed
 bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
@@ -351,11 +345,17 @@ bf5.f.smooth <- bf5.smooth %>% filter(mm1=="female") %>% arrange(period5,tips,ag
 bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15)
 bf5.f.0.smooth <- filter(bf5.f.smooth, age5 == 0)
 
+bf5.m.smooth <- bf5.smooth %>% filter(mm1=="male") %>% arrange(period5,tips,age5)
+bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15)
+bf5.m.0.smooth <- filter(bf5.m.smooth, age5 == 0)
+
 tips.DX.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.no0.smooth),"sparseMatrix")
-tips.DX.0.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.0.smooth),"sparseMatrix")
+tips.DX.smooth.m <- as(model.matrix(event~as.factor(tips)-1,data=bf5.m.no0.smooth),"sparseMatrix")
 
 LQcoef.f <- LQcoef %>% filter(sex=="Female", !age%in%c("0","1-4")) %>% select(ax:vx)
 LQcoef.f$age5 <- seq(5,110,by=5)
+LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:vx)
+LQcoef.m$age5 <- seq(5,110,by=5)
 
 LQ.baseline.DX.smooth <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.f.no0.smooth) %*% as.matrix(LQcoef.f[,1:4])
 LQ.baseline.DX.ax.smooth <- LQ.baseline.DX.smooth[,1]
@@ -375,17 +375,23 @@ LQ.baseline.DX.vx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>%
   slice(-1) %>% select(-n) %>%
   as.matrix() %>% as("sparseMatrix")
 
-basepop_init <- as.numeric(pop.f.aggr$'1960') %>% ifelse(.==0, 0.5, .)
-
-#fx_init <- burkina.faso.females$fertility.rates[4:10, ]
-#fx_init <- reshape2::melt(fx_init) %>% 
-#  slice(c(rep(0:(ncol(fx_init)-1) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init),
-#          rep((ncol(fx_init)-1) * nrow(fx_init) + 1:nrow(fx_init), max(bf.idx5$periods - 2004)) )) %>%
-#  mutate(year = rep(1960:max(bf.idx5$periods), each = nrow(fx_init))) %>%
-#  select(-2) %>%
-#  pivot_wider(names_from = year, values_from = value) %>%
-#  select(num_range("",bf.idx5$periods)) %>%
-#  as.matrix()
+LQ.baseline.DX.smooth.m <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.m.no0.smooth) %*% as.matrix(LQcoef.m[,1:4])
+LQ.baseline.DX.ax.smooth.m <- LQ.baseline.DX.smooth.m[,1]
+LQ.baseline.DX.bx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,2], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.cx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,3], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.vx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,4], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
 
 ##WPP fx
 fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>% 
@@ -398,7 +404,6 @@ fx_init <-  fx %>% filter(year %in% bf.idx5$periods) %>%
   pivot_wider(names_from=year, values_from=fx) %>% 
   select(-age) %>% as.matrix()
 
-log_basepop_mean <- as.vector(log(basepop_init))
 log_fx_mean <- as.vector(log(fx_init))
 
 thiele.prior <- function(h, sex) {
@@ -441,41 +446,47 @@ thiele.prior <- function(h, sex) {
 igme.h.mean.f <- igme.5q0.5 %>% filter(Sex=="Female", year5 %in% levels(bf5.f.no0.smooth$period5)) %>% .$child.mort %>% log()
 thiele.prior.f <- sapply(igme.h.mean.f, thiele.prior, sex="female")
 
+igme.h.mean.m <- igme.5q0.5 %>% filter(Sex=="Male", year5 %in% levels(bf5.m.no0.smooth$period5)) %>% .$child.mort %>% log()
+thiele.prior.m <- sapply(igme.h.mean.f, thiele.prior, sex="male")
+
 thiele_age <- seq(2, 112, by = 5)
 
-data.f <- as.matrix(log(ddharm_bf_census_f_smoothed_aggr[,-1]))
+basepop.f <- pop.f.aggr$`1960`
+basepop.m <- pop.m.aggr$`1960`
+
+data.f <- as.matrix(log(ddharm_bf_census_f_smoothed_aggr[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_smoothed_aggr[,-1]))
 #data.f <- as.matrix(log(ddharm_bf_census_f_raw[,-1]))
 #data.f <- as.matrix(log(bf_census_f[,-1]))
 #data.f <- as.matrix(log(bf.pop.aggr.f %>% select('1975', '1985', '1995', '2005', '2015')))
 
-data.vec <- list(log_basepop_mean_f = log_basepop_mean,
+data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                  log_fx_mean = log_fx_mean,
                  srb = rep(1.05, bf.idx5$n_periods),
                  interval = bf.idx5$interval,
                  n_periods = bf.idx5$n_periods,
                  fx_idx = 4L,
                  n_fx = 7L,
-                 census_log_pop_f = data.f,
+                 census_log_pop_f = data.f, census_log_pop_m = data.m,
                  census_year_idx = match(bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval), bf.idx5$periods),
                  census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
-
+                 
                  open_idx = bf.idx5$n_ages,
                  pop_start = 3, pop_end = open.age / 5,
-                
-                 df = bf5.f.no0.smooth$adjusted,
-                 Ef = bf5.f.no0.smooth$pyears2,
-                 df_age = match(bf5.f.no0.smooth$age5+2, thiele_age),
-                 df_time = match(bf5.f.no0.smooth$period5, levels(bf5.f.no0.smooth$period5)),
-                 df_tp = c(bf5.f.no0.smooth$tips)-1,
                  
-                 log_phi_mean = log(thiele.prior.f[1,]),
-                 log_psi_mean = log(thiele.prior.f[2,]),
-                 log_lambda_mean = log(thiele.prior.f[3,]),
-                 log_delta_mean = log(thiele.prior.f[4,]),
-                 log_epsilon_mean = log(thiele.prior.f[5,]),
-                 log_A_mean = log(thiele.prior.f[6,]),
-                 log_B_mean = log(thiele.prior.f[7,]),
-                
+                 df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
+                 Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
+                 df_age = match(bf5.f.no0.smooth$age5+2, thiele_age), dm_age = match(bf5.m.no0.smooth$age5+2, thiele_age),
+                 df_time = match(bf5.f.no0.smooth$period5, levels(bf5.f.no0.smooth$period5)), dm_time = match(bf5.m.no0.smooth$period5, levels(bf5.m.no0.smooth$period5)),
+                 df_tp = c(bf5.f.no0.smooth$tips)-1, dm_tp = c(bf5.m.no0.smooth$tips)-1,
+                 
+                 log_phi_mean_f = log(thiele.prior.f[1,]), log_phi_mean_m = log(thiele.prior.m[1,]),
+                 log_psi_mean_f = log(thiele.prior.f[2,]), log_psi_mean_m = log(thiele.prior.m[2,]),
+                 log_lambda_mean_f = log(thiele.prior.f[3,]), log_lambda_mean_m = log(thiele.prior.m[3,]),
+                 log_delta_mean_f = log(thiele.prior.f[4,]), log_delta_mean_m = log(thiele.prior.m[4,]),
+                 log_epsilon_mean_f = log(thiele.prior.f[5,]), log_epsilon_mean_m = log(thiele.prior.m[5,]),
+                 log_A_mean_f = log(thiele.prior.f[6,]), log_A_mean_m = log(thiele.prior.m[6,]),
+                 log_B_mean_f = log(thiele.prior.f[7,]), log_B_mean_m = log(thiele.prior.m[7,]),
+                 
                  #log_phi_mean = rep(mean(log(thiele.prior.f[1,])), bf.idx5$n_periods),
                  #log_psi_mean =  rep(mean(log(thiele.prior.f[2,])), bf.idx5$n_periods),
                  #log_lambda_mean =  rep(mean(log(thiele.prior.f[3,])), bf.idx5$n_periods),
@@ -483,61 +494,60 @@ data.vec <- list(log_basepop_mean_f = log_basepop_mean,
                  #log_epsilon_mean =  rep(mean(log(thiele.prior.f[5,])), bf.idx5$n_periods),
                  #log_A_mean =  rep(mean(log(thiele.prior.f[6,])), bf.idx5$n_periods),
                  #log_B_mean =  rep(mean(log(thiele.prior.f[7,])), bf.idx5$n_periods),
-                
+                 
                  thiele_age = thiele_age,
                  
                  penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
                  null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
                  penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
                  
-                 LQ_baseline_mx_DX_f = LQ.baseline.DX.ax.smooth,
-                 h_DX_f = LQ.baseline.DX.bx.smooth,
-                 h2_DX_f = LQ.baseline.DX.cx.smooth,
-                 k_DX_f = LQ.baseline.DX.vx.smooth,
-                 tp_DX_f = tips.DX.smooth,
-                 LQ_baseline_f = as.matrix(LQcoef.f[,1:4]),
-                 h_constant_f = igme.h.mean.f
+                 LQ_baseline_mx_DX_f = LQ.baseline.DX.ax.smooth,  LQ_baseline_mx_DX_m = LQ.baseline.DX.ax.smooth.m,
+                 h_DX_f = LQ.baseline.DX.bx.smooth, h_DX_m = LQ.baseline.DX.bx.smooth.m,
+                 h2_DX_f = LQ.baseline.DX.cx.smooth, h2_DX_m = LQ.baseline.DX.cx.smooth.m,
+                 k_DX_f = LQ.baseline.DX.vx.smooth, k_DX_m = LQ.baseline.DX.vx.smooth.m,
+                 tp_DX_f = tips.DX.smooth, tp_DX_m = tips.DX.smooth.m,
+                 LQ_baseline_f = as.matrix(LQcoef.f[,1:4]), LQ_baseline_m = as.matrix(LQcoef.m[,1:4]),
+                 h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
 )
 
-par.vec <- list(log_tau2_logpop_f = c(1,0),
-                #log_tau2_logpop_f_base=0,
+par.vec <- list(log_tau2_logpop_f = c(1,0), log_tau2_logpop_m = c(1,0),
                 log_tau2_fx = 2,
-                log_tau2_gx_f = 4,
-                log_basepop_f = log_basepop_mean,
+                log_tau2_gx_f = 4, log_tau2_gx_m = 4,
+                log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
                 log_fx = log_fx_mean,
-                gx_f = rep(0, bf.idx5$n_ages * bf.idx5$n_periods),
-                logit_rho_g_x = 4,
-                logit_rho_g_t = 2,
+                gx_f = rep(0, bf.idx5$n_ages * bf.idx5$n_periods), gx_m = rep(0, bf.idx5$n_ages * bf.idx5$n_periods),
+                logit_rho_g_x_f = 4, logit_rho_g_x_m = 4,
+                logit_rho_g_t_f = 2, logit_rho_g_t_m = 2,
                 
                 log_lambda_tp = 0,
                 log_lambda_tp_0_inflated_sd = 0.3,
                 tp_params = rep(0,15),
                 
-                log_dispersion = 1,
+                log_dispersion_f = 1, log_dispersion_m = 1,
+                 
+                log_phi_innov_f = rep(0, bf.idx5$n_periods), log_phi_innov_m = rep(0, bf.idx5$n_periods),
+                log_psi_innov_f = rep(0, bf.idx5$n_periods), log_psi_innov_m = rep(0, bf.idx5$n_periods),
+                log_lambda_innov_f = rep(0, bf.idx5$n_periods), log_lambda_innov_m = rep(0, bf.idx5$n_periods),
+                log_delta_innov_f = rep(0, bf.idx5$n_periods), log_delta_innov_m = rep(0, bf.idx5$n_periods),
+                log_epsilon_innov_f = rep(0, bf.idx5$n_periods), log_epsilon_innov_m = rep(0, bf.idx5$n_periods),
+                log_A_innov_f = rep(0, bf.idx5$n_periods), log_A_innov_m = rep(0, bf.idx5$n_periods),
+                log_B_innov_f = rep(0, bf.idx5$n_periods), log_B_innov_m = rep(0, bf.idx5$n_periods),
                 
-                log_phi_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_psi_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_lambda_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_delta_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_epsilon_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_A_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
-                log_B_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
+                log_marginal_prec_phi_f = 2, log_marginal_prec_phi_m = 2,
+                log_marginal_prec_psi_f = 2, log_marginal_prec_psi_m = 2,
+                log_marginal_prec_lambda_f = 2, log_marginal_prec_lambda_m = 2,
+                log_marginal_prec_delta_f = 2, log_marginal_prec_delta_m = 2,
+                log_marginal_prec_epsilon_f = 2, log_marginal_prec_epsilon_m = 2,
+                log_marginal_prec_A_f = 2, log_marginal_prec_A_m = 2,
+                log_marginal_prec_B_f = 2, log_marginal_prec_B_m = 2,
                 
-                log_marginal_prec_phi = 2,
-                log_marginal_prec_psi = 2,
-                log_marginal_prec_lambda = 2,
-                log_marginal_prec_delta = 2,
-                log_marginal_prec_epsilon = 2,
-                log_marginal_prec_A = 2,
-                log_marginal_prec_B = 2,
-                
-                logit_rho_phi = 2,
-                logit_rho_psi = 2,
-                logit_rho_lambda = 2,
-                logit_rho_delta = 2,
-                logit_rho_epsilon = 2,
-                logit_rho_A = 2,
-                logit_rho_B = 2,
+                logit_rho_phi_f = 2, logit_rho_phi_m = 2,
+                logit_rho_psi_f = 2, logit_rho_psi_m = 2,
+                logit_rho_lambda_f = 2, logit_rho_lambda_m = 2,
+                logit_rho_delta_f = 2, logit_rho_delta_m = 2,
+                logit_rho_epsilon_f = 2, logit_rho_epsilon_m = 2,
+                logit_rho_A_f = 2, logit_rho_A_m = 2,
+                logit_rho_B_f = 2, logit_rho_B_m = 2,
                 
                 log_marginal_prec_h = 0,
                 log_marginal_prec_k = 0,
@@ -556,29 +566,12 @@ system.time(LQ.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c
                                                                                  "tp_params",
                                                                                  "h_params_f",
                                                                                  "k_params_f"
-                                                                                 ),
-                                DLL="ccmpp_LQuad_bothsexes_AR_f_no0"
-                                )
-            ) 
+),
+DLL="ccmpp_LQuad_bothsexes_AR_f_no0"
+)
+) 
 
 system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                 "log_fx",
-                                                                                 "gx_f",
-                                                                                 "tp_params",
-                                                                                 "log_phi_innov",
-                                                                                 "log_psi_innov",
-                                                                                 "log_lambda_innov",
-                                                                                 "log_delta_innov",
-                                                                                 "log_epsilon_innov",
-                                                                                 "log_A_innov",
-                                                                                 "log_B_innov"
-                                                                                 ),
-                                DLL="ccmpp_f_thiele",
-                                #map = list(log_tau2_logpop_f = factor(c(1,1)))
-                                )
-            ) 
-
-system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
                                                                                      "log_fx",
                                                                                      "gx_f",
                                                                                      "tp_params",
@@ -589,34 +582,51 @@ system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, ra
                                                                                      "log_epsilon_innov",
                                                                                      "log_A_innov",
                                                                                      "log_B_innov"
-                                                                                     ),
-                                        DLL="ccmpp_f_thiele",
-                                        map = list(logit_rho_phi = factor(NA),
-                                                   logit_rho_psi = factor(NA),
-                                                   logit_rho_lambda = factor(NA),
-                                                   logit_rho_delta = factor(NA),
-                                                   logit_rho_epsilon = factor(NA),
-                                                   logit_rho_A = factor(NA),
-                                                   logit_rho_B = factor(NA)
-                                                   )
-                                        )
-            ) 
+),
+DLL="ccmpp_f_thiele",
+#map = list(log_tau2_logpop_f = factor(c(1,1)))
+)
+) 
+
+system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+                                                                                         "log_fx",
+                                                                                         "gx_f",
+                                                                                         "tp_params",
+                                                                                         "log_phi_innov",
+                                                                                         "log_psi_innov",
+                                                                                         "log_lambda_innov",
+                                                                                         "log_delta_innov",
+                                                                                         "log_epsilon_innov",
+                                                                                         "log_A_innov",
+                                                                                         "log_B_innov"
+),
+DLL="ccmpp_f_thiele",
+map = list(logit_rho_phi = factor(NA),
+           logit_rho_psi = factor(NA),
+           logit_rho_lambda = factor(NA),
+           logit_rho_delta = factor(NA),
+           logit_rho_epsilon = factor(NA),
+           logit_rho_A = factor(NA),
+           logit_rho_B = factor(NA)
+)
+)
+) 
 
 
 system.time(thiele.f.noDHS <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                     "log_fx",
-                                                                                     "gx_f",
-                                                                                     "log_phi_innov",
-                                                                                     "log_psi_innov",
-                                                                                     "log_lambda_innov",
-                                                                                     "log_delta_innov",
-                                                                                     "log_epsilon_innov",
-                                                                                     "log_A_innov",
-                                                                                     "log_B_innov"
-                                                                                     ),
-                                    DLL="ccmpp_f_thiele_noDHS"
-                                    )
-            ) 
+                                                                                       "log_fx",
+                                                                                       "gx_f",
+                                                                                       "log_phi_innov",
+                                                                                       "log_psi_innov",
+                                                                                       "log_lambda_innov",
+                                                                                       "log_delta_innov",
+                                                                                       "log_epsilon_innov",
+                                                                                       "log_A_innov",
+                                                                                       "log_B_innov"
+),
+DLL="ccmpp_f_thiele_noDHS"
+)
+) 
 
 input.LQ.both.vec$par_init$logit_rho_g_t <- 0
 system.time(thiele.f.fixgt <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
@@ -630,14 +640,14 @@ system.time(thiele.f.fixgt <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, rand
                                                                                        "log_epsilon_innov",
                                                                                        "log_A_innov",
                                                                                        "log_B_innov"
-                                                                                       ),
-                                      DLL="ccmpp_f_thiele",
-                                      map=list(logit_rho_g_t = factor(NA))
-                                      )
-            ) 
+),
+DLL="ccmpp_f_thiele",
+map=list(logit_rho_g_t = factor(NA))
+)
+) 
 
 models.list <- list("LQ" = LQ.f.no0, "Thiele" = thiele.f.no0, "Thiele MVN" = thiele.f.no0.MVN, "Thiele no DHS" = thiele.f.noDHS,
-                     "Thiele fixgt" = thiele.f.fixgt)
+                    "Thiele fixgt" = thiele.f.fixgt)
 
 #q4515####
 q4515.func <- function(x){
@@ -904,7 +914,7 @@ pop.df <- lapply(models.list, get.pop) %>%
   mutate(cohort = year - age,
          cohort = 5 * floor(cohort / 5),
          model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
-         )
+  )
 
 
 pop.df %>% filter(year%%5==0) %>%
