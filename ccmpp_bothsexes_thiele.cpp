@@ -21,6 +21,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(census_log_pop_f);
   DATA_MATRIX(census_log_pop_m);
   DATA_IVECTOR(census_year_idx);
+  DATA_IVECTOR(census_year_grow_idx);
   DATA_SCALAR(interval);
   DATA_INTEGER(n_periods);
   DATA_INTEGER(fx_idx);
@@ -453,11 +454,11 @@ Type objective_function<Type>::operator() ()
 
   matrix<Type> census_proj_mat_f(basepop_f.size(),census_year_idx.size());
   matrix<Type> census_proj_mat_m(basepop_m.size(),census_year_idx.size());
-
+ 
   for(int i = 0; i < census_year_idx.size(); i++) {	
 	census_proj_mat_f.col(i) = vector<Type>(proj.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
-        census_proj_mat_m.col(i) = vector<Type>(proj_m.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj_m.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
- }
+	census_proj_mat_m.col(i) = vector<Type>(proj_m.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj_m.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
+  }
 
   // likelihood for log census counts
   for(int i = 0; i < census_year_idx.size(); i++) {
@@ -509,6 +510,7 @@ Type objective_function<Type>::operator() ()
     REPORT(mx_mat_f);
     REPORT(fx);
     REPORT(gx_f);
+    REPORT(census_proj_mat_f);
 
     REPORT(population_m);
     REPORT(cohort_deaths_m);
@@ -518,6 +520,7 @@ Type objective_function<Type>::operator() ()
     REPORT(sx_mat_m);
     REPORT(mx_mat_m);
     REPORT(gx_m);
+    REPORT(census_proj_mat_m);
 
     REPORT(phi_f);
     REPORT(psi_f);
