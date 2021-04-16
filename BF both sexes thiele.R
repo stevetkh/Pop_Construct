@@ -186,7 +186,7 @@ wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Burkina Faso"
+country <- "Uganda"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -341,11 +341,11 @@ bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
 bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 bf5.f.smooth <- bf5.smooth %>% filter(mm1=="female") %>% arrange(period5,tips,age5)
-bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15)
+bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15, age5<55)
 bf5.f.0.smooth <- filter(bf5.f.smooth, age5 == 0)
 
 bf5.m.smooth <- bf5.smooth %>% filter(mm1=="male") %>% arrange(period5,tips,age5)
-bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15)
+bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15, age5<55)
 bf5.m.0.smooth <- filter(bf5.m.smooth, age5 == 0)
 
 tips.DX.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.no0.smooth),"sparseMatrix")
@@ -509,7 +509,7 @@ data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(b
                  h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
 )
 
-par.vec <- list(log_tau2_logpop_f = c(1,0), log_tau2_logpop_m = c(1,0),
+par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 log_tau2_fx = 2,
                 log_tau2_gx_f = 4, log_tau2_gx_m = 4,
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
@@ -518,7 +518,7 @@ par.vec <- list(log_tau2_logpop_f = c(1,0), log_tau2_logpop_m = c(1,0),
                 logit_rho_g_x_f = 4, logit_rho_g_x_m = 4,
                 logit_rho_g_t_f = 2, logit_rho_g_t_m = 2,
                 
-                log_lambda_tp = 0,
+                log_lambda_tp = 1,
                 log_lambda_tp_0_inflated_sd = 0.3,
                 tp_params = rep(0,15),
                 
@@ -610,7 +610,7 @@ q50.func <- function(x){
   as_tibble(5 * x$mode$mx_mat_f[1,] / (1 + 2.5 * x$mode$mx_mat_f[1,])) %>%
     mutate(sex="female", year = bf.idx5$periods) %>%
     bind_rows(
-      as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+      as_tibble(5 * x$mode$mx_mat_m[1,] / (1 + 2.5 * x$mode$mx_mat_m[1,])) %>%
         mutate(sex="male", year = bf.idx5$periods)
     )
 }
