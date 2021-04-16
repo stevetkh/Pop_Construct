@@ -343,7 +343,7 @@ Type objective_function<Type>::operator() ()
 
   matrix<Type> mx_mat_f(thiele_age.size(), phi_f.size()); 
   matrix<Type> mx_mat_m(thiele_age.size(), phi_f.size()); 
-  for(int i = 0; i < phi.size(); i++){
+  for(int i = 0; i < phi_f.size(); i++){
     mx_mat_f.col(i) = phi_f(i)*exp(-psi_f(i)*thiele_age) + lambda_f(i)*exp(-delta_f(i)*((thiele_age-epsilon_f(i))*(thiele_age-epsilon_f(i)))) + A_f(i)*exp(B_f(i)*thiele_age);
     mx_mat_m.col(i) = phi_m(i)*exp(-psi_m(i)*thiele_age) + lambda_m(i)*exp(-delta_m(i)*((thiele_age-epsilon_m(i))*(thiele_age-epsilon_m(i)))) + A_m(i)*exp(B_m(i)*thiele_age);
   }

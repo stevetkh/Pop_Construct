@@ -27,14 +27,9 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele"))
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_f_thiele_noDHS"))
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_LQuad_bothsexes_AR_f_no0"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
