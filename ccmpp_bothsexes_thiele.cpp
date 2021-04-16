@@ -451,13 +451,21 @@ Type objective_function<Type>::operator() ()
   PopulationProjection_m<Type> proj_m(ccmpp_m<Type>(basepop_m, sx_mat_m, gx_mat_m,
 					      srb, interval, proj.births));
 
+  matrix<Type> census_proj_mat_f(basepop_f.size(),census_year_idx.size());
+  matrix<Type> census_proj_mat_m(basepop_m.size(),census_year_idx.size());
+
+  for(int i = 0; i < census_year_idx.size(); i++) {	
+	census_proj_mat_f.col(i) = vector<Type>(proj.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
+        census_proj_mat_m.col(i) = vector<Type>(proj_m.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj_m.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
+ }
+
   // likelihood for log census counts
   for(int i = 0; i < census_year_idx.size(); i++) {
-    nll -= dnorm(vector<Type>(census_log_pop_f.col(i)),
-  		 log(vector<Type>(proj.population.col(census_year_idx[i] - 1))),
+    nll -= dnorm(vector<Type>(census_log_pop_f.block(pop_start - 1, i, pop_end - pop_start + 1, 1)),
+  		 log(vector<Type>(census_proj_mat_f.block(pop_start - 1, i, pop_end - pop_start + 1, 1))),
   		 sigma_logpop_f, true).sum();
-    nll -= dnorm(vector<Type>(census_log_pop_m.col(i)),
-  		 log(vector<Type>(proj_m.population.col(census_year_idx[i] - 1))),
+    nll -= dnorm(vector<Type>(census_log_pop_m.block(pop_start - 1, i, pop_end - pop_start + 1, 1)),
+  		 log(vector<Type>(census_proj_mat_m.block(pop_start - 1, i, pop_end - pop_start + 1, 1))),
   		 sigma_logpop_m, true).sum();
   }
 

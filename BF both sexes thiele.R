@@ -576,76 +576,17 @@ system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random
                                     )
             ) 
 
-system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                         "log_fx",
-                                                                                         "gx_f",
-                                                                                         "tp_params",
-                                                                                         "log_phi_innov",
-                                                                                         "log_psi_innov",
-                                                                                         "log_lambda_innov",
-                                                                                         "log_delta_innov",
-                                                                                         "log_epsilon_innov",
-                                                                                         "log_A_innov",
-                                                                                         "log_B_innov"
-),
-DLL="ccmpp_f_thiele",
-map = list(logit_rho_phi = factor(NA),
-           logit_rho_psi = factor(NA),
-           logit_rho_lambda = factor(NA),
-           logit_rho_delta = factor(NA),
-           logit_rho_epsilon = factor(NA),
-           logit_rho_A = factor(NA),
-           logit_rho_B = factor(NA)
-)
-)
-) 
 
-
-system.time(thiele.f.noDHS <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                       "log_fx",
-                                                                                       "gx_f",
-                                                                                       "log_phi_innov",
-                                                                                       "log_psi_innov",
-                                                                                       "log_lambda_innov",
-                                                                                       "log_delta_innov",
-                                                                                       "log_epsilon_innov",
-                                                                                       "log_A_innov",
-                                                                                       "log_B_innov"
-),
-DLL="ccmpp_f_thiele_noDHS"
-)
-) 
-
-input.LQ.both.vec$par_init$logit_rho_g_t <- 0
-system.time(thiele.f.fixgt <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                       "log_fx",
-                                                                                       "gx_f",
-                                                                                       "tp_params",
-                                                                                       "log_phi_innov",
-                                                                                       "log_psi_innov",
-                                                                                       "log_lambda_innov",
-                                                                                       "log_delta_innov",
-                                                                                       "log_epsilon_innov",
-                                                                                       "log_A_innov",
-                                                                                       "log_B_innov"
-),
-DLL="ccmpp_f_thiele",
-map=list(logit_rho_g_t = factor(NA))
-)
-) 
-
-models.list <- list("LQ" = LQ.f.no0, "Thiele" = thiele.f.no0, "Thiele MVN" = thiele.f.no0.MVN, "Thiele no DHS" = thiele.f.noDHS,
-                    "Thiele fixgt" = thiele.f.fixgt)
+models.list <- list("Thiele" = thiele.f.no0)
 
 #q4515####
 q4515.func <- function(x){
   as_tibble(apply(x$mode$mx_mat_f[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
-    mutate(sex="female", year = bf.idx5$periods)
-  #%>%
-  #  bind_rows(
-  #    as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
-  #      mutate(sex="male", year = bf.idx5$periods)
-  #  )
+    mutate(sex="female", year = bf.idx5$periods) %>%
+    bind_rows(
+      as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+        mutate(sex="male", year = bf.idx5$periods)
+    )
 }
 #wpp.bf.q4515<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP_BF_45q15.csv")
 
@@ -667,12 +608,11 @@ q4515.df %>%
 #child mx####
 q50.func <- function(x){
   as_tibble(5 * x$mode$mx_mat_f[1,] / (1 + 2.5 * x$mode$mx_mat_f[1,])) %>%
-    mutate(sex="female", year = bf.idx5$periods)
-  #%>%
-  #  bind_rows(
-  #    as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
-  #      mutate(sex="male", year = bf.idx5$periods)
-  #  )
+    mutate(sex="female", year = bf.idx5$periods) %>%
+    bind_rows(
+      as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+        mutate(sex="male", year = bf.idx5$periods)
+    )
 }
 
 q50.df <- lapply(models.list, q50.func) %>% 
@@ -680,6 +620,7 @@ q50.df <- lapply(models.list, q50.func) %>%
   bind_rows() %>%
   bind_rows(
     as_tibble(exp(igme.h.mean.f)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(exp(igme.h.mean.m)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
   ) %>%
   mutate(model = fct_relevel(model, "IGME Estimates"))
 
