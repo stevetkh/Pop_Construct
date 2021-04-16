@@ -17,8 +17,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(log_basepop_mean_f);
   DATA_VECTOR(log_basepop_mean_m);
   DATA_VECTOR(log_fx_mean);
-  DATA_VECTOR(gx_mean_f);
-  DATA_VECTOR(gx_mean_m);
   DATA_VECTOR(srb);
   DATA_MATRIX(census_log_pop_f);
   DATA_MATRIX(census_log_pop_m);

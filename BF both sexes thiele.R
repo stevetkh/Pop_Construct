@@ -30,7 +30,6 @@ rm(req, filelist, filename)
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele"))
 
-
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
   
@@ -560,33 +559,22 @@ par.vec <- list(log_tau2_logpop_f = c(1,0), log_tau2_logpop_m = c(1,0),
 
 input.LQ.both.vec <- list(data = data.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-system.time(LQ.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
-                                                                                 "log_fx",
-                                                                                 "gx_f",
-                                                                                 "tp_params",
-                                                                                 "h_params_f",
-                                                                                 "k_params_f"
-),
-DLL="ccmpp_LQuad_bothsexes_AR_f_no0"
-)
-) 
-
-system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
+system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
                                                                                      "log_fx",
-                                                                                     "gx_f",
+                                                                                     "gx_f","gx_m",
                                                                                      "tp_params",
-                                                                                     "log_phi_innov",
-                                                                                     "log_psi_innov",
-                                                                                     "log_lambda_innov",
-                                                                                     "log_delta_innov",
-                                                                                     "log_epsilon_innov",
-                                                                                     "log_A_innov",
-                                                                                     "log_B_innov"
-),
-DLL="ccmpp_f_thiele",
-#map = list(log_tau2_logpop_f = factor(c(1,1)))
-)
-) 
+                                                                                     "log_phi_innov_f", "log_phi_innov_m",
+                                                                                     "log_psi_innov_f", "log_psi_innov_m",
+                                                                                     "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                     "log_delta_innov_f", "log_delta_innov_m",
+                                                                                     "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                     "log_A_innov_f", "log_A_innov_m",
+                                                                                     "log_B_innov_f", "log_B_innov_m"
+                                                                                     ),
+                                    DLL="ccmpp_bothsexes_thiele",
+                                    #map = list(log_tau2_logpop_f = factor(c(1,1)))
+                                    )
+            ) 
 
 system.time(thiele.f.no0.MVN <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f",
                                                                                          "log_fx",
