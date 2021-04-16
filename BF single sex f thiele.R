@@ -219,7 +219,7 @@ census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
 ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
   filter(SexID == 1) %>%
@@ -231,7 +231,7 @@ ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalC
   ungroup()
 
 ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
   filter(SexID == 2) %>%
@@ -522,21 +522,21 @@ par.vec <- list(log_tau2_logpop_f = c(1,0),
                 log_A_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
                 log_B_innov = rep(0, length(levels(bf5.f.no0.smooth$period5))),
                 
-                log_marginal_prec_phi = 0,
-                log_marginal_prec_psi = 0,
-                log_marginal_prec_lambda = 0,
-                log_marginal_prec_delta = 0,
-                log_marginal_prec_epsilon = 0,
-                log_marginal_prec_A = 0,
-                log_marginal_prec_B = 0,
+                log_marginal_prec_phi = 2,
+                log_marginal_prec_psi = 2,
+                log_marginal_prec_lambda = 2,
+                log_marginal_prec_delta = 2,
+                log_marginal_prec_epsilon = 2,
+                log_marginal_prec_A = 2,
+                log_marginal_prec_B = 2,
                 
-                logit_rho_phi = 1,
-                logit_rho_psi = 1,
-                logit_rho_lambda = 1,
-                logit_rho_delta = 1,
-                logit_rho_epsilon = 1,
-                logit_rho_A = 1,
-                logit_rho_B = 1,
+                logit_rho_phi = 2,
+                logit_rho_psi = 2,
+                logit_rho_lambda = 2,
+                logit_rho_delta = 2,
+                logit_rho_epsilon = 2,
+                logit_rho_A = 2,
+                logit_rho_B = 2,
                 
                 log_marginal_prec_h = 0,
                 log_marginal_prec_k = 0,
@@ -573,7 +573,7 @@ system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random
                                                                                  "log_B_innov"
                                                                                  ),
                                 DLL="ccmpp_f_thiele",
-                                map = list(log_tau2_logpop_f = factor(c(1,1)))
+                                #map = list(log_tau2_logpop_f = factor(c(1,1)))
                                 )
             ) 
 
