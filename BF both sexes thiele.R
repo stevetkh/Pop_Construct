@@ -341,11 +341,11 @@ bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
 bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 bf5.f.smooth <- bf5.smooth %>% filter(mm1=="female") %>% arrange(period5,tips,age5)
-bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15, age5<55)
+bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15, age5<60)
 bf5.f.0.smooth <- filter(bf5.f.smooth, age5 == 0)
 
 bf5.m.smooth <- bf5.smooth %>% filter(mm1=="male") %>% arrange(period5,tips,age5)
-bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15, age5<55)
+bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15, age5<60)
 bf5.m.0.smooth <- filter(bf5.m.smooth, age5 == 0)
 
 tips.DX.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.no0.smooth),"sparseMatrix")
@@ -540,13 +540,13 @@ par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 log_marginal_prec_A_f = 2, log_marginal_prec_A_m = 2,
                 log_marginal_prec_B_f = 2, log_marginal_prec_B_m = 2,
                 
-                logit_rho_phi_f = 2, logit_rho_phi_m = 2,
-                logit_rho_psi_f = 2, logit_rho_psi_m = 2,
-                logit_rho_lambda_f = 2, logit_rho_lambda_m = 2,
-                logit_rho_delta_f = 2, logit_rho_delta_m = 2,
-                logit_rho_epsilon_f = 2, logit_rho_epsilon_m = 2,
-                logit_rho_A_f = 2, logit_rho_A_m = 2,
-                logit_rho_B_f = 2, logit_rho_B_m = 2,
+                logit_rho_phi_f = 3, logit_rho_phi_m = 3,
+                logit_rho_psi_f = 3, logit_rho_psi_m = 3,
+                logit_rho_lambda_f = 3, logit_rho_lambda_m = 3,
+                logit_rho_delta_f = 3, logit_rho_delta_m = 3,
+                logit_rho_epsilon_f = 3, logit_rho_epsilon_m = 3,
+                logit_rho_A_f = 3, logit_rho_A_m = 3,
+                logit_rho_B_f = 3, logit_rho_B_m = 3,
                 
                 log_marginal_prec_h = 0,
                 log_marginal_prec_k = 0,
@@ -596,13 +596,17 @@ q4515.df <- lapply(models.list, q4515.func) %>%
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
   bind_rows() %>%
   bind_rows(
-    as_tibble(reshape2::melt(wpp.bf.q4515[2,-c(1:4)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
-    as_tibble(reshape2::melt(wpp.bf.q4515[1,-c(1:4)]/1000)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male")
-  ) %>%
+    reshape2::melt(wpp.bf.q4515[,-c(1,3,4)]) %>% 
+      mutate(model = "WPP Estimates",
+             year = as.numeric(gsub("X|\\.5","",variable)),
+             value = value/1000,
+             sex = Sex) %>%
+      select(-c(variable, Sex))
+    ) %>%
   mutate(model = fct_relevel(model, "WPP Estimates"))
 
 q4515.df %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model, linetype = sex), lwd = 1.2) + ylab(bquote(""[45]*q[15])) +
+  ggplot() + geom_line(aes(x = year, y = value, col = sex, linetype = model), lwd = 1.2) + ylab(bquote(""[45]*q[15])) +
   theme(text = element_text(size=25))
 
 #child mx####
@@ -625,7 +629,7 @@ q50.df <- lapply(models.list, q50.func) %>%
   mutate(model = fct_relevel(model, "IGME Estimates"))
 
 q50.df %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model, linetype = sex), lwd = 1.2) + ylab(bquote(""[5]*q[0])) +
+  ggplot() + geom_line(aes(x = year, y = value, col = sex, linetype = model), lwd = 1.2) + ylab(bquote(""[5]*q[0])) +
   theme(text = element_text(size=25))
 
 ##Comparison to DHS-spline####
@@ -747,7 +751,8 @@ thiele <- lapply(models.list, function(y){y$mode$mx_mat_f %>%
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
   bind_rows() %>%
   setNames(c("age5", "period5", "value", "model")) %>%
-  mutate(period5 = sprintf("%d-%d",period5, period5+4)) %>%
+  mutate(period5 = sprintf("%d-%d",period5, period5+4),
+         sex = "female") %>%
   bind_rows(
     reshape2::melt(more.countries.avg[[country]]$mort.f) %>% 
       mutate(age5 = 5 * floor(Var1 / 5),
@@ -756,49 +761,122 @@ thiele <- lapply(models.list, function(y){y$mode$mx_mat_f %>%
       summarise_at(vars(value), mean) %>%
       mutate(value = exp(value),
              period5 = sprintf("%d-%d",period5, period5+4),
-             model = "Spline average")
+             model = "Spline average",
+             sex = "female")
+  ) %>%
+  bind_rows(
+    lapply(models.list, function(y){y$mode$mx_mat_m %>%
+        `colnames<-`(bf.idx5$periods) %>%  
+        `rownames<-`(seq(0, nrow(y$mode$mx_mat_f)*5-5, by = 5)) %>%
+        reshape2::melt()}) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      setNames(c("age5", "period5", "value", "model")) %>%
+      mutate(period5 = sprintf("%d-%d",period5, period5+4),
+             sex = "male") %>%
+      bind_rows(
+        reshape2::melt(more.countries.avg[[country]]$mort.m) %>% 
+          mutate(age5 = 5 * floor(Var1 / 5),
+                 period5 = 5 * floor(Var2 / 5)) %>% 
+          group_by(age5, period5) %>%
+          summarise_at(vars(value), mean) %>%
+          mutate(value = exp(value),
+                 period5 = sprintf("%d-%d",period5, period5+4),
+                 model = "Spline average",
+                 sex = "male")
+      )
   ) %>%
   mutate(model = str_wrap(model, 20))
 
 DHS.plot <- bf5.f.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
   select(tips, age5, period5, value) %>%
-  mutate(period5 = sprintf("%d-%d", period5, period5 + 4))
+  mutate(period5 = sprintf("%d-%d", period5, period5 + 4),
+         sex = "female") %>%
+  bind_rows(
+    bf5.m.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
+      select(tips, age5, period5, value) %>%
+      mutate(period5 = sprintf("%d-%d", period5, period5 + 4),
+             sex = "male") 
+  )
 
-ggplot(thiele %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
-  geom_line(data = filter(thiele, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
-  geom_point(data = filter(DHS.plot, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
-  geom_point(data = filter(DHS.plot, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
-  geom_point(data = filter(DHS.plot, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+thiele.f <- filter(thiele, sex == "female")
+thiele.m <- filter(thiele, sex == "male")
+DHS.plot.f <- filter(DHS.plot, sex == "female")
+DHS.plot.m <- filter(DHS.plot, sex == "male")
+  
+ggplot(thiele.f %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+  geom_line(data = filter(thiele.f, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
+  geom_point(data = filter(DHS.plot.f, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot.f, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot.f, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
   scale_shape_manual(values = 0:14) +
   scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
   facet_wrap(~period5) + 
-  ggtitle(country) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  ggtitle(paste(country, "Females")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 
+ggplot(thiele.m %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+  geom_line(data = filter(thiele.m, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
+  geom_point(data = filter(DHS.plot.m, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot.m, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot.m, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+  scale_shape_manual(values = 0:14) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  facet_wrap(~period5) + 
+  ggtitle(paste(country, "Males")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+
 par.deviation <- bind_rows(
-  as_tibble(log(thiele.f.no0$mode$phi) - data.vec$log_phi_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$phi_f) - data.vec$log_phi_mean_f) %>% 
     mutate(par = "phi", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$psi) - data.vec$log_psi_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$psi_f) - data.vec$log_psi_mean_f) %>% 
     mutate(par = "psi", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$lambda) - data.vec$log_lambda_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$lambda_f) - data.vec$log_lambda_mean_f) %>% 
     mutate(par = "lambda", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$delta) - data.vec$log_delta_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$delta_f) - data.vec$log_delta_mean_f) %>% 
     mutate(par = "delta", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$epsilon) - data.vec$log_epsilon_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$epsilon_f) - data.vec$log_epsilon_mean_f) %>% 
     mutate(par = "epsilon", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$A) - data.vec$log_A_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$A_f) - data.vec$log_A_mean_f) %>% 
     mutate(par = "A", period5 = bf.idx5$periods),
   
-  as_tibble(log(thiele.f.no0$mode$B) - data.vec$log_B_mean) %>% 
+  as_tibble(log(thiele.f.no0$mode$B_f) - data.vec$log_B_mean_f) %>% 
     mutate(par = "B", period5 = bf.idx5$periods)
 ) %>%
-  mutate(par = fct_inorder(par))
+  mutate(par = fct_inorder(par), sex = "female") %>%
+  bind_rows(
+    bind_rows(
+      as_tibble(log(thiele.f.no0$mode$phi_m) - data.vec$log_phi_mean_m) %>% 
+        mutate(par = "phi", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$psi_m) - data.vec$log_psi_mean_m) %>% 
+        mutate(par = "psi", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$lambda_m) - data.vec$log_lambda_mean_m) %>% 
+        mutate(par = "lambda", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$delta_m) - data.vec$log_delta_mean_m) %>% 
+        mutate(par = "delta", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$epsilon_m) - data.vec$log_epsilon_mean_m) %>% 
+        mutate(par = "epsilon", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$A_m) - data.vec$log_A_mean_m) %>% 
+        mutate(par = "A", period5 = bf.idx5$periods),
+      
+      as_tibble(log(thiele.f.no0$mode$B_m) - data.vec$log_B_mean_m) %>% 
+        mutate(par = "B", period5 = bf.idx5$periods)
+    ) %>%
+      mutate(par = fct_inorder(par), sex = "male")
+  )
 
 
 ggplot(par.deviation) + geom_line(aes(x = period5, y = value, col = par), lwd = 1.2) +
@@ -806,112 +884,122 @@ ggplot(par.deviation) + geom_line(aes(x = period5, y = value, col = par), lwd = 
   ggtitle("Deviation from prior means")
 
 
-#populaton counts####
+#population counts####
 #ADD AR.f$mode$census_proj
 #ddharm_bf_census_f_smoothed_aggr$'1995' <- ddharm_bf_census_f_smoothed_aggr$'1985'^(1-10/11) *  ddharm_bf_census_f_smoothed_aggr$'1996'^(10/11)
 #ddharm_bf_census_f_smoothed_aggr$'2005' <- ddharm_bf_census_f_smoothed_aggr$'1996'^(1-9/10) *  ddharm_bf_census_f_smoothed_aggr$'2006'^(9/10)
 
 #ddharm_bf_census_f_raw$'1995' <- ddharm_bf_census_f_raw$'1985'^(1-10/11) *  ddharm_bf_census_f_raw$'1996'^(10/11)
 #ddharm_bf_census_f_raw$'2005' <- ddharm_bf_census_f_raw$'1996'^(1-9/10) *  ddharm_bf_census_f_raw$'2006'^(9/10)
-
-
 mf5 <- projection_model_frames(bf.idx5)
 get.pop<- function(x){
   pop.mat <- matrix(x$mode$population_f, bf.idx5$n_ages, bf.idx5$n_periods+1)
-  #pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
-  #rownames(pop.mat) <- c(bf.idx5$ages, "All")
-  rownames(pop.mat) <- c(bf.idx5$ages)
-  colnames(pop.mat) <- bf.idx5$periods_out
-  reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
+  pop.mat.m <- matrix(x$mode$population_m, bf.idx5$n_ages, bf.idx5$n_periods+1)
+  rownames(pop.mat) <-  rownames(pop.mat.m) <- c(bf.idx5$ages)
+  colnames(pop.mat) <- colnames(pop.mat.m) <- bf.idx5$periods_out
+  bind_rows(
+    reshape2::melt(pop.mat) %>% mutate(sex="female"),
+    reshape2::melt(pop.mat.m) %>% mutate(sex="male")
+  ) %>%
+    select(age = Var1, year = Var2, value = value, sex)
 }
 
 pop.df <- lapply(models.list, get.pop) %>% 
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
   bind_rows() %>%
   bind_rows(
-    ddharm_bf_census_f_raw %>%
-      mutate(age = c(ddharm_bf_census_f_raw$age), model="UNPD Census") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
+    bind_rows(ddharm_bf_census_f_raw %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+              ddharm_bf_census_m_raw %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+              ) %>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL ,model="UNPD Census"),
     
-    ddharm_bf_census_f_smoothed_aggr %>%
-      mutate(age = c(ddharm_bf_census_f_raw$age), model="UNPD Census smoothed") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
+    bind_rows(ddharm_bf_census_f_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+              ddharm_bf_census_m_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+      ) %>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="UNPD Census smoothed"),
     
-    mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
+    bind_rows(mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, sex = "female"),
+              mutate(pop.m.aggr[,-(1:3)], age = ddharm_bf_census_m_raw$age, sex = "male")
+              )%>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="WPP Estimates")
   ) %>%
   mutate(cohort = year - age,
          cohort = 5 * floor(cohort / 5),
          model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
   )
 
-
-pop.df %>% filter(year%%5==0) %>%
-  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 3, page=3)
-
-
-mf5 <- projection_model_frames(bf.idx5)
 get.census.pop<- function(x){
   pop.mat <- matrix(x$mode$census_proj_mat_f, bf.idx5$n_ages, ncol(data.f))
-  #pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
-  #rownames(pop.mat) <- c(bf.idx5$ages, "All")
-  rownames(pop.mat) <- c(bf.idx5$ages)
-  colnames(pop.mat) <- colnames(data.f)
-  reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
+  pop.mat.m <- matrix(x$mode$census_proj_mat_m, bf.idx5$n_ages, ncol(data.f))
+  rownames(pop.mat) <-  rownames(pop.mat.m) <- c(bf.idx5$ages)
+  colnames(pop.mat) <- colnames(pop.mat.m) <- colnames(data.f)
+  bind_rows(
+    reshape2::melt(pop.mat) %>% mutate(sex="female"),
+    reshape2::melt(pop.mat.m) %>% mutate(sex="male")
+  ) %>%
+    select(age = Var1, year = Var2, value = value, sex)
 }
 
 censpop.df <- lapply(models.list, get.census.pop) %>% 
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
   bind_rows() %>%
   bind_rows(
-    ddharm_bf_census_f_raw %>%
-      mutate(age = c(ddharm_bf_census_f_raw$age), model="UNPD Census") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
+    bind_rows(ddharm_bf_census_f_raw %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+              ddharm_bf_census_m_raw %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+    ) %>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL ,model="UNPD Census"),
     
-    ddharm_bf_census_f_smoothed_aggr %>%
-      mutate(age = c(ddharm_bf_census_f_smoothed_aggr$age), model="UNPD Census smoothed") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL),
+    bind_rows(ddharm_bf_census_f_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+              ddharm_bf_census_m_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+    ) %>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="UNPD Census smoothed"),
     
-    mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, model="WPP Estimates") %>%
-      pivot_longer(!age & !model) %>% mutate(year=as.numeric(name), name=NULL)
+    bind_rows(mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, sex = "female"),
+              mutate(pop.m.aggr[,-(1:3)], age = ddharm_bf_census_m_raw$age, sex = "male")
+    )%>%
+      pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="WPP Estimates")
   ) %>%
   mutate(cohort = year - age,
+         cohort = 5 * floor(cohort / 5),
          model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
   )
 
 allpop.df <- full_join(pop.df, censpop.df) %>% mutate(model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")))
 
 
-allpop.df %>% filter(year %in% c(1960,colnames(data.f))) %>%
+allpop.df %>% filter(year %in% c(1960, colnames(data.f))) %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) + ylab("Population counts") + 
-  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 3, page=1)
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  facet_grid_paginate(year~sex, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
 
 allpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~cohort, scale="free_y", nrow = 2, ncol = 2, page=2)
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  facet_grid_paginate(cohort~sex, scale="free_y", switch="y", nrow = 3, ncol = 2, page=2)
 
 censpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) + ylab("Population counts") +
-  facet_wrap_paginate(~age, scale="free", nrow = 4, ncol = 3, page=1)
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  facet_grid_paginate(age~sex, scale="free", switch="y", nrow = 4, ncol = 2, page=1)
 
 allpop.df %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~age, scale="free", nrow = 4, ncol = 3, page=1)
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  facet_grid_paginate(age~sex, scale="free", switch="y", nrow = 4, ncol = 2, page=3)
 
 #migration####
 get.mig<- function(x){
   pop.mat <- matrix(x$mode$migrations_f, bf.idx5$n_ages, bf.idx5$n_periods)
-  #pop.mat <- rbind(pop.mat, apply(pop.mat,2,sum))
-  #rownames(pop.mat) <- c(bf.idx5$ages, "All")
-  rownames(pop.mat) <- c(bf.idx5$ages)
-  colnames(pop.mat) <- bf.idx5$periods
-  reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, mig = value)
+  pop.mat.m <- matrix(x$mode$migrations_m, bf.idx5$n_ages, bf.idx5$n_periods)
+  rownames(pop.mat) <- rownames(pop.mat.m) <- c(bf.idx5$ages)
+  colnames(pop.mat) <- colnames(pop.mat.m) <- bf.idx5$periods
+  bind_rows(reshape2::melt(pop.mat) %>% mutate(sex = "female"),
+            reshape2::melt(pop.mat.m) %>% mutate(sex = "male")
+            ) %>% select(age = Var1, year = Var2, mig = value, sex)
 }
 
 mig.df <- lapply(models.list, get.mig) %>% 
@@ -920,17 +1008,17 @@ mig.df <- lapply(models.list, get.mig) %>%
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
   filter(year %in% c(1960, 1975, 1985, 1995, 2005, 2015)) %>%
-  ggplot() + geom_line(aes(x = age, y = gx, col = model), lwd = 1.2) +
+  ggplot() + geom_line(aes(x = age, y = gx, col = model, linetype=sex), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   facet_wrap_paginate(~ year, nrow=2, ncol=3, page=1, scales = "free_y")
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model), lwd = 1.2) +
+  ggplot() + geom_line(aes(x = year, y = gx, col = model, linetype=sex), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   facet_wrap_paginate(~ age, scales="free_y", nrow=2, ncol=3, page=2)
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = age, y = gx, col = model), lwd = 1.2) +
+  ggplot() + geom_line(aes(x = age, y = gx, col = model, linetype=sex), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   facet_wrap_paginate(~ cohort, nrow=2, ncol=3, page=3)
 
