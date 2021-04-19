@@ -735,14 +735,14 @@ loghump.models.list <- list("Thiele 50" = thiele.f.no0.loghump.50, "Thiele 55" =
 #q4515####
 q4515.func <- function(x){
   as_tibble(apply(x$mode$mx_mat_f[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+  #as_tibble(apply(x$mode$mx_mat_f[4:12,],2,function(x){1-exp(sum(-5*x))})) %>%
     mutate(sex="female", year = bf.idx5$periods) %>%
     bind_rows(
       as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-prod((1-2.5*x)/(1+2.5*x))})) %>%
+      #as_tibble(apply(x$mode$mx_mat_m[4:12,],2,function(x){1-exp(sum(-5*x))})) %>%
         mutate(sex="male", year = bf.idx5$periods)
     )
 }
-#wpp.bf.q4515<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP_BF_45q15.csv")
-
 wpp.bf.q4515 <- filter(wpp.q4515, Name==country)
 
 q4515.df <- lapply(models.list, q4515.func) %>% 
@@ -975,7 +975,8 @@ thiele <- lapply(models.list, function(y){y$mode$mx_mat_f %>%
       )
   ) %>%
   mutate(model = str_wrap(model, 20),
-         hump = "Normal hump")
+         hump = "Normal hump",
+         period = as.numeric(gsub("-\\d{4,}","",period5)))
 
 
 thiele.loghump <- lapply(loghump.models.list, function(y){y$mode$mx_mat_f %>%
@@ -1021,7 +1022,8 @@ thiele.loghump <- lapply(loghump.models.list, function(y){y$mode$mx_mat_f %>%
       )
   ) %>%
   mutate(model = str_wrap(model, 20),
-         hump = "log-Normal hump")
+         hump = "log-Normal hump",
+         period = as.numeric(gsub("-\\d{4,}","",period5)))
 
 DHS.plot <- bf5.f.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
   select(tips, age5, period5, value) %>%
@@ -1086,6 +1088,21 @@ ggplot(thiele.m %>% filter(age5 %in% 0:70, hump == "log-Normal hump")) + geom_li
   ggtitle(paste(country, "Males (log-Normal hump)")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+
+ggplot(bind_rows(thiele.f, thiele.m) %>% filter(age5 %in% 0:70, model!="Spline average", hump=="Normal hump")) + geom_line(aes(x = period, y = value, col=sex, linetype=model), lwd=1.2) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  ggtitle(paste(country, "Normal hump")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  facet_wrap(~age5)
+
+ggplot(bind_rows(thiele.f, thiele.m) %>% filter(age5 %in% 0:70, model!="Spline average", hump=="log-Normal hump")) + geom_line(aes(x = period, y = value, col=sex, linetype=model), lwd=1.2) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  ggtitle(paste(country, "log-Normal hump")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  facet_wrap(~age5)
 
 par.func <- function(x){
  bind_rows(phi = x$mode$phi_f,
@@ -1508,31 +1525,44 @@ censpop.df <- lapply(models.list, get.census.pop) %>%
   )
   
 
-allpop.df <- full_join(pop.df, censpop.df) %>% mutate(model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")))
+allpop.df <- full_join(pop.df, censpop.df) %>% mutate(model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+                                                      hump = fct_inorder(hump))
 
-allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="female") %>%
+allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="female", !model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")) %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  geom_point(data = allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="female", model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             aes(x = age, y = value, pch = model), size=3) +
+  scale_shape_manual(values = c(0, 16, 3)) +
   theme(text = element_text(size=25)) + ylab("Population counts") + 
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
   ggtitle(paste(country,"Females")) +
   facet_grid_paginate(year~hump, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
 
-allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="male") %>%
+allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="male", !model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")) %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  geom_point(data = allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="male", model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             aes(x = age, y = value, pch = model), size=3) +
+  scale_shape_manual(values = c(0, 16, 3)) +
   theme(text = element_text(size=25)) + ylab("Population counts") + 
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
   ggtitle(paste(country,"Males")) +
   facet_grid_paginate(year~hump, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
 
-allpop.df %>% filter(sex=="female") %>%
+allpop.df %>% filter(sex=="female", !model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")) %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  geom_point(data = allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="female", model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             aes(x = year, y = value, pch = model), size=3) +
+  scale_shape_manual(values = c(0, 16, 3)) +
   theme(text = element_text(size=25)) +
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
   ggtitle(paste(country, "Females")) +
   facet_grid_paginate(age~hump, scale="free", switch="y", nrow = 4, ncol = 2, page=3)
 
-allpop.df %>% filter(sex=="male") %>%
+allpop.df %>% filter(sex=="male", !model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")) %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  geom_point(data = allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="male", model %in% c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             aes(x = year, y = value, pch = model), size=3) +
+  scale_shape_manual(values = c(0, 16, 3)) +
   theme(text = element_text(size=25)) +
   ggtitle(paste(country, "Males")) +
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
@@ -1615,13 +1645,15 @@ fx.df <- lapply(models.list, get.fert) %>%
   mutate(model = fct_relevel(model, "Initial Values"),
          hump = fct_inorder(hump)) 
 
-fx.df %>%
+fx.df %>% filter(model != "Initial Values") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  geom_point(data = filter(fx.df, model=="Initial Values"), aes(x = age, y = value), size = 3) +
   theme(text = element_text(size=25)) +
   facet_grid_paginate(year~hump, scale="free_y", nrow = 4, ncol = 2, switch="y", page=1)
 
-fx.df %>%
+fx.df %>% filter(model != "Initial Values") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  geom_point(data = filter(fx.df, model=="Initial Values"), aes(x = year, y = value), size = 3) +
   theme(text = element_text(size=25)) +
   facet_grid_paginate(age~hump, scale="free_y", nrow = 4, ncol = 2, switch="y", page=1)
 

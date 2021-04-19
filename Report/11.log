@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  19 APR 2021 18:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  19 APR 2021 23:39
 entering extended mode
 **./11.tex
 (11.tex
@@ -816,107 +816,121 @@ Package pdftex.def Info: ../Burkina Faso/11//dhs males log-normal.png  used on
 input line 98.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
  [6]
-<../Burkina Faso/11//pop females.png, id=42, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//age mx normal.png, id=42, 1375.38844pt x 791.20593pt>
+File: ../Burkina Faso/11//age mx normal.png Graphic file (type png)
+<use ../Burkina Faso/11//age mx normal.png>
+Package pdftex.def Info: ../Burkina Faso/11//age mx normal.png  used on input l
+ine 103.
+(pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
+<../Burkina Faso/11//age mx log-normal.png, id=43, 1375.38844pt x 791.20593pt>
+File: ../Burkina Faso/11//age mx log-normal.png Graphic file (type png)
+<use ../Burkina Faso/11//age mx log-normal.png>
+Package pdftex.def Info: ../Burkina Faso/11//age mx log-normal.png  used on inp
+ut line 106.
+(pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
+ [7 <../Burkina Faso/11//age mx normal.png> <../Burkina Faso/11//age mx log-nor
+mal.png>]
+<../Burkina Faso/11//pop females.png, id=50, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//pop females.png Graphic file (type png)
 <use ../Burkina Faso/11//pop females.png>
 Package pdftex.def Info: ../Burkina Faso/11//pop females.png  used on input lin
-e 104.
+e 112.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//pop males.png, id=43, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//pop males.png, id=51, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//pop males.png Graphic file (type png)
 <use ../Burkina Faso/11//pop males.png>
 Package pdftex.def Info: ../Burkina Faso/11//pop males.png  used on input line 
-107.
+115.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [7 <../Burkina Faso/11//pop females.png> <../Burkina Faso/11//pop males.png>]
-<../Burkina Faso/11//age pop females.png, id=50, 1375.38844pt x 791.20593pt>
+ [8 <../Burkina Faso/11//pop females.png> <../Burkina Faso/11//pop males.png>]
+<../Burkina Faso/11//age pop females.png, id=57, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//age pop females.png Graphic file (type png)
 <use ../Burkina Faso/11//age pop females.png>
 Package pdftex.def Info: ../Burkina Faso/11//age pop females.png  used on input
- line 113.
+ line 121.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//age pop males.png, id=51, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//age pop males.png, id=58, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//age pop males.png Graphic file (type png)
 <use ../Burkina Faso/11//age pop males.png>
 Package pdftex.def Info: ../Burkina Faso/11//age pop males.png  used on input l
-ine 116.
+ine 124.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [8 <../Burkina Faso/11//age pop females.png> <../Burkina Faso/11//age pop male
+ [9 <../Burkina Faso/11//age pop females.png> <../Burkina Faso/11//age pop male
 s.png>]
-<../Burkina Faso/11//mig.png, id=57, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//mig.png, id=64, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//mig.png Graphic file (type png)
 <use ../Burkina Faso/11//mig.png>
-Package pdftex.def Info: ../Burkina Faso/11//mig.png  used on input line 121.
+Package pdftex.def Info: ../Burkina Faso/11//mig.png  used on input line 129.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//age mig.png, id=58, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//age mig.png, id=65, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//age mig.png Graphic file (type png)
 <use ../Burkina Faso/11//age mig.png>
-Package pdftex.def Info: ../Burkina Faso/11//age mig.png  used on input line 12
-4.
+Package pdftex.def Info: ../Burkina Faso/11//age mig.png  used on input line 13
+2.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [9 <../Burkina Faso/11//mig.png> <../Burkina Faso/11//age mig.png>]
-<../Burkina Faso/11//cohort mig.png, id=64, 1375.38844pt x 791.20593pt>
+ [10 <../Burkina Faso/11//mig.png> <../Burkina Faso/11//age mig.png>]
+<../Burkina Faso/11//cohort mig.png, id=71, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//cohort mig.png Graphic file (type png)
 <use ../Burkina Faso/11//cohort mig.png>
 Package pdftex.def Info: ../Burkina Faso/11//cohort mig.png  used on input line
- 129.
+ 137.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [10 <../Burkina Faso/11//cohort mig.png>]
-<../Burkina Faso/11//fert.png, id=69, 1375.38844pt x 791.20593pt>
+ [11 <../Burkina Faso/11//cohort mig.png>]
+<../Burkina Faso/11//fert.png, id=76, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//fert.png Graphic file (type png)
 <use ../Burkina Faso/11//fert.png>
-Package pdftex.def Info: ../Burkina Faso/11//fert.png  used on input line 134.
+Package pdftex.def Info: ../Burkina Faso/11//fert.png  used on input line 142.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//age fert.png, id=70, 1375.38844pt x 791.20593pt>
+<../Burkina Faso/11//age fert.png, id=77, 1375.38844pt x 791.20593pt>
 File: ../Burkina Faso/11//age fert.png Graphic file (type png)
 <use ../Burkina Faso/11//age fert.png>
 Package pdftex.def Info: ../Burkina Faso/11//age fert.png  used on input line 1
-37.
+45.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [11 <../Burkina Faso/11//fert.png> <../Burkina Faso/11//age fert.png>]
-<../Burkina Faso/11//decomp females normal.png, id=76, 1375.38844pt x 791.20593
+ [12 <../Burkina Faso/11//fert.png> <../Burkina Faso/11//age fert.png>]
+<../Burkina Faso/11//decomp females normal.png, id=83, 1375.38844pt x 791.20593
 pt>
 File: ../Burkina Faso/11//decomp females normal.png Graphic file (type png)
 <use ../Burkina Faso/11//decomp females normal.png>
 Package pdftex.def Info: ../Burkina Faso/11//decomp females normal.png  used on
- input line 143.
+ input line 151.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//decomp females log-normal.png, id=77, 1375.38844pt x 791.2
+<../Burkina Faso/11//decomp females log-normal.png, id=84, 1375.38844pt x 791.2
 0593pt>
 File: ../Burkina Faso/11//decomp females log-normal.png Graphic file (type png)
 
 <use ../Burkina Faso/11//decomp females log-normal.png>
 Package pdftex.def Info: ../Burkina Faso/11//decomp females log-normal.png  use
-d on input line 146.
+d on input line 154.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
- [12 <../Burkina Faso/11//decomp females normal.png> <../Burkina Faso/11//decom
+ [13 <../Burkina Faso/11//decomp females normal.png> <../Burkina Faso/11//decom
 p females log-normal.png>]
-<../Burkina Faso/11//decomp males normal.png, id=83, 1375.38844pt x 791.20593pt
+<../Burkina Faso/11//decomp males normal.png, id=91, 1375.38844pt x 791.20593pt
 >
 File: ../Burkina Faso/11//decomp males normal.png Graphic file (type png)
 <use ../Burkina Faso/11//decomp males normal.png>
 Package pdftex.def Info: ../Burkina Faso/11//decomp males normal.png  used on i
-nput line 151.
+nput line 159.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
-<../Burkina Faso/11//decomp males log-normal.png, id=84, 1375.38844pt x 791.205
+<../Burkina Faso/11//decomp males log-normal.png, id=92, 1375.38844pt x 791.205
 93pt>
 File: ../Burkina Faso/11//decomp males log-normal.png Graphic file (type png)
 <use ../Burkina Faso/11//decomp males log-normal.png>
 Package pdftex.def Info: ../Burkina Faso/11//decomp males log-normal.png  used 
-on input line 154.
+on input line 162.
 (pdftex.def)             Requested size: 516.47249pt x 297.0999pt.
 
 
 Package caption Warning: Unused \captionsetup[sub] on input line 19.
 See the caption package documentation for explanation.
 
-[13 <../Burkina Faso/11//decomp males normal.png> <../Burkina Faso/11//decomp m
+[14 <../Burkina Faso/11//decomp males normal.png> <../Burkina Faso/11//decomp m
 ales log-normal.png>] (11.aux) ) 
 Here is how much of TeX's memory you used:
- 17789 strings out of 479321
- 363941 string characters out of 2856107
+ 17801 strings out of 479321
+ 364411 string characters out of 2856107
  657456 words of memory out of 3000000
- 34881 multiletter control sequences out of 15000+600000
+ 34891 multiletter control sequences out of 15000+600000
  410292 words of font info for 51 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  102i,6n,103p,464b,583s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -925,9 +939,9 @@ fonts/enc/dvips/base/8r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/font
 s/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/ktang3/AppData/Local/Programs/M
 iKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
-Output written on 11.pdf (13 pages, 931488 bytes).
+Output written on 11.pdf (14 pages, 994813 bytes).
 PDF statistics:
- 103 PDF objects out of 1000 (max. 8388607)
+ 110 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 118 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 128 words of extra memory for PDF output out of 10000 (max. 10000000)
 
