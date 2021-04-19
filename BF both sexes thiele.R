@@ -30,6 +30,9 @@ rm(req, filelist, filename)
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele"))
 
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump"))
+
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
   
@@ -186,13 +189,16 @@ wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 
-country <- "Uganda"
+country <- "Burkina Faso"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
+LQcoef.f <- LQcoef %>% filter(sex=="Female", !age%in%c("0","1-4")) %>% select(ax:vx)
+LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:vx)
 
 open.age <- 75
 n_ages = open.age / 5 + 1
+
 
 ##IGME priors
 igme.5q0.df <- igme.5q0.f %>% filter(Country.Name == country) %>% reshape2::melt() %>% 
@@ -329,69 +335,6 @@ bf.idx5<-projection_indices(period_start = 1960,
                             fx_idx = 4L,
                             n_fx = 7L,
                             n_sexes = 2)
-
-##DHS data cohort smoothed
-bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
-  mutate(age5 = 5 * floor(agegr / 5),
-         period5 = 5 * floor(period / 5)) %>%
-  group_by(mm1, tips, DHS, age5, period5) %>%
-  summarise_at(vars(pyears, event, pyears2, adjusted), sum) %>%
-  ungroup()
-
-bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
-bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
-bf5.f.smooth <- bf5.smooth %>% filter(mm1=="female") %>% arrange(period5,tips,age5)
-bf5.f.no0.smooth <- filter(bf5.f.smooth, age5  >= 15, age5<60)
-bf5.f.0.smooth <- filter(bf5.f.smooth, age5 == 0)
-
-bf5.m.smooth <- bf5.smooth %>% filter(mm1=="male") %>% arrange(period5,tips,age5)
-bf5.m.no0.smooth <- filter(bf5.m.smooth, age5  >= 15, age5<60)
-bf5.m.0.smooth <- filter(bf5.m.smooth, age5 == 0)
-
-tips.DX.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.no0.smooth),"sparseMatrix")
-tips.DX.smooth.m <- as(model.matrix(event~as.factor(tips)-1,data=bf5.m.no0.smooth),"sparseMatrix")
-
-LQcoef.f <- LQcoef %>% filter(sex=="Female", !age%in%c("0","1-4")) %>% select(ax:vx)
-LQcoef.f$age5 <- seq(5,110,by=5)
-LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:vx)
-LQcoef.m$age5 <- seq(5,110,by=5)
-
-LQ.baseline.DX.smooth <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.f.no0.smooth) %*% as.matrix(LQcoef.f[,1:4])
-LQ.baseline.DX.ax.smooth <- LQ.baseline.DX.smooth[,1]
-LQ.baseline.DX.bx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,2], period5=bf5.f.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-LQ.baseline.DX.cx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,3], period5=bf5.f.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-LQ.baseline.DX.vx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,4], period5=bf5.f.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-
-LQ.baseline.DX.smooth.m <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.m.no0.smooth) %*% as.matrix(LQcoef.m[,1:4])
-LQ.baseline.DX.ax.smooth.m <- LQ.baseline.DX.smooth.m[,1]
-LQ.baseline.DX.bx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,2], period5=bf5.m.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-LQ.baseline.DX.cx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,3], period5=bf5.m.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-LQ.baseline.DX.vx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
-  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,4], period5=bf5.m.no0.smooth$period5)) %>% 
-  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
-  slice(-1) %>% select(-n) %>%
-  as.matrix() %>% as("sparseMatrix")
-
 ##WPP fx
 fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>% 
   mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
@@ -434,29 +377,92 @@ thiele.prior <- function(h, sex) {
     all.age <- seq(2, 92, by = 5)
     par <- exp(par)
     est <- par[1] * exp(-par[2] * all.age) + par[3] * exp(-par[4]*(all.age - par[5])^2) + par[6] * exp(par[7] * all.age)
-    ess <- sum((log(est[-1]) - dat[-1])^2) + 1e4 * (log(est[1]) - dat[1])^2
+    ess <- sum((log(est[-1]) - dat[-1])^2) + 1e5 * (log(est[1]) - dat[1])^2
     return(ess)
   }
   nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 1000, iter.max = 1000))
   stopifnot(nlm$convergence ==0)
   return(setNames(exp(nlm$par), c("phi", "psi", "lambda", "delta", "epsilon", "A", "B")))
 }
+thiele.loghump.prior <- function(h, sex) {
+  cat(h,"\n")
+  log.m0 <- h - log(1 - 0.5 * exp(h)) + log(0.2)
+  if(sex == "male"){
+    LQ.mx <- c(log.m0, as.matrix(LQcoef.m[,1:3]) %*% c(1, h, h^2))
+  } else if (sex == "female") {
+    LQ.mx <- c(log.m0, as.matrix(LQcoef.f[,1:3]) %*% c(1, h, h^2))
+  }
+  
+  #get priors for phi and psi using LQ mx at 0-4 to 10-14
+  child.coef <- lm(LQ.mx[1:3] ~ c(2, 7, 12), weights = c(1e15, 1, 1))$coef
+  phi <- exp(child.coef[1])
+  psi <- -child.coef[2]
+  
+  #get priors for lambda, delta and epsilon using 10-14 to 40-44
+  hump.coef <- lm(LQ.mx[3:9] ~  log(seq(12, 42, by = 5)) + I(log(seq(12, 42, by = 5))^2))$coef
+  delta <- -hump.coef[3]
+  epsilon <- exp(-hump.coef[2] / (2 * hump.coef[3]))
+  lambda <- exp(hump.coef[1]+delta*(log(epsilon)^2))
+  
+  lambda <- ifelse(lambda<1e-5 | lambda>0.015, 8e-3, lambda)
+  delta <- ifelse(delta<0, 1e-3, delta)
+  epsilon <- ifelse(epsilon>40 | epsilon<10, 25, epsilon)
+  
+  #get priors for A and B using 65-69 to 90-94
+  old.coef <- lm(LQ.mx[14:19] ~ seq(67, 92, by = 5))$coef
+  A <- exp(old.coef[1])
+  B <- old.coef[2]
+  
+  thiele.min <- function(par, dat){
+    all.age <- seq(2, 92, by = 5)
+    par <- exp(par)
+    est <- par[1] * exp(-par[2] * all.age) + par[3] * exp(-par[4]*((log(all.age) - log(par[5]))^2)) + par[6] * exp(par[7] * all.age)
+    ess <- mean(sum((log(est[-1]) - dat[-1])^2) + 1e4 * (log(est[1]) - dat[1])^2)
+    return(ess)
+  }
+  nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-2))
+  stopifnot(nlm$convergence ==0)
+  cat(nlm$message,"\n")
+  return(setNames(exp(nlm$par), c("phi", "psi", "lambda", "delta", "epsilon", "A", "B")))
+}
 
 igme.h.mean.f <- igme.5q0.5 %>% filter(Sex=="Female", year5 %in% levels(bf5.f.no0.smooth$period5)) %>% .$child.mort %>% log()
 thiele.prior.f <- sapply(igme.h.mean.f, thiele.prior, sex="female")
+thiele.loghump.prior.f <- sapply(igme.h.mean.f, thiele.loghump.prior, sex="female")
 
 igme.h.mean.m <- igme.5q0.5 %>% filter(Sex=="Male", year5 %in% levels(bf5.m.no0.smooth$period5)) %>% .$child.mort %>% log()
-thiele.prior.m <- sapply(igme.h.mean.f, thiele.prior, sex="male")
+thiele.prior.m <- sapply(igme.h.mean.m, thiele.prior, sex="male")
+thiele.loghump.prior.m <- sapply(igme.h.mean.m, thiele.loghump.prior, sex="male")
 
 thiele_age <- seq(2, 112, by = 5)
 
 basepop.f <- pop.f.aggr$`1960`
 basepop.m <- pop.m.aggr$`1960`
 
+prec.init <- 3
+rho.init <- 2
+
 data.f <- as.matrix(log(ddharm_bf_census_f_smoothed_aggr[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_smoothed_aggr[,-1]))
 #data.f <- as.matrix(log(ddharm_bf_census_f_raw[,-1]))
 #data.f <- as.matrix(log(bf_census_f[,-1]))
 #data.f <- as.matrix(log(bf.pop.aggr.f %>% select('1975', '1985', '1995', '2005', '2015')))
+
+##DHS data cohort smoothed
+bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
+  mutate(age5 = 5 * floor(agegr / 5),
+         period5 = 5 * floor(period / 5)) %>%
+  group_by(mm1, tips, DHS, age5, period5) %>%
+  summarise_at(vars(pyears, event, pyears2, adjusted), sum) %>%
+  ungroup()
+
+bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
+bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
+
+dhs.start.age <- 15
+dhs.end.age <- 55
+
+bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
+bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
 
 data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                  log_fx_mean = log_fx_mean,
@@ -498,15 +504,66 @@ data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(b
                  
                  penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
                  null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
-                 penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
+                 penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix")
                  
-                 LQ_baseline_mx_DX_f = LQ.baseline.DX.ax.smooth,  LQ_baseline_mx_DX_m = LQ.baseline.DX.ax.smooth.m,
-                 h_DX_f = LQ.baseline.DX.bx.smooth, h_DX_m = LQ.baseline.DX.bx.smooth.m,
-                 h2_DX_f = LQ.baseline.DX.cx.smooth, h2_DX_m = LQ.baseline.DX.cx.smooth.m,
-                 k_DX_f = LQ.baseline.DX.vx.smooth, k_DX_m = LQ.baseline.DX.vx.smooth.m,
-                 tp_DX_f = tips.DX.smooth, tp_DX_m = tips.DX.smooth.m,
-                 LQ_baseline_f = as.matrix(LQcoef.f[,1:4]), LQ_baseline_m = as.matrix(LQcoef.m[,1:4]),
-                 h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
+                 #LQ_baseline_mx_DX_f = LQ.baseline.DX.ax.smooth,  LQ_baseline_mx_DX_m = LQ.baseline.DX.ax.smooth.m,
+                 #h_DX_f = LQ.baseline.DX.bx.smooth, h_DX_m = LQ.baseline.DX.bx.smooth.m,
+                 #h2_DX_f = LQ.baseline.DX.cx.smooth, h2_DX_m = LQ.baseline.DX.cx.smooth.m,
+                 #k_DX_f = LQ.baseline.DX.vx.smooth, k_DX_m = LQ.baseline.DX.vx.smooth.m,
+                 #tp_DX_f = tips.DX.smooth, tp_DX_m = tips.DX.smooth.m,
+                 #LQ_baseline_f = as.matrix(LQcoef.f[,1:4]), LQ_baseline_m = as.matrix(LQcoef.m[,1:4]),
+                 #h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
+)
+
+data.loghump.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
+                 log_fx_mean = log_fx_mean,
+                 srb = rep(1.05, bf.idx5$n_periods),
+                 interval = bf.idx5$interval,
+                 n_periods = bf.idx5$n_periods,
+                 fx_idx = 4L,
+                 n_fx = 7L,
+                 census_log_pop_f = data.f, census_log_pop_m = data.m,
+                 census_year_idx = match(bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval), bf.idx5$periods),
+                 census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
+                 
+                 open_idx = bf.idx5$n_ages,
+                 pop_start = 3, pop_end = open.age / 5,
+                 
+                 df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
+                 Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
+                 df_age = match(bf5.f.no0.smooth$age5+2, thiele_age), dm_age = match(bf5.m.no0.smooth$age5+2, thiele_age),
+                 df_time = match(bf5.f.no0.smooth$period5, levels(bf5.f.no0.smooth$period5)), dm_time = match(bf5.m.no0.smooth$period5, levels(bf5.m.no0.smooth$period5)),
+                 df_tp = c(bf5.f.no0.smooth$tips)-1, dm_tp = c(bf5.m.no0.smooth$tips)-1,
+                 
+                 log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
+                 log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
+                 log_lambda_mean_f = log(thiele.loghump.prior.f[3,]), log_lambda_mean_m = log(thiele.loghump.prior.m[3,]),
+                 log_delta_mean_f = log(thiele.loghump.prior.f[4,]), log_delta_mean_m = log(thiele.loghump.prior.m[4,]),
+                 log_epsilon_mean_f = log(thiele.loghump.prior.f[5,]), log_epsilon_mean_m = log(thiele.loghump.prior.m[5,]),
+                 log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
+                 log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
+                 
+                 #log_phi_mean = rep(mean(log(thiele.prior.f[1,])), bf.idx5$n_periods),
+                 #log_psi_mean =  rep(mean(log(thiele.prior.f[2,])), bf.idx5$n_periods),
+                 #log_lambda_mean =  rep(mean(log(thiele.prior.f[3,])), bf.idx5$n_periods),
+                 #log_delta_mean =  rep(mean(log(thiele.prior.f[4,])), bf.idx5$n_periods),
+                 #log_epsilon_mean =  rep(mean(log(thiele.prior.f[5,])), bf.idx5$n_periods),
+                 #log_A_mean =  rep(mean(log(thiele.prior.f[6,])), bf.idx5$n_periods),
+                 #log_B_mean =  rep(mean(log(thiele.prior.f[7,])), bf.idx5$n_periods),
+                 
+                 thiele_age = thiele_age,
+                 
+                 penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
+                 null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
+                 penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix")
+                 
+                 #LQ_baseline_mx_DX_f = LQ.baseline.DX.ax.smooth,  LQ_baseline_mx_DX_m = LQ.baseline.DX.ax.smooth.m,
+                 #h_DX_f = LQ.baseline.DX.bx.smooth, h_DX_m = LQ.baseline.DX.bx.smooth.m,
+                 #h2_DX_f = LQ.baseline.DX.cx.smooth, h2_DX_m = LQ.baseline.DX.cx.smooth.m,
+                 #k_DX_f = LQ.baseline.DX.vx.smooth, k_DX_m = LQ.baseline.DX.vx.smooth.m,
+                 #tp_DX_f = tips.DX.smooth, tp_DX_m = tips.DX.smooth.m,
+                 #LQ_baseline_f = as.matrix(LQcoef.f[,1:4]), LQ_baseline_m = as.matrix(LQcoef.m[,1:4]),
+                 #h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
 )
 
 par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
@@ -532,21 +589,21 @@ par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 log_A_innov_f = rep(0, bf.idx5$n_periods), log_A_innov_m = rep(0, bf.idx5$n_periods),
                 log_B_innov_f = rep(0, bf.idx5$n_periods), log_B_innov_m = rep(0, bf.idx5$n_periods),
                 
-                log_marginal_prec_phi_f = 2, log_marginal_prec_phi_m = 2,
-                log_marginal_prec_psi_f = 2, log_marginal_prec_psi_m = 2,
-                log_marginal_prec_lambda_f = 2, log_marginal_prec_lambda_m = 2,
-                log_marginal_prec_delta_f = 2, log_marginal_prec_delta_m = 2,
-                log_marginal_prec_epsilon_f = 2, log_marginal_prec_epsilon_m = 2,
-                log_marginal_prec_A_f = 2, log_marginal_prec_A_m = 2,
-                log_marginal_prec_B_f = 2, log_marginal_prec_B_m = 2,
+                log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
+                log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
+                log_marginal_prec_lambda_f = prec.init, log_marginal_prec_lambda_m = prec.init,
+                log_marginal_prec_delta_f = prec.init, log_marginal_prec_delta_m = prec.init,
+                log_marginal_prec_epsilon_f = prec.init, log_marginal_prec_epsilon_m = prec.init,
+                log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
+                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
                 
-                logit_rho_phi_f = 3, logit_rho_phi_m = 3,
-                logit_rho_psi_f = 3, logit_rho_psi_m = 3,
-                logit_rho_lambda_f = 3, logit_rho_lambda_m = 3,
-                logit_rho_delta_f = 3, logit_rho_delta_m = 3,
-                logit_rho_epsilon_f = 3, logit_rho_epsilon_m = 3,
-                logit_rho_A_f = 3, logit_rho_A_m = 3,
-                logit_rho_B_f = 3, logit_rho_B_m = 3,
+                logit_rho_phi_f = rho.init, logit_rho_phi_m = rho.init,
+                logit_rho_psi_f = rho.init, logit_rho_psi_m = rho.init,
+                logit_rho_lambda_f = rho.init, logit_rho_lambda_m = rho.init,
+                logit_rho_delta_f = rho.init, logit_rho_delta_m = rho.init,
+                logit_rho_epsilon_f = rho.init, logit_rho_epsilon_m = rho.init,
+                logit_rho_A_f = rho.init, logit_rho_A_m = rho.init,
+                logit_rho_B_f = rho.init, logit_rho_B_m = rho.init,
                 
                 log_marginal_prec_h = 0,
                 log_marginal_prec_k = 0,
@@ -557,9 +614,10 @@ par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
 )
 
 
-input.LQ.both.vec <- list(data = data.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
+input.thiele.both.vec <- list(data = data.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
+input.thiele.loghump.both.vec <- list(data = data.loghump.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+system.time(thiele.f.no0.50 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
                                                                                      "log_fx",
                                                                                      "gx_f","gx_m",
                                                                                      "tp_params",
@@ -577,7 +635,102 @@ system.time(thiele.f.no0 <- fit_tmb(input.LQ.both.vec,inner_verbose=TRUE, random
             ) 
 
 
-models.list <- list("Thiele" = thiele.f.no0)
+
+system.time(thiele.f.no0.loghump.50 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                                         "log_fx",
+                                                                                                         "gx_f","gx_m",
+                                                                                                         "tp_params",
+                                                                                                         "log_phi_innov_f", "log_phi_innov_m",
+                                                                                                         "log_psi_innov_f", "log_psi_innov_m",
+                                                                                                         "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                                         "log_delta_innov_f", "log_delta_innov_m",
+                                                                                                         "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                                         "log_A_innov_f", "log_A_innov_m",
+                                                                                                         "log_B_innov_f", "log_B_innov_m"
+                                                                                                         ),
+                                            DLL="ccmpp_bothsexes_thiele_loghump",
+                                            #map = list(log_tau2_logpop_f = factor(c(1,1)))
+                                            )
+            ) 
+
+
+
+system.time(thiele.f.no0.55 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                            "log_fx",
+                                                                                            "gx_f","gx_m",
+                                                                                            "tp_params",
+                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                            "log_B_innov_f", "log_B_innov_m"
+),
+DLL="ccmpp_bothsexes_thiele",
+#map = list(log_tau2_logpop_f = factor(c(1,1)))
+)
+) 
+
+
+
+system.time(thiele.f.no0.loghump.55 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                                            "log_fx",
+                                                                                                            "gx_f","gx_m",
+                                                                                                            "tp_params",
+                                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                                            "log_B_innov_f", "log_B_innov_m"
+),
+DLL="ccmpp_bothsexes_thiele_loghump",
+#map = list(log_tau2_logpop_f = factor(c(1,1)))
+)
+) 
+
+
+
+
+system.time(thiele.f.no0.60 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                            "log_fx",
+                                                                                            "gx_f","gx_m",
+                                                                                            "tp_params",
+                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                            "log_B_innov_f", "log_B_innov_m"
+),
+DLL="ccmpp_bothsexes_thiele",
+#map = list(log_tau2_logpop_f = factor(c(1,1)))
+)
+) 
+
+
+
+system.time(thiele.f.no0.loghump.60 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                                            "log_fx",
+                                                                                                            "gx_f","gx_m",
+                                                                                                            "tp_params",
+                                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                                            "log_B_innov_f", "log_B_innov_m"
+),
+DLL="ccmpp_bothsexes_thiele_loghump",
+#map = list(log_tau2_logpop_f = factor(c(1,1)))
+)
+) 
+models.list <- list("Thiele 50" = thiele.f.no0.50, "Thiele 55" = thiele.f.no0.55, "Thiele 60" = thiele.f.no0.60)
+loghump.models.list <- list("Thiele 50" = thiele.f.no0.loghump.50, "Thiele 55" = thiele.f.no0.loghump.55, "Thiele 60" = thiele.f.no0.loghump.60)
 
 #q4515####
 q4515.func <- function(x){
@@ -603,11 +756,27 @@ q4515.df <- lapply(models.list, q4515.func) %>%
              sex = Sex) %>%
       select(-c(variable, Sex))
     ) %>%
-  mutate(model = fct_relevel(model, "WPP Estimates"))
+  mutate(model = fct_relevel(model, "WPP Estimates"),
+         hump = "Normal hump")
 
-q4515.df %>%
+q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    reshape2::melt(wpp.bf.q4515[,-c(1,3,4)]) %>% 
+      mutate(model = "WPP Estimates",
+             year = as.numeric(gsub("X|\\.5","",variable)),
+             value = value/1000,
+             sex = Sex) %>%
+      select(-c(variable, Sex))
+  ) %>%
+  mutate(model = fct_relevel(model, "WPP Estimates"),
+         hump = "log-Normal hump")
+
+bind_rows(q4515.df,q4515.df.loghump) %>% mutate(hump = fct_inorder(hump)) %>%
   ggplot() + geom_line(aes(x = year, y = value, col = sex, linetype = model), lwd = 1.2) + ylab(bquote(""[45]*q[15])) +
-  theme(text = element_text(size=25))
+  theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30))+
+  facet_wrap(~hump)
 
 #child mx####
 q50.func <- function(x){
@@ -625,12 +794,31 @@ q50.df <- lapply(models.list, q50.func) %>%
   bind_rows(
     as_tibble(exp(igme.h.mean.f)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
     as_tibble(exp(igme.h.mean.m)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
+    
+    as_tibble(5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 2) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * 2)}) / 
+                (1 + 2.5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 2) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * 2)}) )) %>%
+      mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(5 * apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * 2) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * 2)}) / 
+                (1 + 2.5 * apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * 2) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * 2)}) )) %>%
+      mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "male")
   ) %>%
-  mutate(model = fct_relevel(model, "IGME Estimates"))
+  mutate(model = fct_relevel(model, "IGME Estimates"),
+         hump = "Normal hump")
 
-q50.df %>%
+q50.df.loghump <- lapply(loghump.models.list, q50.func) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    as_tibble(exp(igme.h.mean.f)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(exp(igme.h.mean.m)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
+  ) %>%
+  mutate(model = fct_relevel(model, "IGME Estimates"),
+         hump = "log-Normal hump")
+
+bind_rows(q50.df, q50.df.loghump) %>% mutate(hump = fct_inorder(hump)) %>%
   ggplot() + geom_line(aes(x = year, y = value, col = sex, linetype = model), lwd = 1.2) + ylab(bquote(""[5]*q[0])) +
-  theme(text = element_text(size=25))
+  theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size = 30)) +
+  facet_wrap(~hump)
 
 ##Comparison to DHS-spline####
 load("~/more countries final avg sex Rwanda.RData")
@@ -786,7 +974,54 @@ thiele <- lapply(models.list, function(y){y$mode$mx_mat_f %>%
                  sex = "male")
       )
   ) %>%
-  mutate(model = str_wrap(model, 20))
+  mutate(model = str_wrap(model, 20),
+         hump = "Normal hump")
+
+
+thiele.loghump <- lapply(loghump.models.list, function(y){y$mode$mx_mat_f %>%
+    `colnames<-`(bf.idx5$periods) %>%  
+    `rownames<-`(seq(0, nrow(y$mode$mx_mat_f)*5-5, by = 5)) %>%
+    reshape2::melt()}) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  setNames(c("age5", "period5", "value", "model")) %>%
+  mutate(period5 = sprintf("%d-%d",period5, period5+4),
+         sex = "female") %>%
+  bind_rows(
+    reshape2::melt(more.countries.avg[[country]]$mort.f) %>% 
+      mutate(age5 = 5 * floor(Var1 / 5),
+             period5 = 5 * floor(Var2 / 5)) %>% 
+      group_by(age5, period5) %>%
+      summarise_at(vars(value), mean) %>%
+      mutate(value = exp(value),
+             period5 = sprintf("%d-%d",period5, period5+4),
+             model = "Spline average",
+             sex = "female")
+  ) %>%
+  bind_rows(
+    lapply(loghump.models.list, function(y){y$mode$mx_mat_m %>%
+        `colnames<-`(bf.idx5$periods) %>%  
+        `rownames<-`(seq(0, nrow(y$mode$mx_mat_f)*5-5, by = 5)) %>%
+        reshape2::melt()}) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      setNames(c("age5", "period5", "value", "model")) %>%
+      mutate(period5 = sprintf("%d-%d",period5, period5+4),
+             sex = "male") %>%
+      bind_rows(
+        reshape2::melt(more.countries.avg[[country]]$mort.m) %>% 
+          mutate(age5 = 5 * floor(Var1 / 5),
+                 period5 = 5 * floor(Var2 / 5)) %>% 
+          group_by(age5, period5) %>%
+          summarise_at(vars(value), mean) %>%
+          mutate(value = exp(value),
+                 period5 = sprintf("%d-%d",period5, period5+4),
+                 model = "Spline average",
+                 sex = "male")
+      )
+  ) %>%
+  mutate(model = str_wrap(model, 20),
+         hump = "log-Normal hump")
 
 DHS.plot <- bf5.f.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as.numeric(levels(period5)[period5])) %>%
   select(tips, age5, period5, value) %>%
@@ -799,24 +1034,36 @@ DHS.plot <- bf5.f.no0.smooth %>% mutate(value = adjusted / pyears2, period5 = as
              sex = "male") 
   )
 
-thiele.f <- filter(thiele, sex == "female")
-thiele.m <- filter(thiele, sex == "male")
+thiele.f <- bind_rows(filter(thiele, sex == "female"), filter(thiele.loghump, sex == "female")) %>% mutate(hump = fct_inorder(hump))
+thiele.m <- bind_rows(filter(thiele, sex == "male"), filter(thiele.loghump, sex == "male")) %>% mutate(hump = fct_inorder(hump))
 DHS.plot.f <- filter(DHS.plot, sex == "female")
 DHS.plot.m <- filter(DHS.plot, sex == "male")
   
-ggplot(thiele.f %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+ggplot(thiele.f %>% filter(age5 %in% 0:70, hump=="Normal hump")) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
   geom_line(data = filter(thiele.f, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
   geom_point(data = filter(DHS.plot.f, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
   geom_point(data = filter(DHS.plot.f, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
   geom_point(data = filter(DHS.plot.f, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
   scale_shape_manual(values = 0:14) +
   scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
-  facet_wrap(~period5) + 
-  ggtitle(paste(country, "Females")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  ggtitle(paste(country, "Females (Normal hump)")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
   theme(text = element_text(size=25),
-        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  facet_wrap(~period5)
 
-ggplot(thiele.m %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+ggplot(thiele.f %>% filter(age5 %in% 0:70, hump=="log-Normal hump")) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+  geom_line(data = filter(thiele.f, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
+  geom_point(data = filter(DHS.plot.f, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot.f, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot.f, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+  scale_shape_manual(values = 0:14) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  ggtitle(paste(country, "Females (log-Normal hump)")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  facet_wrap(~period5)
+
+ggplot(thiele.m %>% filter(age5 %in% 0:70, hump == "Normal hump")) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
   geom_line(data = filter(thiele.m, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
   geom_point(data = filter(DHS.plot.m, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
   geom_point(data = filter(DHS.plot.m, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
@@ -824,10 +1071,92 @@ ggplot(thiele.m %>% filter(age5 %in% 0:70)) + geom_line(aes(x = age5, y = value,
   scale_shape_manual(values = 0:14) +
   scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
   facet_wrap(~period5) + 
-  ggtitle(paste(country, "Males")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  ggtitle(paste(country, "Males (Normal hump)")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 
+ggplot(thiele.m %>% filter(age5 %in% 0:70, hump == "log-Normal hump")) + geom_line(aes(x = age5, y = value, col=model), lwd=1.2, linetype = 2) +
+  geom_line(data = filter(thiele.m, model == "Spline average"), aes(x = age5, y = value, col = model), lwd=1.2, linetype=1)+
+  geom_point(data = filter(DHS.plot.m, value!=0), aes(x = age5, y = value, shape = tips), alpha = 0) + 
+  geom_point(data = filter(DHS.plot.m, value!=0, tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=3, stroke=2) +
+  geom_point(data = filter(DHS.plot.m, value!=0, !tips %in% 1:3), aes(x = age5, y = value, shape = tips), size=2, alpha = 0.3) +
+  scale_shape_manual(values = 0:14) +
+  scale_y_continuous(trans = "log", labels = function(x){as.character(round(x,3))}) +
+  facet_wrap(~period5) + 
+  ggtitle(paste(country, "Males (log-Normal hump)")) + ylab(bquote(""[5]*m[x])) + xlab("5-year age groups") +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+par.func <- function(x){
+ bind_rows(phi = x$mode$phi_f,
+           psi = x$mode$psi_f,
+           lambda = x$mode$lambda_f,
+           delta = x$mode$delta_f,
+           epsilon = x$mode$epsilon_f,
+           A = x$mode$A_f,
+           B = x$mode$B_f) %>%
+    mutate(sex="female", period5 = bf.idx5$periods)  %>%
+    bind_rows(
+      bind_rows(phi = x$mode$phi_m,
+                psi = x$mode$psi_m,
+                lambda = x$mode$lambda_m,
+                delta = x$mode$delta_m,
+                epsilon = x$mode$epsilon_m,
+                A = x$mode$A_m,
+                B = x$mode$B_m) %>%
+        mutate(sex="male", period5 = bf.idx5$periods)
+    )
+}
+
+thiele.par <- lapply(models.list, par.func) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  pivot_longer(-c(sex, period5, model)) %>%
+  bind_rows(
+    thiele.prior.f %>%
+      `colnames<-`(bf.idx5$periods) %>%
+      reshape2::melt() %>%
+      mutate(sex = "female", model = "Initial Values") %>%
+      select(name = Var1, period5 = Var2, value, model, sex),
+    thiele.prior.m %>%
+      `colnames<-`(bf.idx5$periods) %>%
+      reshape2::melt() %>%
+      mutate(sex = "male", model = "Initial Values") %>%
+      select(name = Var1, period5 = Var2, value, model, sex)
+    ) %>%
+  mutate(name = fct_inorder(name))
+
+
+thiele.par.loghump <- lapply(loghump.models.list, par.func) %>% 
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  pivot_longer(-c(sex, period5, model)) %>%
+  bind_rows(
+    thiele.loghump.prior.f %>%
+      `colnames<-`(bf.idx5$periods) %>%
+      reshape2::melt() %>%
+      mutate(sex = "female", model = "Initial Values") %>%
+      select(name = Var1, period5 = Var2, value, model, sex),
+    thiele.loghump.prior.m %>%
+      `colnames<-`(bf.idx5$periods) %>%
+      reshape2::melt() %>%
+      mutate(sex = "male", model = "Initial Values") %>%
+      select(name = Var1, period5 = Var2, value, model, sex)
+  ) %>%
+  mutate(name = fct_inorder(name))
+
+
+ggplot(thiele.par) + geom_line(aes(x = period5, y = value, linetype = model, col = sex), lwd = 1.2) +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  ggtitle("Normal hump") +
+  facet_wrap(~name, scales="free_y")
+
+ggplot(thiele.par.loghump) + geom_line(aes(x = period5, y = value, linetype = model, col = sex), lwd = 1.2) +
+  theme(text = element_text(size=25),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  ggtitle("log-Normal hump") +
+  facet_wrap(~name, scales="free_y")
 
 par.deviation <- bind_rows(
   as_tibble(log(thiele.f.no0$mode$phi_f) - data.vec$log_phi_mean_f) %>% 
@@ -883,6 +1212,166 @@ ggplot(par.deviation) + geom_line(aes(x = period5, y = value, col = par), lwd = 
   theme(text = element_text(size=20)) +
   ggtitle("Deviation from prior means")
 
+#Thiele Decomposed####
+mx.mat.func <- function(x, hump="normal"){
+  age <- seq(2, 112, by = 5)
+  if(hump=="normal"){
+    child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*age)}) %*% diag(x$mode$phi_f)
+    hump.mort <- sapply(x$mode$epsilon_f, function(y){(y-age)^2}) %*% diag(-x$mode$delta_f) %>% exp() %*% diag(x$mode$lambda_f)
+    old.mort <- sapply(x$mode$B_f, function(y){exp(y*age)}) %*% diag(x$mode$A_f)
+    child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*age)}) %*% diag(x$mode$phi_m)
+    hump.mort.m <- sapply(x$mode$epsilon_m, function(y){(y-age)^2}) %*% diag(-x$mode$delta_m) %>% exp() %*% diag(x$mode$lambda_m)
+    old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*age)}) %*% diag(x$mode$A_m)
+    } else if(hump=="log") {
+      child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*age)}) %*% diag(x$mode$phi_f)
+      hump.mort <- sapply(x$mode$epsilon_f, function(y){(log(y)-log(age))^2}) %*% diag(-x$mode$delta_f) %>% exp() %*% diag(x$mode$lambda_f)
+      old.mort <- sapply(x$mode$B_f, function(y){exp(y*age)}) %*% diag(x$mode$A_f)
+      child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*age)}) %*% diag(x$mode$phi_m)
+      hump.mort.m <- sapply(x$mode$epsilon_m, function(y){(log(y)-log(age))^2}) %*% diag(-x$mode$delta_m) %>% exp() %*% diag(x$mode$lambda_m)
+      old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*age)}) %*% diag(x$mode$A_m)
+      }
+  
+  lapply(list(Child = child.mort, Hump = hump.mort, Senescent = old.mort, Total = child.mort + hump.mort + old.mort), function(i){
+    i %>%
+      `colnames<-`(bf.idx5$periods) %>%  
+      `rownames<-`(seq(0, 110, by = 5)) %>%
+      reshape2::melt()
+  })%>% 
+    map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+    bind_rows() %>%
+    mutate(sex="female") %>%
+    bind_rows(
+      lapply(list(Child = child.mort.m, Hump = hump.mort.m, Senescent = old.mort.m, Total = child.mort.m + hump.mort.m + old.mort.m), function(i){
+        i %>%
+          `colnames<-`(bf.idx5$periods) %>%  
+          `rownames<-`(seq(0, 110, by = 5)) %>%
+          reshape2::melt()
+      })%>% 
+        map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+        bind_rows() %>%
+        mutate(sex="male")
+    )
+}
+
+thiele.decomp <- lapply(models.list, mx.mat.func, hump="normal") %>%
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    lapply(
+      list(Child = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+           Hump = apply(thiele.prior.f, 2, function(i) {i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2))}),
+           Senescent = apply(thiele.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
+           Total = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+               i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2)) +
+               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+      ), function(i) {
+        i %>%
+          `colnames<-`(bf.idx5$periods) %>%  
+          `rownames<-`(seq(0, 110, by = 5)) %>%
+          reshape2::melt()
+      }) %>% 
+      map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      mutate(sex="female", model = "Initial Values"),
+    
+    lapply(
+      list(Child = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+           Hump = apply(thiele.prior.m, 2, function(i) {i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2))}),
+           Senescent = apply(thiele.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
+           Total = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+               i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2)) +
+               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+      ), function(i) {
+        i %>%
+          `colnames<-`(bf.idx5$periods) %>%  
+          `rownames<-`(seq(0, 110, by = 5)) %>%
+          reshape2::melt()
+      }) %>% 
+      map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      mutate(sex="male", model = "Initial Values") 
+  ) %>%
+  setNames(c("age5", "period5", "value", "stage", "sex", "model")) %>%
+  mutate(period5 = as.factor(period5),
+         age5 = as.numeric(age5),
+         stage = fct_relevel(stage, c("Total", "Child", "Hump", "Senescent"))
+  ) 
+
+thiele.decomp.loghump <- lapply(loghump.models.list, mx.mat.func, hump="log") %>%
+  map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+  bind_rows() %>%
+  bind_rows(
+    lapply(
+      list(Child = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+           Hump = apply(thiele.loghump.prior.f, 2, function(i) {i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2))}),
+           Senescent = apply(thiele.loghump.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
+           Total = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+               i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2)) +
+               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+      ), function(i) {
+        i %>%
+          `colnames<-`(bf.idx5$periods) %>%  
+          `rownames<-`(seq(0, 110, by = 5)) %>%
+          reshape2::melt()
+      }) %>% 
+      map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      mutate(sex="female", model = "Initial Values"),
+    
+    lapply(
+      list(Child = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+           Hump = apply(thiele.loghump.prior.m, 2, function(i) {i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2))}),
+           Senescent = apply(thiele.loghump.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
+           Total = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+               i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2)) +
+               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+      ), function(i) {
+        i %>%
+          `colnames<-`(bf.idx5$periods) %>%  
+          `rownames<-`(seq(0, 110, by = 5)) %>%
+          reshape2::melt()
+      }) %>% 
+      map2(names(.), ~ add_column(.x, stage = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      mutate(sex="male", model = "Initial Values") 
+  ) %>%
+  setNames(c("age5", "period5", "value", "stage", "sex", "model")) %>%
+  mutate(period5 = as.factor(period5),
+         age5 = as.numeric(age5),
+         stage = fct_relevel(stage, c("Total", "Child", "Hump", "Senescent"))
+  )
+  
+ggplot(filter(thiele.decomp, sex=="female")) + geom_line(aes(x = age5, y = value, col = period5), lwd = 1.2) +
+  scale_color_manual(values = colorRampPalette(colors = c("blue", "red"))(bf.idx5$n_periods)) + 
+  scale_y_continuous(trans="log", labels = function(x){as.character(round(x, 5))}) +
+  theme(text = element_text(size=20),
+        strip.text = element_text(size=20)) + 
+  ggtitle("Burkina Faso Females (Normal hump)") +
+  facet_grid(stage~model, scales="free_y", switch = "y")
+
+ggplot(filter(thiele.decomp.loghump, sex=="female")) + geom_line(aes(x = age5, y = value, col = period5), lwd = 1.2) +
+  scale_color_manual(values = colorRampPalette(colors = c("blue", "red"))(bf.idx5$n_periods)) + 
+  scale_y_continuous(trans="log", labels = function(x){as.character(round(x, 5))}) +
+  theme(text = element_text(size=20),
+        strip.text = element_text(size=20)) + 
+  ggtitle("Burkina Faso Females (log-Normal hump)") +
+  facet_grid(stage~model, scales="free_y", switch = "y")
+
+ggplot(filter(thiele.decomp, sex=="male")) + geom_line(aes(x = age5, y = value, col = period5), lwd = 1.2) +
+  scale_color_manual(values = colorRampPalette(colors = c("blue", "red"))(bf.idx5$n_periods)) + 
+  scale_y_continuous(trans="log", labels = function(x){as.character(round(x, 5))}) +
+  theme(text = element_text(size=20),
+        strip.text = element_text(size=20)) + 
+  ggtitle("Burkina Faso Males (Normal hump)") +
+  facet_grid(stage~model, scales="free_y", switch = "y")
+
+ggplot(filter(thiele.decomp.loghump, sex=="male")) + geom_line(aes(x = age5, y = value, col = period5), lwd = 1.2) +
+  scale_color_manual(values = colorRampPalette(colors = c("blue", "red"))(bf.idx5$n_periods)) + 
+  scale_y_continuous(trans="log", labels = function(x){as.character(round(x, 5))}) +
+  theme(text = element_text(size=20),
+        strip.text = element_text(size=20)) + 
+  ggtitle("Burkina Faso Males (log-Normal hump)") +
+  facet_grid(stage~model, scales="free_y", switch = "y")
 
 #population counts####
 #ADD AR.f$mode$census_proj
@@ -925,7 +1414,34 @@ pop.df <- lapply(models.list, get.pop) %>%
   ) %>%
   mutate(cohort = year - age,
          cohort = 5 * floor(cohort / 5),
-         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
+         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+         hump = "Normal hump"
+  ) %>%
+  bind_rows(
+    lapply(loghump.models.list, get.pop) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      bind_rows(
+        bind_rows(ddharm_bf_census_f_raw %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+                  ddharm_bf_census_m_raw %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+        ) %>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL ,model="UNPD Census"),
+        
+        bind_rows(ddharm_bf_census_f_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+                  ddharm_bf_census_m_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+        ) %>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="UNPD Census smoothed"),
+        
+        bind_rows(mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, sex = "female"),
+                  mutate(pop.m.aggr[,-(1:3)], age = ddharm_bf_census_m_raw$age, sex = "male")
+        )%>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="WPP Estimates")
+      ) %>%
+      mutate(cohort = year - age,
+             cohort = 5 * floor(cohort / 5),
+             model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             hump = "log-Normal hump"
+      )
   )
 
 get.census.pop<- function(x){
@@ -961,35 +1477,73 @@ censpop.df <- lapply(models.list, get.census.pop) %>%
   ) %>%
   mutate(cohort = year - age,
          cohort = 5 * floor(cohort / 5),
-         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates"))
+         model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+         hump = "Normal hump"
+  ) %>%
+  bind_rows(
+    lapply(loghump.models.list, get.census.pop) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      bind_rows(
+        bind_rows(ddharm_bf_census_f_raw %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+                  ddharm_bf_census_m_raw %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+        ) %>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL ,model="UNPD Census"),
+        
+        bind_rows(ddharm_bf_census_f_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_f_raw$age), sex = "female"),
+                  ddharm_bf_census_m_smoothed_aggr %>% mutate(age = c(ddharm_bf_census_m_raw$age), sex = "male")
+        ) %>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="UNPD Census smoothed"),
+        
+        bind_rows(mutate(pop.f.aggr[,-(1:3)], age = ddharm_bf_census_f_raw$age, sex = "female"),
+                  mutate(pop.m.aggr[,-(1:3)], age = ddharm_bf_census_m_raw$age, sex = "male")
+        )%>%
+          pivot_longer(!age & !sex) %>% mutate(year=as.numeric(name), name=NULL, model="WPP Estimates")
+      ) %>%
+      mutate(cohort = year - age,
+             cohort = 5 * floor(cohort / 5),
+             model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")),
+             hump = "log-Normal hump"
+      )
   )
+  
 
 allpop.df <- full_join(pop.df, censpop.df) %>% mutate(model = fct_relevel(model, c("UNPD Census", "UNPD Census smoothed", "WPP Estimates")))
 
-
-allpop.df %>% filter(year %in% c(1960, colnames(data.f))) %>%
+allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="female") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) + ylab("Population counts") + 
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
-  facet_grid_paginate(year~sex, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
+  ggtitle(paste(country,"Females")) +
+  facet_grid_paginate(year~hump, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
 
+allpop.df %>% filter(year %in% c(1960, colnames(data.f)), sex=="male") %>%
+  ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) + ylab("Population counts") + 
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  ggtitle(paste(country,"Males")) +
+  facet_grid_paginate(year~hump, scale="free_y", switch = "y", nrow = 3, ncol = 2, page=1)
+
+allpop.df %>% filter(sex=="female") %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  ggtitle(paste(country, "Females")) +
+  facet_grid_paginate(age~hump, scale="free", switch="y", nrow = 4, ncol = 2, page=3)
+
+allpop.df %>% filter(sex=="male") %>%
+  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  ggtitle(paste(country, "Males")) +
+  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
+  facet_grid_paginate(age~hump, scale="free", switch="y", nrow = 4, ncol = 2, page=3)
+
+#cohort plot
 allpop.df %>% filter(model != "WPP Estimates") %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
   scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
   facet_grid_paginate(cohort~sex, scale="free_y", switch="y", nrow = 3, ncol = 2, page=2)
-
-censpop.df %>% filter(model != "WPP Estimates") %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) + ylab("Population counts") +
-  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
-  facet_grid_paginate(age~sex, scale="free", switch="y", nrow = 4, ncol = 2, page=1)
-
-allpop.df %>%
-  ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  scale_y_continuous(label = function(x) format(x, scientific = TRUE)) +
-  facet_grid_paginate(age~sex, scale="free", switch="y", nrow = 4, ncol = 2, page=3)
 
 #migration####
 get.mig<- function(x){
@@ -1004,24 +1558,30 @@ get.mig<- function(x){
 
 mig.df <- lapply(models.list, get.mig) %>% 
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
-  bind_rows()
+  bind_rows() %>%
+  mutate(hump = "Normal hump") %>%
+  bind_rows(
+    lapply(loghump.models.list, get.mig) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      mutate(hump = "log-Normal hump")
+  )
 
-inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, hump = fct_inorder(hump)) %>%
   filter(year %in% c(1960, 1975, 1985, 1995, 2005, 2015)) %>%
+  ggplot() + geom_line(aes(x = age, y = gx, col = sex, linetype=model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_grid_paginate(year~hump, nrow=4, ncol=2, page=1, switch="y", scales = "free_y")
+
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, hump = fct_inorder(hump)) %>%
+  ggplot() + geom_line(aes(x = year, y = gx, col = sex, linetype=model), lwd = 1.2) +
+  theme(text = element_text(size=25)) +
+  facet_grid_paginate(age~hump, nrow=4, ncol=2, switch="y", scales="free_y", page=2)
+
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, hump = fct_inorder(hump)) %>%
   ggplot() + geom_line(aes(x = age, y = gx, col = model, linetype=sex), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~ year, nrow=2, ncol=3, page=1, scales = "free_y")
-
-inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = year, y = gx, col = model, linetype=sex), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~ age, scales="free_y", nrow=2, ncol=3, page=2)
-
-inner_join(mig.df, pop.df) %>% mutate(gx = mig/value) %>%
-  ggplot() + geom_line(aes(x = age, y = gx, col = model, linetype=sex), lwd = 1.2) +
-  theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~ cohort, nrow=2, ncol=3, page=3)
-
+  facet_grid_paginate(cohort~hump, nrow=4, ncol=2, page=3)
 
 
 #fertility####
@@ -1040,14 +1600,73 @@ fx.df <- lapply(models.list, get.fert) %>%
       select(age = Var1, year = Var2, value = value) %>%
       mutate(model = "Initial Values")
   ) %>%
-  mutate(model = fct_relevel(model, "Initial Values")) 
+  mutate(hump = "Normal hump") %>%
+  bind_rows(
+    lapply(loghump.models.list, get.fert) %>% 
+      map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
+      bind_rows() %>%
+      bind_rows(
+        reshape2::melt(fx_init %>% `rownames<-`(bf.idx5$fertility_ages)) %>%
+          select(age = Var1, year = Var2, value = value) %>%
+          mutate(model = "Initial Values")
+      ) %>%
+      mutate(hump = "log-Normal hump") 
+  ) %>%
+  mutate(model = fct_relevel(model, "Initial Values"),
+         hump = fct_inorder(hump)) 
 
 fx.df %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~year, scale="free_y", nrow = 2, ncol = 4, page=1)
+  facet_grid_paginate(year~hump, scale="free_y", nrow = 4, ncol = 2, switch="y", page=1)
 
 fx.df %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
   theme(text = element_text(size=25)) +
-  facet_wrap_paginate(~age, scale="free_y", nrow = 2, ncol = 4, page=1)
+  facet_grid_paginate(age~hump, scale="free_y", nrow = 4, ncol = 2, switch="y", page=1)
+
+
+#trash code####
+
+tips.DX.smooth <- as(model.matrix(event~as.factor(tips)-1,data=bf5.f.no0.smooth),"sparseMatrix")
+tips.DX.smooth.m <- as(model.matrix(event~as.factor(tips)-1,data=bf5.m.no0.smooth),"sparseMatrix")
+
+LQcoef.f$age5 <- seq(5,110,by=5)
+
+LQcoef.m$age5 <- seq(5,110,by=5)
+
+LQ.baseline.DX.smooth <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.f.no0.smooth) %*% as.matrix(LQcoef.f[,1:4])
+LQ.baseline.DX.ax.smooth <- LQ.baseline.DX.smooth[,1]
+LQ.baseline.DX.bx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,2], period5=bf5.f.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.cx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,3], period5=bf5.f.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.vx.smooth <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.f.no0.smooth), ax=LQ.baseline.DX.smooth[,4], period5=bf5.f.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+
+LQ.baseline.DX.smooth.m <- model.matrix(adjusted~factor(age5, levels = seq(5, 110, by = 5)) - 1, data=bf5.m.no0.smooth) %*% as.matrix(LQcoef.m[,1:4])
+LQ.baseline.DX.ax.smooth.m <- LQ.baseline.DX.smooth.m[,1]
+LQ.baseline.DX.bx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,2], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.cx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,3], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
+LQ.baseline.DX.vx.smooth.m <- data.frame(period5 = as.factor(bf.idx5$periods)) %>% 
+  bind_rows(bind_cols(n = 1 : nrow(bf5.m.no0.smooth), ax=LQ.baseline.DX.smooth.m[,4], period5=bf5.m.no0.smooth$period5)) %>% 
+  pivot_wider(names_from=period5, values_from=ax, values_fill=0) %>% 
+  slice(-1) %>% select(-n) %>%
+  as.matrix() %>% as("sparseMatrix")
