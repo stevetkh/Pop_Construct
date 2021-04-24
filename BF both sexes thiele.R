@@ -214,7 +214,8 @@ igme.5q0.5 <- igme.5q0.df %>% mutate(year5 = 5 * floor(year/5)) %>% group_by(Sex
 
 #DDHarmonized smoothed
 census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,       
-                                                    times = 1950:2020) # time frame for censuses to extract
+                                                    times = 1950:2020,
+                                                    DataSourceShortName = "DYB") # time frame for censuses to extract
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
 ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
