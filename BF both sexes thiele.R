@@ -183,8 +183,8 @@ fit_tmb <- function(tmb_input,
 }
 
 
-igme.5q0.f<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.csv")
-igme.5q0.m<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
+igme.5q0.m<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.csv")
+igme.5q0.f<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
 wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
@@ -198,7 +198,6 @@ LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:v
 
 open.age <- 75
 n_ages = open.age / 5 + 1
-
 
 ##IGME priors
 igme.5q0.df <- igme.5q0.f %>% filter(Country.Name == country) %>% reshape2::melt() %>% 
@@ -271,6 +270,22 @@ ddharm_smoothed_mat <- ddharm_smoothed %>% pivot_wider(names_from = year, values
 
 ddharm_census_f_smoothed <- ddharm_smoothed_mat %>% filter(sex=="female") %>% select(-sex)
 ddharm_census_m_smoothed <- ddharm_smoothed_mat %>% filter(sex=="male") %>% select(-sex)
+
+ddharm_bf_census_f_oag <- ddharm_census_f_smoothed %>%
+  group_by(age) %>%
+  summarise_at(vars(-AgeLabel), function(y){first(na.omit(y))})
+  
+ddharm_bf_census_m_oag <- ddharm_census_m_smoothed %>%
+  group_by(age) %>%
+  summarise_at(vars(-AgeLabel), function(y){first(na.omit(y))})
+
+ddharm_bf_census_f_raw_oag <- ddharm_bf_census_f %>%
+  group_by(AgeStart) %>%
+  summarise_at(vars(-AgeLabel), function(y){first(na.omit(y))})
+
+ddharm_bf_census_m_raw_oag <- ddharm_bf_census_m %>%
+  group_by(AgeStart) %>%
+  summarise_at(vars(-AgeLabel), function(y){first(na.omit(y))})
 
 ddharm_bf_census_f_smoothed_aggr <- ddharm_census_f_smoothed %>%
   arrange(AgeLabel) %>%
@@ -368,6 +383,10 @@ thiele.prior <- function(h, sex) {
   epsilon <- -hump.coef[2] / (2 * hump.coef[3])
   lambda <- exp(hump.coef[1] - hump.coef[2]^2 / (4 * hump.coef[3]))
   
+  lambda <- ifelse(lambda<1e-5 | lambda>0.015, 3e-3, lambda)
+  delta <- ifelse(delta<1e-5, 1e-3, delta)
+  epsilon <- ifelse(epsilon>40 | epsilon<10, 20, epsilon)
+  
   #get priors for A and B using 65-69 to 90-94
   old.coef <- lm(LQ.mx[14:19] ~ seq(67, 92, by = 5))$coef
   A <- exp(old.coef[1])
@@ -377,10 +396,12 @@ thiele.prior <- function(h, sex) {
     all.age <- seq(2, 92, by = 5)
     par <- exp(par)
     est <- par[1] * exp(-par[2] * all.age) + par[3] * exp(-par[4]*(all.age - par[5])^2) + par[6] * exp(par[7] * all.age)
-    ess <- sum((log(est[-1]) - dat[-1])^2) + 1e5 * (log(est[1]) - dat[1])^2
+    ess <- sum((log(est[-1]) - dat[-1])^2) + 1e4 * (log(est[1]) - dat[1])^2
     return(ess)
   }
-  nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 1000, iter.max = 1000))
+  #nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-4))
+  nlm <- nlminb(start = log(c(phi, psi, 2e-3, 5e-3, 24, 1e-5, 0.1)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-4))
+  cat(nlm$message,"\n")
   stopifnot(nlm$convergence ==0)
   return(setNames(exp(nlm$par), c("phi", "psi", "lambda", "delta", "epsilon", "A", "B")))
 }
@@ -405,7 +426,7 @@ thiele.loghump.prior <- function(h, sex) {
   lambda <- exp(hump.coef[1]+delta*(log(epsilon)^2))
   
   lambda <- ifelse(lambda<1e-5 | lambda>0.015, 8e-3, lambda)
-  delta <- ifelse(delta<0, 1e-3, delta)
+  delta <- ifelse(delta<1e-10, 1e-3, delta)
   epsilon <- ifelse(epsilon>40 | epsilon<10, 25, epsilon)
   
   #get priors for A and B using 65-69 to 90-94
@@ -420,17 +441,17 @@ thiele.loghump.prior <- function(h, sex) {
     ess <- mean(sum((log(est[-1]) - dat[-1])^2) + 1e4 * (log(est[1]) - dat[1])^2)
     return(ess)
   }
-  nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-2))
+  nlm <- nlminb(start = log(c(phi, psi, 2e-3, 0.2, 20, 1e-6, 0.1)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-2))
   stopifnot(nlm$convergence ==0)
   cat(nlm$message,"\n")
   return(setNames(exp(nlm$par), c("phi", "psi", "lambda", "delta", "epsilon", "A", "B")))
 }
 
-igme.h.mean.f <- igme.5q0.5 %>% filter(Sex=="Female", year5 %in% levels(bf5.f.no0.smooth$period5)) %>% .$child.mort %>% log()
+igme.h.mean.f <- igme.5q0.5 %>% filter(Sex=="Female", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log()
 thiele.prior.f <- sapply(igme.h.mean.f, thiele.prior, sex="female")
 thiele.loghump.prior.f <- sapply(igme.h.mean.f, thiele.loghump.prior, sex="female")
 
-igme.h.mean.m <- igme.5q0.5 %>% filter(Sex=="Male", year5 %in% levels(bf5.m.no0.smooth$period5)) %>% .$child.mort %>% log()
+igme.h.mean.m <- igme.5q0.5 %>% filter(Sex=="Male", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log()
 thiele.prior.m <- sapply(igme.h.mean.m, thiele.prior, sex="male")
 thiele.loghump.prior.m <- sapply(igme.h.mean.m, thiele.loghump.prior, sex="male")
 
@@ -438,9 +459,6 @@ thiele_age <- seq(2, 112, by = 5)
 
 basepop.f <- pop.f.aggr$`1960`
 basepop.m <- pop.m.aggr$`1960`
-
-prec.init <- 3
-rho.init <- 2
 
 data.f <- as.matrix(log(ddharm_bf_census_f_smoothed_aggr[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_smoothed_aggr[,-1]))
 #data.f <- as.matrix(log(ddharm_bf_census_f_raw[,-1]))
@@ -459,10 +477,13 @@ bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 
 dhs.start.age <- 15
-dhs.end.age <- 55
+dhs.end.age <- 50
 
 bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
 bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
+
+prec.init <- 4
+rho.init <- 2
 
 data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                  log_fx_mean = log_fx_mean,
@@ -476,7 +497,7 @@ data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(b
                  census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
                  
                  open_idx = bf.idx5$n_ages,
-                 pop_start = 3, pop_end = open.age / 5,
+                 pop_start = 2, pop_end = open.age / 5,
                  
                  df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                  Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -527,7 +548,7 @@ data.loghump.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m
                  census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
                  
                  open_idx = bf.idx5$n_ages,
-                 pop_start = 3, pop_end = open.age / 5,
+                 pop_start = 2, pop_end = open.age / 5,
                  
                  df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                  Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -566,6 +587,7 @@ data.loghump.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m
                  #h_constant_f = igme.h.mean.f, h_constant_m = igme.h.mean.m
 )
 
+
 par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 log_tau2_fx = 2,
                 log_tau2_gx_f = 4, log_tau2_gx_m = 4,
@@ -580,7 +602,7 @@ par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 tp_params = rep(0,15),
                 
                 log_dispersion_f = 1, log_dispersion_m = 1,
-                 
+                
                 log_phi_innov_f = rep(0, bf.idx5$n_periods), log_phi_innov_m = rep(0, bf.idx5$n_periods),
                 log_psi_innov_f = rep(0, bf.idx5$n_periods), log_psi_innov_m = rep(0, bf.idx5$n_periods),
                 log_lambda_innov_f = rep(0, bf.idx5$n_periods), log_lambda_innov_m = rep(0, bf.idx5$n_periods),
@@ -613,22 +635,21 @@ par.vec <- list(log_tau2_logpop_f = c(4,4), log_tau2_logpop_m = c(4,4),
                 logit_rho_k = 0
 )
 
-
 input.thiele.both.vec <- list(data = data.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
 input.thiele.loghump.both.vec <- list(data = data.loghump.vec, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-system.time(thiele.f.no0.50 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                     "log_fx",
-                                                                                     "gx_f","gx_m",
-                                                                                     "tp_params",
-                                                                                     "log_phi_innov_f", "log_phi_innov_m",
-                                                                                     "log_psi_innov_f", "log_psi_innov_m",
-                                                                                     "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                     "log_delta_innov_f", "log_delta_innov_m",
-                                                                                     "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                     "log_A_innov_f", "log_A_innov_m",
-                                                                                     "log_B_innov_f", "log_B_innov_m"
-                                                                                     ),
+system.time(thiele.f.no0 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                            "log_fx",
+                                                                                            "gx_f","gx_m",
+                                                                                            "tp_params",
+                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                            "log_B_innov_f", "log_B_innov_m"
+                                                                                         ),
                                     DLL="ccmpp_bothsexes_thiele",
                                     #map = list(log_tau2_logpop_f = factor(c(1,1)))
                                     )
@@ -636,17 +657,17 @@ system.time(thiele.f.no0.50 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE,
 
 
 
-system.time(thiele.f.no0.loghump.50 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                                         "log_fx",
-                                                                                                         "gx_f","gx_m",
-                                                                                                         "tp_params",
-                                                                                                         "log_phi_innov_f", "log_phi_innov_m",
-                                                                                                         "log_psi_innov_f", "log_psi_innov_m",
-                                                                                                         "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                                         "log_delta_innov_f", "log_delta_innov_m",
-                                                                                                         "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                                         "log_A_innov_f", "log_A_innov_m",
-                                                                                                         "log_B_innov_f", "log_B_innov_m"
+system.time(thiele.f.no0.loghump <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                                            "log_fx",
+                                                                                                            "gx_f","gx_m",
+                                                                                                            "tp_params",
+                                                                                                            "log_phi_innov_f", "log_phi_innov_m",
+                                                                                                            "log_psi_innov_f", "log_psi_innov_m",
+                                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                                            "log_delta_innov_f", "log_delta_innov_m",
+                                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                                            "log_A_innov_f", "log_A_innov_m",
+                                                                                                            "log_B_innov_f", "log_B_innov_m"
                                                                                                          ),
                                             DLL="ccmpp_bothsexes_thiele_loghump",
                                             #map = list(log_tau2_logpop_f = factor(c(1,1)))
@@ -654,83 +675,25 @@ system.time(thiele.f.no0.loghump.50 <- fit_tmb(input.thiele.loghump.both.vec,inn
             ) 
 
 
+system.time(thiele.f.no0.oag <- fit_tmb(input.thiele.oag.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                         "log_fx",
+                                                                                         "gx_f","gx_m",
+                                                                                         "tp_params",
+                                                                                         "log_phi_innov_f", "log_phi_innov_m",
+                                                                                         "log_psi_innov_f", "log_psi_innov_m",
+                                                                                         "log_lambda_innov_f", "log_lambda_innov_m",
+                                                                                         "log_delta_innov_f", "log_delta_innov_m",
+                                                                                         "log_epsilon_innov_f", "log_epsilon_innov_m",
+                                                                                         "log_A_innov_f", "log_A_innov_m",
+                                                                                         "log_B_innov_f", "log_B_innov_m"
+                                                                                         ),
+                                        DLL="ccmpp_bothsexes_thiele_oag",
+                                        #map = list(log_tau2_logpop_f = factor(c(1,1)))
+                                        )
+            ) 
 
-system.time(thiele.f.no0.55 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                            "log_fx",
-                                                                                            "gx_f","gx_m",
-                                                                                            "tp_params",
-                                                                                            "log_phi_innov_f", "log_phi_innov_m",
-                                                                                            "log_psi_innov_f", "log_psi_innov_m",
-                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                            "log_delta_innov_f", "log_delta_innov_m",
-                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                            "log_A_innov_f", "log_A_innov_m",
-                                                                                            "log_B_innov_f", "log_B_innov_m"
-),
-DLL="ccmpp_bothsexes_thiele",
-#map = list(log_tau2_logpop_f = factor(c(1,1)))
-)
-) 
-
-
-
-system.time(thiele.f.no0.loghump.55 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                                            "log_fx",
-                                                                                                            "gx_f","gx_m",
-                                                                                                            "tp_params",
-                                                                                                            "log_phi_innov_f", "log_phi_innov_m",
-                                                                                                            "log_psi_innov_f", "log_psi_innov_m",
-                                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                                            "log_delta_innov_f", "log_delta_innov_m",
-                                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                                            "log_A_innov_f", "log_A_innov_m",
-                                                                                                            "log_B_innov_f", "log_B_innov_m"
-),
-DLL="ccmpp_bothsexes_thiele_loghump",
-#map = list(log_tau2_logpop_f = factor(c(1,1)))
-)
-) 
-
-
-
-
-system.time(thiele.f.no0.60 <- fit_tmb(input.thiele.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                            "log_fx",
-                                                                                            "gx_f","gx_m",
-                                                                                            "tp_params",
-                                                                                            "log_phi_innov_f", "log_phi_innov_m",
-                                                                                            "log_psi_innov_f", "log_psi_innov_m",
-                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                            "log_delta_innov_f", "log_delta_innov_m",
-                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                            "log_A_innov_f", "log_A_innov_m",
-                                                                                            "log_B_innov_f", "log_B_innov_m"
-),
-DLL="ccmpp_bothsexes_thiele",
-#map = list(log_tau2_logpop_f = factor(c(1,1)))
-)
-) 
-
-
-
-system.time(thiele.f.no0.loghump.60 <- fit_tmb(input.thiele.loghump.both.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
-                                                                                                            "log_fx",
-                                                                                                            "gx_f","gx_m",
-                                                                                                            "tp_params",
-                                                                                                            "log_phi_innov_f", "log_phi_innov_m",
-                                                                                                            "log_psi_innov_f", "log_psi_innov_m",
-                                                                                                            "log_lambda_innov_f", "log_lambda_innov_m",
-                                                                                                            "log_delta_innov_f", "log_delta_innov_m",
-                                                                                                            "log_epsilon_innov_f", "log_epsilon_innov_m",
-                                                                                                            "log_A_innov_f", "log_A_innov_m",
-                                                                                                            "log_B_innov_f", "log_B_innov_m"
-),
-DLL="ccmpp_bothsexes_thiele_loghump",
-#map = list(log_tau2_logpop_f = factor(c(1,1)))
-)
-) 
-models.list <- list("Thiele 50" = thiele.f.no0.50, "Thiele 55" = thiele.f.no0.55, "Thiele 60" = thiele.f.no0.60)
-loghump.models.list <- list("Thiele 50" = thiele.f.no0.loghump.50, "Thiele 55" = thiele.f.no0.loghump.55, "Thiele 60" = thiele.f.no0.loghump.60)
+models.list <- list("Thiele" = thiele.f.no0)
+loghump.models.list <- list("Thiele" = thiele.f.no0.loghump)
 
 #q4515####
 q4515.func <- function(x){
@@ -754,10 +717,27 @@ q4515.df <- lapply(models.list, q4515.func) %>%
              year = as.numeric(gsub("X|\\.5","",variable)),
              value = value/1000,
              sex = Sex) %>%
-      select(-c(variable, Sex))
+      select(-c(variable, Sex)),
+    
+    apply(apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(17, 57, by = 5)) + 
+        i[3] * exp(-i[4] * ((seq(17, 57, by = 5) - i[5])^2)) +
+        i[6] * exp(i[7] * seq(17, 57, by = 5))}) %>%
+          `colnames<-`(bf.idx5$periods) %>% 
+          `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
+      as_tibble() %>%
+      mutate(sex="female", model = "Initial Values", year = bf.idx5$periods),
+    
+    apply(apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(17, 57, by = 5)) + 
+        i[3] * exp(-i[4] * ((seq(17, 57, by = 5) - i[5])^2)) +
+        i[6] * exp(i[7] * seq(17, 57, by = 5))}) %>%
+          `colnames<-`(bf.idx5$periods) %>% 
+          `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
+      as_tibble() %>%
+      mutate(sex="male", model = "Initial Values", year = bf.idx5$periods)
     ) %>%
   mutate(model = fct_relevel(model, "WPP Estimates"),
          hump = "Normal hump")
+
 
 q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>% 
   map2(names(.), ~ add_column(.x, model = rep(.y, nrow(.x)))) %>% 
@@ -768,7 +748,23 @@ q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>%
              year = as.numeric(gsub("X|\\.5","",variable)),
              value = value/1000,
              sex = Sex) %>%
-      select(-c(variable, Sex))
+      select(-c(variable, Sex)),
+    
+    apply(apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(17, 57, by = 5)) + 
+        i[3] * exp(-i[4] * ((seq(17, 57, by = 5) - i[5])^2)) +
+        i[6] * exp(i[7] * seq(17, 57, by = 5))}) %>%
+          `colnames<-`(bf.idx5$periods) %>% 
+          `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
+      as_tibble() %>%
+      mutate(sex="female", model = "Initial Values", year = bf.idx5$periods),
+    
+    apply(apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(17, 57, by = 5)) + 
+        i[3] * exp(-i[4] * ((seq(17, 57, by = 5) - i[5])^2)) +
+        i[6] * exp(i[7] * seq(17, 57, by = 5))}) %>%
+          `colnames<-`(bf.idx5$periods) %>% 
+          `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
+      as_tibble() %>%
+      mutate(sex="male", model = "Initial Values", year = bf.idx5$periods)
   ) %>%
   mutate(model = fct_relevel(model, "WPP Estimates"),
          hump = "log-Normal hump")
