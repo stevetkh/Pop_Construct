@@ -191,7 +191,7 @@ wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.
 open.age <- 85
 n_ages <- open.age / 5 + 1
 
-country <- "Benin"
+country <- "Burkina Faso"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -217,29 +217,29 @@ census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,
                                                     DataSourceShortName = "DYB") # time frame for censuses to extract from Demographic Yearbook
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
-ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
+ddharm_bf_census_m <- census_pop_counts %>%  
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 1, five_year == TRUE) %>%
+  select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  filter(SexID == 1) %>%
   group_by(AgeStart, AgeLabel, AgeSpan) %>%
   arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
   select(-c(StatisticalConceptName, SexID)) %>%
   summarise_all(function(y){first(na.omit(y))}) %>%
-  ungroup() %>%
-  select(-AgeSpan)
+  select(-AgeSpan) %>%
+  ungroup()
 
-ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
+ddharm_bf_census_f <- census_pop_counts %>%  
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 2, five_year == TRUE) %>%
+  select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  filter(SexID == 2) %>%
   group_by(AgeStart, AgeLabel, AgeSpan) %>%
   arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
   select(-c(StatisticalConceptName, SexID)) %>%
   summarise_all(function(y){first(na.omit(y))}) %>%
-  ungroup() %>%
-  select(-AgeSpan)
+  select(-AgeSpan) %>%
+  ungroup()
 
 ddharm_smoothed <- tibble()
 
@@ -430,7 +430,7 @@ bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 
 dhs.start.age <- 15
-dhs.end.age <- 55
+dhs.end.age <- 50
 
 bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
 bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
@@ -507,11 +507,15 @@ data.loghump.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m
                          
                          log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
                          log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
-                         log_lambda_mean_f = log(thiele.loghump.prior.f[3,]), log_lambda_mean_m = log(thiele.loghump.prior.m[3,]),
-                         log_delta_mean_f = log(thiele.loghump.prior.f[4,]), log_delta_mean_m = log(thiele.loghump.prior.m[4,]),
-                         log_epsilon_mean_f = log(thiele.loghump.prior.f[5,]), log_epsilon_mean_m = log(thiele.loghump.prior.m[5,]),
+                         #log_lambda_mean_f = log(thiele.loghump.prior.f[3,]), log_lambda_mean_m = log(thiele.loghump.prior.m[3,]),
+                         #log_delta_mean_f = log(thiele.loghump.prior.f[4,]), log_delta_mean_m = log(thiele.loghump.prior.m[4,]),
+                         #log_epsilon_mean_f = log(thiele.loghump.prior.f[5,]), log_epsilon_mean_m = log(thiele.loghump.prior.m[5,]),
                          log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                          log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
+                         
+                         log_lambda_mean_f = rep(log(0.005), bf.idx5$n_periods), log_lambda_mean_m = rep(log(0.008), bf.idx5$n_periods),
+                         log_delta_mean_f = rep(log(1.2), bf.idx5$n_periods), log_delta_mean_m = rep(log(1.2), bf.idx5$n_periods), 
+                         log_epsilon_mean_f = rep(log(22), bf.idx5$n_periods), log_epsilon_mean_m = rep(log(25), bf.idx5$n_periods), 
                          
                          thiele_age = thiele_age,
                          
@@ -643,7 +647,7 @@ system.time(thiele.f.loghump.oag.MVN <- fit_tmb(input.thiele.loghump.oag.vec,inn
 
 
 models.list <- list("Thiele" = thiele.f.oag)
-loghump.models.list <- list("Thiele" = thiele.f.loghump.oag, "Thiele MVN" = thiele.f.loghump.oag.MVN)
+loghump.models.list <- list("Thiele" = thiele.f.loghump.oag)
 
 #q4515####
 q4515.func <- function(x){

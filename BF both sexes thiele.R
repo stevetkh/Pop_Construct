@@ -218,11 +218,11 @@ census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,
                                                     DataSourceShortName = "DYB") # time frame for censuses to extract
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
-ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
+ddharm_bf_census_m <- census_pop_counts %>%  
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 1, five_year == TRUE) %>%
+  select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  filter(SexID == 1) %>%
   group_by(AgeStart, AgeLabel, AgeSpan) %>%
   arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
   select(-c(StatisticalConceptName, SexID)) %>%
@@ -230,11 +230,11 @@ ddharm_bf_census_m <- census_pop_counts %>% select(ReferencePeriod, StatisticalC
   select(-AgeSpan) %>%
   ungroup()
 
-ddharm_bf_census_f <- census_pop_counts %>% select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1963) %>%
+ddharm_bf_census_f <- census_pop_counts %>%  
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 2, five_year == TRUE) %>%
+  select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
-  filter(SexID == 2) %>%
   group_by(AgeStart, AgeLabel, AgeSpan) %>%
   arrange(AgeStart, StatisticalConceptName) %>% ###De-factor first
   select(-c(StatisticalConceptName, SexID)) %>%
