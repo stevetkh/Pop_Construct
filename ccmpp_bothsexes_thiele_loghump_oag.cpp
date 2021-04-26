@@ -175,19 +175,19 @@ Type objective_function<Type>::operator() ()
   nll -= dlgamma(log_marginal_prec_psi_m, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_psi_m(exp(-0.5 * log_marginal_prec_psi_m));  
 
-  nll -= dlgamma(log_marginal_prec_lambda_f, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_lambda_f, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_lambda_f(exp(-0.5 * log_marginal_prec_lambda_f));
-  nll -= dlgamma(log_marginal_prec_lambda_m, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_lambda_m, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_lambda_m(exp(-0.5 * log_marginal_prec_lambda_m));
   
-  nll -= dlgamma(log_marginal_prec_delta_f, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_delta_f, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_delta_f(exp(-0.5 * log_marginal_prec_delta_f));
-  nll -= dlgamma(log_marginal_prec_delta_m, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_delta_m, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_delta_m(exp(-0.5 * log_marginal_prec_delta_m));  
 
-  nll -= dlgamma(log_marginal_prec_epsilon_f, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_epsilon_f, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_epsilon_f(exp(-0.5 * log_marginal_prec_epsilon_f));
-  nll -= dlgamma(log_marginal_prec_epsilon_m, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dlgamma(log_marginal_prec_epsilon_m, Type(1.0), Type(1.0 / 0.01), true);
   Type sigma_epsilon_m(exp(-0.5 * log_marginal_prec_epsilon_m));
   
   nll -= dlgamma(log_marginal_prec_A_f, Type(1.0), Type(1.0 / 0.01), true);

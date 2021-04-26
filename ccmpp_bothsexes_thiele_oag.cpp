@@ -137,14 +137,14 @@ Type objective_function<Type>::operator() ()
   Type nll(0.0);
 
   //inverse gamma prior for variance with shape=1 and scale=0.0109  
-  nll -= dlgamma(log_tau2_logpop_f(0), Type(1.0), Type(1.0 / 0.0109), true);
+  nll -= dlgamma(log_tau2_logpop_f(0), Type(1.0), Type(1.0 / 0.1), true);
   Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop_f(0)));
-  nll -= dlgamma(log_tau2_logpop_m(0), Type(1.0), Type(1.0 / 0.0109), true);
+  nll -= dlgamma(log_tau2_logpop_m(0), Type(1.0), Type(1.0 / 0.1), true);
   Type sigma_logpop_m(exp(-0.5 * log_tau2_logpop_m(0)));
 
-  nll -= dlgamma(log_tau2_logpop_f(1), Type(1.0), Type(1.0 / 0.0109), true);
+  nll -= dlgamma(log_tau2_logpop_f(1), Type(1.0), Type(1.0 / 0.1), true);
   Type sigma_logpop_f_base(exp(-0.5 * log_tau2_logpop_f(1)));
-  nll -= dlgamma(log_tau2_logpop_m(1), Type(1.0), Type(1.0 / 0.0109), true);
+  nll -= dlgamma(log_tau2_logpop_m(1), Type(1.0), Type(1.0 / 0.1), true);
   Type sigma_logpop_m_base(exp(-0.5 * log_tau2_logpop_m(1)));
 
   nll -= dlgamma(log_tau2_fx, Type(1.0), Type(1.0 / 0.0109), true);
