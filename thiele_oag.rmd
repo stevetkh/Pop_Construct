@@ -339,7 +339,8 @@ pop.m.oag <- filter(pop, Sex=="male") %>% select(-Sex) %>%
   summarise_at(vars(-age), sum, na.rm=T)
 
 bf.idx5<-projection_indices(period_start = 1960,
-                            period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
+                            #period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
+                            period_end = 2015,
                             interval = 5,
                             n_ages = n_ages,
                             fx_idx = 4L,
@@ -1333,19 +1334,19 @@ ggplot(bind_rows(thiele.f, thiele.m) %>% filter(age5 %in% 0:70, model!="Spline a
 mx.mat.func <- function(x, hump="normal"){
   age <- seq(2, 112, by = 5)
   if(hump=="normal"){
-    child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*age)}) %*% diag(x$mode$phi_f)
+    child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*(age-2))}) %*% diag(x$mode$phi_f)
     hump.mort <- sapply(x$mode$epsilon_f, function(y){(y-age)^2}) %*% diag(-x$mode$delta_f) %>% exp() %*% diag(x$mode$lambda_f)
-    old.mort <- sapply(x$mode$B_f, function(y){exp(y*age)}) %*% diag(x$mode$A_f)
-    child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*age)}) %*% diag(x$mode$phi_m)
+    old.mort <- sapply(x$mode$B_f, function(y){exp(y*(age-92))}) %*% diag(x$mode$A_f)
+    child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*(age-2))}) %*% diag(x$mode$phi_m)
     hump.mort.m <- sapply(x$mode$epsilon_m, function(y){(y-age)^2}) %*% diag(-x$mode$delta_m) %>% exp() %*% diag(x$mode$lambda_m)
-    old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*age)}) %*% diag(x$mode$A_m)
+    old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*(age-92))}) %*% diag(x$mode$A_m)
   } else if(hump=="log") {
-    child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*age)}) %*% diag(x$mode$phi_f)
+    child.mort <- sapply(x$mode$psi_f, function(y){exp(-y*(age-2))}) %*% diag(x$mode$phi_f)
     hump.mort <- sapply(x$mode$epsilon_f, function(y){(log(y)-log(age))^2}) %*% diag(-x$mode$delta_f) %>% exp() %*% diag(x$mode$lambda_f)
-    old.mort <- sapply(x$mode$B_f, function(y){exp(y*age)}) %*% diag(x$mode$A_f)
-    child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*age)}) %*% diag(x$mode$phi_m)
+    old.mort <- sapply(x$mode$B_f, function(y){exp(y*(age-92))}) %*% diag(x$mode$A_f)
+    child.mort.m <- sapply(x$mode$psi_m, function(y){exp(-y*(age-2))}) %*% diag(x$mode$phi_m)
     hump.mort.m <- sapply(x$mode$epsilon_m, function(y){(log(y)-log(age))^2}) %*% diag(-x$mode$delta_m) %>% exp() %*% diag(x$mode$lambda_m)
-    old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*age)}) %*% diag(x$mode$A_m)
+    old.mort.m <- sapply(x$mode$B_m, function(y){exp(y*(age-92))}) %*% diag(x$mode$A_m)
   }
   
   lapply(list(Child = child.mort, Hump = hump.mort, Senescent = old.mort, Total = child.mort + hump.mort + old.mort), function(i){
@@ -1375,12 +1376,12 @@ thiele.decomp <- lapply(models.list, mx.mat.func, hump="normal") %>%
   bind_rows() %>%
   bind_rows(
     lapply(
-      list(Child = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+      list(Child = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
            Hump = apply(thiele.prior.f, 2, function(i) {i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2))}),
-           Senescent = apply(thiele.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
-           Total = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+           Senescent = apply(thiele.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
+           Total = apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
                i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2)) +
-               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+               i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%
           `colnames<-`(bf.idx5$periods) %>%  
@@ -1392,12 +1393,12 @@ thiele.decomp <- lapply(models.list, mx.mat.func, hump="normal") %>%
       mutate(sex="female", model = "Initial Values"),
     
     lapply(
-      list(Child = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+      list(Child = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
            Hump = apply(thiele.prior.m, 2, function(i) {i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2))}),
-           Senescent = apply(thiele.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
-           Total = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+           Senescent = apply(thiele.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
+           Total = apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
                i[3] * exp(-i[4] * ((seq(2, 112, by = 5) - i[5])^2)) +
-               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+               i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%
           `colnames<-`(bf.idx5$periods) %>%  
@@ -1419,12 +1420,12 @@ thiele.decomp.loghump <- lapply(loghump.models.list, mx.mat.func, hump="log") %>
   bind_rows() %>%
   bind_rows(
     lapply(
-      list(Child = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+      list(Child = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
            Hump = apply(thiele.loghump.prior.f, 2, function(i) {i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2))}),
-           Senescent = apply(thiele.loghump.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
-           Total = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+           Senescent = apply(thiele.loghump.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
+           Total = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
                i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2)) +
-               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+               i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%
           `colnames<-`(bf.idx5$periods) %>%  
@@ -1436,12 +1437,12 @@ thiele.decomp.loghump <- lapply(loghump.models.list, mx.mat.func, hump="log") %>
       mutate(sex="female", model = "Initial Values"),
     
     lapply(
-      list(Child = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5))}),
+      list(Child = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
            Hump = apply(thiele.loghump.prior.m, 2, function(i) {i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2))}),
-           Senescent = apply(thiele.loghump.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(2, 112, by = 5))}),
-           Total = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(2, 112, by = 5)) + 
+           Senescent = apply(thiele.loghump.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
+           Total = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
                i[3] * exp(-i[4] * ((log(seq(2, 112, by = 5)) - log(i[5]))^2)) +
-               i[6] * exp(i[7] * seq(2, 112, by = 5))})
+               i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%
           `colnames<-`(bf.idx5$periods) %>%  

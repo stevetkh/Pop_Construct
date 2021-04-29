@@ -251,10 +251,16 @@ gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"Democratic Republi
 gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"Côte d'Ivoire","Cote d'Ivoire")
 gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"United Republic of Tanzania","Tanzania")
 
+igme.5q0.m$Country.Name <- str_replace(igme.5q0.m$Country.Name,"Democratic Republic of the Congo","Congo Democratic Republic")
+igme.5q0.f$Country.Name <- str_replace(igme.5q0.f$Country.Name,"Democratic Republic of the Congo","Congo Democratic Republic")
+
+igme.5q0.m$Country.Name<-str_replace(igme.5q0.m$Country.Name,"United Republic of Tanzania","Tanzania")
+igme.5q0.f$Country.Name<-str_replace(igme.5q0.f$Country.Name,"United Republic of Tanzania","Tanzania")
+
 open.age <- 75
 n_ages <- open.age / 5 + 1
 
-country <- "Benin"
+country <- "Eswatini"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -281,7 +287,7 @@ census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,
 
 #####################MIXING DE-FACTO AND DE-JURE HERE
 ddharm_bf_census_m <- census_pop_counts %>%  
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 1, five_year == TRUE) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1960, SexID == 1, five_year == TRUE) %>%
   select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
@@ -293,7 +299,7 @@ ddharm_bf_census_m <- census_pop_counts %>%
   ungroup()
 
 ddharm_bf_census_f <- census_pop_counts %>%  
-  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod >= 1960, SexID == 2, five_year == TRUE) %>%
+  filter(AgeSpan %in% c(-1, 5), AgeLabel != "Total", ReferencePeriod > 1960, SexID == 2, five_year == TRUE) %>%
   select(ReferencePeriod, StatisticalConceptName, AgeStart, AgeLabel, AgeSpan, DataValue, SexID) %>%
   distinct() %>%
   pivot_wider(names_from = ReferencePeriod, values_from = DataValue) %>%
@@ -370,7 +376,8 @@ pop.m.oag <- filter(pop, Sex=="male") %>% select(-Sex) %>%
   summarise_at(vars(-age), sum, na.rm=T)
 
 bf.idx5<-projection_indices(period_start = 1960,
-                            period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
+                            #period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
+                            period_end = 2015, #IGME estimates only up to 2015
                             interval = 5,
                             n_ages = n_ages,
                             fx_idx = 4L,
