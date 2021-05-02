@@ -8,19 +8,21 @@ for(i in joint.countries){
       "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_oag.rmd",
       params=list(country=i),
       output_file= paste0(gsub("\\s|'","_",i),".pdf"),
-      output_dir = "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/Rmd/"
+      output_dir = "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/Rmd_RW/"
       )
   },error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
   )
 }
 
-for(i in joint.countries){
-  cat(gsub("\\s|'","_",i),"\n")
-}
 
-rmarkdown::render(
-  "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_oag.rmd",
-  params=list(country=i),
-  output_file= paste0(gsub("\\s|'","_",i),".pdf"),
-  output_dir = "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/Rmd/"
-)
+for(i in joint.countries){
+  tryCatch({
+    rmarkdown::render(
+      "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_oag_RW_only.rmd",
+      params=list(country=i),
+      output_file= paste0(gsub("\\s|'","_",i),".pdf"),
+      output_dir = "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/Rmd_RW_only/"
+    )
+  },error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
+  )
+}

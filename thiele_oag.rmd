@@ -711,7 +711,7 @@ thiele.f.loghump.oag$message
 
 ___Thiele log-Normal Hump RW___
 ```{r, echo=FALSE}
-system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
+system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=FALSE, outer_verbose=FALSE, random = c("log_basepop_f","log_basepop_m",
                                                                                                               "log_fx",
                                                                                                               "gx_f","gx_m",
                                                                                                               "tp_params",
@@ -756,8 +756,8 @@ data.vec.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = lo
                  open_idx = bf.idx5$n_ages,
                  oag = apply(data.f, 2, function(i){length(na.omit(i))}),
                  pop_start = rep(2, ncol(data.f)), 
-                 #pop_end = rep(75/5+1, ncol(data.f)),
-                 pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))}) > 75/5 + 1, 75/5, apply(data.f, 2, function(i){length(na.omit(i))})-1),
+                 pop_end = rep(75/5, ncol(data.f)),
+                 #pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))}) > 75/5 + 1, 75/5, apply(data.f, 2, function(i){length(na.omit(i))})-1),
                  
                  df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                  Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -796,9 +796,8 @@ data.loghump.vec.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                          open_idx = bf.idx5$n_ages,
                          oag = apply(data.f, 2, function(i){length(na.omit(i))}),
                          pop_start = rep(2, ncol(data.f)), 
-                         #pop_end = rep(70 / 5 + 1, ncol(data.f)),
-                         pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))}) > 75/5 + 1, 75/5, apply(data.f, 2,
-                                                                                                              function(i){length(na.omit(i))})-1),
+                         pop_end = rep(75 / 5, ncol(data.f)),
+                         #pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))}) > 75/5 + 1, 75/5, apply(data.f, 2,                                                                                                              function(i){length(na.omit(i))})-1),
                          
                          df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                          Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -840,8 +839,8 @@ data.loghump.vec.RW.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_
                             open_idx = bf.idx5$n_ages,
                             oag = apply(data.f, 2, function(i){length(na.omit(i))}),
                             pop_start = rep(2, ncol(data.f)), 
-                            #pop_end = rep(75/5, ncol(data.f)),
-                            pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
+                            pop_end = rep(75/5, ncol(data.f)),
+                            #pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
                             
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                             Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -871,8 +870,6 @@ data.loghump.vec.RW.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_
 input.thiele.oag.vec.re <- list(data = data.vec.re, par_init = par.vec, model = "ccmpp_vr_tmb")
 input.thiele.loghump.oag.vec.re <- list(data = data.loghump.vec.re, par_init = par.vec, model = "ccmpp_vr_tmb")
 input.thiele.loghump.oag.vec.RW.re <- list(data = data.loghump.vec.RW.re, par_init = par.vec, model = "ccmpp_vr_tmb")
-
-
 ```
 
 __Thiele Normal Hump (Pop 5-9 to 70-74, DHS 15-19 to 45-49)__
@@ -922,7 +919,7 @@ thiele.f.loghump.oag.re$message
 
 ___Thiele log-Normal Hump RW (Pop 5-9 to 70-74, DHS 15-19 to 45-49)___
 ```{r, echo=FALSE}
-system.time(thiele.f.loghump.oag.RW.ori.re <- fit_tmb(input.thiele.loghump.oag.vec.RW.re,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
+system.time(thiele.f.loghump.oag.RW.ori.re <- fit_tmb(input.thiele.loghump.oag.vec.RW.re,inner_verbose=FALSE, outer_verbose=FALSE,random = c("log_basepop_f","log_basepop_m",
                                                                                                               "log_fx",
                                                                                                               "gx_f","gx_m",
                                                                                                               "tp_params",

@@ -33,6 +33,9 @@ dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag"))
 
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_originalscale.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_originalscale"))
+
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW"))
 
@@ -247,33 +250,39 @@ fit_tmb_optim <- function(tmb_input,
   val
 }
 
-igme.5q0.m<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.csv")
-igme.5q0.f<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
+igme.5q0.m <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.csv")
+igme.5q0.f <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
 wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 gbd.q4515 <- read.csv(file="C:/Users/ktang3/Desktop/Imperial/SSA_mort/GBD 45q15.csv",header=T)
+wpp.qx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP age specific.csv")
+
 gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"Democratic Republic of the Congo","Congo Democratic Republic")
 gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"Côte d'Ivoire","Cote d'Ivoire")
 gbd.q4515$location_name<-str_replace(gbd.q4515$location_name,"United Republic of Tanzania","Tanzania")
 
 igme.5q0.m$Country.Name <- str_replace(igme.5q0.m$Country.Name,"Democratic Republic of the Congo","Congo Democratic Republic")
 igme.5q0.f$Country.Name <- str_replace(igme.5q0.f$Country.Name,"Democratic Republic of the Congo","Congo Democratic Republic")
-
 igme.5q0.m$Country.Name<-str_replace(igme.5q0.m$Country.Name,"United Republic of Tanzania","Tanzania")
 igme.5q0.f$Country.Name<-str_replace(igme.5q0.f$Country.Name,"United Republic of Tanzania","Tanzania")
 
-open.age <- 75
+wpp.qx$name <- str_replace(wpp.qx$name,"Democratic Republic of the Congo","Congo Democratic Republic")
+wpp.qx$name <- str_replace(wpp.qx$name,"Democratic Republic of the Congo","Congo Democratic Republic")
+wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
+wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
+
+open.age <- 85
 n_ages <- open.age / 5 + 1
 
-country <- "Benin"
+country <- "Angola"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
 LQcoef.f <- LQcoef %>% filter(sex=="Female", !age%in%c("0","1-4")) %>% select(ax:vx)
 LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:vx)
 
-##IGME priors
+##IGME 5q0
 igme.5q0.df <- igme.5q0.f %>% filter(Country.Name == country) %>% reshape2::melt() %>% 
   mutate(year = as.numeric(gsub("X|\\.5","",variable)), child.mort = value/1000, Sex = "Female") %>%
   select(year,child.mort, Sex) %>%
@@ -285,6 +294,17 @@ igme.5q0.df <- igme.5q0.f %>% filter(Country.Name == country) %>% reshape2::melt
 
 igme.5q0.5 <- igme.5q0.df %>% mutate(year5 = 5 * floor(year/5)) %>% group_by(Sex, year5) %>%
   summarise_at(vars(child.mort),mean) %>% ungroup()
+
+#WPP 5q0
+wpp.bf.qx <- wpp.qx %>% filter(name=="Angola", Sex!="Total")
+
+wpp.5q0.5 <- wpp.bf.qx %>% filter(AgeGrpStart %in% 0:1) %>% select(c(MidPeriod, Sex, px)) %>%
+  group_by(MidPeriod, Sex) %>%
+  summarise_at(vars(px),prod) %>%
+  mutate(q50 = 1-px,
+         year5 = MidPeriod - 3) %>%
+  ungroup() %>% arrange(Sex, year5) %>%
+  select(c(Sex, year5, q50))
 
 #DDHarmonized smoothed
 census_pop_counts <- DDharmonize_validate_PopCounts(locid = country,       
@@ -485,12 +505,14 @@ thiele.loghump.prior <- function(h, sex) {
 }
 
 igme.h.mean.f <- igme.5q0.5 %>% filter(Sex=="Female", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log()
-thiele.prior.f <- sapply(igme.h.mean.f, thiele.prior, sex="female")
-thiele.loghump.prior.f <- sapply(igme.h.mean.f, thiele.loghump.prior, sex="female")
+h.mean.f <- wpp.5q0.5 %>% filter(Sex=="Female", year5 %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
+thiele.prior.f <- sapply(h.mean.f, thiele.prior, sex="female")
+thiele.loghump.prior.f <- sapply(h.mean.f, thiele.loghump.prior, sex="female")
 
 igme.h.mean.m <- igme.5q0.5 %>% filter(Sex=="Male", year5 %in% bf.idx5$periods) %>% .$child.mort %>% log()
-thiele.prior.m <- sapply(igme.h.mean.m, thiele.prior, sex="male")
-thiele.loghump.prior.m <- sapply(igme.h.mean.m, thiele.loghump.prior, sex="male")
+h.mean.m <- wpp.5q0.5 %>% filter(Sex=="Male", year5 %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
+thiele.prior.m <- sapply(h.mean.m, thiele.prior, sex="male")
+thiele.loghump.prior.m <- sapply(h.mean.m, thiele.loghump.prior, sex="male")
 
 thiele_age <- seq(2, 97, by = 5)
 
@@ -506,7 +528,7 @@ bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 
 dhs.start.age <- 15
-dhs.end.age <- 50
+dhs.end.age <- 55
 
 bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
 bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
@@ -515,7 +537,7 @@ basepop.f <- ifelse(pop.f.oag$`1960`==0, 10, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 10, pop.m.oag$'1960')
 
 data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
+#data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
 
 prec.init <- 4
 rho.init <- 2
@@ -615,8 +637,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             open_idx = bf.idx5$n_ages,
                             oag = apply(data.f, 2, function(i){length(na.omit(i))}),
                             pop_start = rep(2, ncol(data.f)), 
-                            #pop_end = rep(75/5, ncol(data.f)),
-                            pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
+                            pop_end = rep(75/5, ncol(data.f)),
+                            #pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
                             
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                             Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -642,7 +664,6 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
                             penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix")
                             )
-
 
 par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 log_tau2_fx = 3,
@@ -748,6 +769,25 @@ system.time(thiele.f.loghump.oag <- fit_tmb(input.thiele.loghump.oag.vec,inner_v
 
 
 
+
+system.time(thiele.f.loghump.oag.ori <- fit_tmb(input.thiele.loghump.oag.vec,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
+                                                                                                        "log_fx",
+                                                                                                        "gx_f","gx_m",
+                                                                                                        "tp_params",
+                                                                                                        "log_phi_f", "log_phi_m",
+                                                                                                        "log_psi_f", "log_psi_m",
+                                                                                                        "log_lambda_f", "log_lambda_m",
+                                                                                                        "log_delta_f", "log_delta_m",
+                                                                                                        "log_epsilon_f", "log_epsilon_m",
+                                                                                                        "log_A_f", "log_A_m",
+                                                                                                        "log_B_f", "log_B_m"
+                                                                                                        ),
+                                                DLL="ccmpp_bothsexes_thiele_loghump_oag_originalscale",
+                                                stepmin = 1e-10, stepmax = 1e-2
+                                                )
+            ) 
+
+
 system.time(thiele.f.loghump.oag.RW <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f", "log_basepop_m",
                                                                                                            "log_fx",
                                                                                                            "gx_f","gx_m",
@@ -813,7 +853,7 @@ system.time(thiele.f.loghump.oag.MVN <- fit_tmb(input.thiele.loghump.oag.vec,inn
 
 
 models.list <- list("Thiele" = thiele.f.oag)
-loghump.models.list <- list("Thiele" = thiele.f.loghump.oag, "Thiele RW innov" = thiele.f.loghump.oag.RW, "Thiele RW ori" = thiele.f.loghump.oag.RW.ori)
+loghump.models.list <- list("Thiele" = thiele.f.loghump.oag.ori, "Thiele RW ori" = thiele.f.loghump.oag.RW.ori)
 
 #q4515####
 q4515.func <- function(x){
@@ -931,6 +971,9 @@ q50.df <- lapply(models.list, q50.func) %>%
     as_tibble(exp(igme.h.mean.f)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
     as_tibble(exp(igme.h.mean.m)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
     
+    as_tibble(exp(h.mean.f)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(exp(h.mean.m)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
+    
     as_tibble(5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) / 
                 (1 + 2.5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "female"),
@@ -938,7 +981,7 @@ q50.df <- lapply(models.list, q50.func) %>%
                 (1 + 2.5 * apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "male")
   ) %>%
-  mutate(model = fct_relevel(model, "IGME Estimates"),
+  mutate(model = fct_relevel(model, "WPP Estimates", "IGME Estimates"),
          hump = "Normal hump")
 
 q50.df.loghump <- lapply(loghump.models.list, q50.func) %>% 
@@ -948,6 +991,9 @@ q50.df.loghump <- lapply(loghump.models.list, q50.func) %>%
     as_tibble(exp(igme.h.mean.f)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
     as_tibble(exp(igme.h.mean.m)) %>% mutate(model="IGME Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
     
+    as_tibble(exp(h.mean.f)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
+    as_tibble(exp(h.mean.m)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
+    
     as_tibble(5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) / 
                 (1 + 2.5 * apply(thiele.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "female"),
@@ -955,7 +1001,7 @@ q50.df.loghump <- lapply(loghump.models.list, q50.func) %>%
                 (1 + 2.5 * apply(thiele.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + i[3] * exp(-i[4] * (2 - i[5])^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "male")
   ) %>%
-  mutate(model = fct_relevel(model, "IGME Estimates"),
+  mutate(model = fct_relevel(model, "WPP Estimates", "IGME Estimates"),
          hump = "log-Normal hump")
 
 bind_rows(q50.df, q50.df.loghump) %>% mutate(hump = fct_inorder(hump)) %>%
