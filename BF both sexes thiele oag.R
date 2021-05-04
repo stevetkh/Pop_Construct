@@ -275,7 +275,7 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 open.age <- 85
 n_ages <- open.age / 5 + 1
 
-country <- "Angola"
+country <- "Zimbabwe"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -296,7 +296,7 @@ igme.5q0.5 <- igme.5q0.df %>% mutate(year5 = 5 * floor(year/5)) %>% group_by(Sex
   summarise_at(vars(child.mort),mean) %>% ungroup()
 
 #WPP 5q0
-wpp.bf.qx <- wpp.qx %>% filter(name=="Angola", Sex!="Total")
+wpp.bf.qx <- wpp.qx %>% filter(name==country, Sex!="Total")
 
 wpp.5q0.5 <- wpp.bf.qx %>% filter(AgeGrpStart %in% 0:1) %>% select(c(MidPeriod, Sex, px)) %>%
   group_by(MidPeriod, Sex) %>%
@@ -339,8 +339,8 @@ ddharm_bf_census_f <- census_pop_counts %>%
 ddharm_smoothed <- tibble()
 
 for(i in 3:ncol(ddharm_bf_census_f)){
-  dat.f <- ddharm_bf_census_f %>% select(1:2,i) %>% filter(!is.na(ddharm_bf_census_f[[i]])) %>% arrange(AgeStart)
-  dat.m <- ddharm_bf_census_m %>% select(1:2,i) %>% filter(!is.na(ddharm_bf_census_m[[i]])) %>% arrange(AgeStart)
+  dat.f <- ddharm_bf_census_f %>% select(c(1:2,i)) %>% filter(!is.na(ddharm_bf_census_f[[i]])) %>% arrange(AgeStart)
+  dat.m <- ddharm_bf_census_m %>% select(c(1:2,i)) %>% filter(!is.na(ddharm_bf_census_m[[i]])) %>% arrange(AgeStart)
   
   stopifnot(length(unique(diff(dat.f$AgeStart))) == 1 | length(unique(diff(dat.m$AgeStart))) == 1)
   
@@ -528,7 +528,7 @@ bf5.smooth$period5 <- factor(bf5.smooth$period5,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 
 dhs.start.age <- 15
-dhs.end.age <- 55
+dhs.end.age <- 45
 
 bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
 bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", age5 >= dhs.start.age, age5 <= dhs.end.age) %>% arrange(period5,tips,age5)
@@ -537,10 +537,14 @@ basepop.f <- ifelse(pop.f.oag$`1960`==0, 10, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 10, pop.m.oag$'1960')
 
 data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-#data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
 
-prec.init <- 4
-rho.init <- 2
+if(country == "Zimbabwe"){
+  data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
+}
+
+prec.init <- 3
+hump.prec.init <- 1
+rho.init <- 0
 
 data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                  log_fx_mean = log_fx_mean,
@@ -637,7 +641,7 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             open_idx = bf.idx5$n_ages,
                             oag = apply(data.f, 2, function(i){length(na.omit(i))}),
                             pop_start = rep(2, ncol(data.f)), 
-                            pop_end = rep(75/5, ncol(data.f)),
+                            pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))})-1 > 75/5, 75/5, apply(data.f, 2, function(i){length(na.omit(i))})-1),
                             #pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
                             
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
@@ -648,9 +652,9 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
                             log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
-                            log_lambda_mean_f = log(0.005), log_lambda_mean_m = log(0.005),
-                            log_delta_mean_f = log(0.7), log_delta_mean_m = log(0.7),
-                            log_epsilon_mean_f = log(20), log_epsilon_mean_m = log(25),
+                            log_lambda_mean_f = log(0.003), log_lambda_mean_m = log(0.003),
+                            log_delta_mean_f = log(0.3), log_delta_mean_m = log(0.3),
+                            log_epsilon_mean_f = log(30), log_epsilon_mean_m = log(35),
                             log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                             log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
                             
@@ -691,16 +695,16 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 log_phi_f = log(thiele.loghump.prior.f[1,]), log_phi_m = log(thiele.loghump.prior.m[1,]),
                 log_psi_f = log(thiele.loghump.prior.f[2,]), log_psi_m = log(thiele.loghump.prior.m[2,]),
                 log_lambda_f = rep(log(0.005), bf.idx5$n_periods), log_lambda_m = rep(log(0.005), bf.idx5$n_periods),
-                log_delta_f = rep(log(0.7), bf.idx5$n_periods), log_delta_m = rep(log(0.7), bf.idx5$n_periods),
-                log_epsilon_f = rep(log(20), bf.idx5$n_periods), log_epsilon_m = rep(log(25), bf.idx5$n_periods),
+                log_delta_f = rep(log(0.3), bf.idx5$n_periods), log_delta_m = rep(log(0.3), bf.idx5$n_periods),
+                log_epsilon_f = rep(log(30), bf.idx5$n_periods), log_epsilon_m = rep(log(35), bf.idx5$n_periods),
                 log_A_f = rep(0, bf.idx5$n_periods), log_A_m = rep(0, bf.idx5$n_periods),
                 log_B_f = rep(0, bf.idx5$n_periods), log_B_m = rep(0, bf.idx5$n_periods),
                 
                 log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
                 log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
-                log_marginal_prec_lambda_f = prec.init, log_marginal_prec_lambda_m = prec.init,
-                log_marginal_prec_delta_f = prec.init, log_marginal_prec_delta_m = prec.init,
-                log_marginal_prec_epsilon_f = prec.init, log_marginal_prec_epsilon_m = prec.init,
+                log_marginal_prec_lambda_f = hump.prec.init, log_marginal_prec_lambda_m = hump.prec.init,
+                log_marginal_prec_delta_f = hump.prec.init, log_marginal_prec_delta_m = hump.prec.init,
+                log_marginal_prec_epsilon_f = hump.prec.init, log_marginal_prec_epsilon_m = hump.prec.init,
                 log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
                 log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
                 

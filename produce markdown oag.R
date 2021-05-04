@@ -15,7 +15,7 @@ for(i in joint.countries){
 }
 
 
-for(i in joint.countries){
+for(i in joint.countries[27:32]){
   tryCatch({
     rmarkdown::render(
       "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_oag_RW_only.rmd",

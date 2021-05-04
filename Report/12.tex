@@ -1,0 +1,55 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{float,times,graphicx,mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{natbib}
+\usepackage[space]{grffile}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{tikzsymbols}
+
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\tr}{tr}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}
+\graphicspath{{../Burkina Faso/12/}}  
+\addtolength{\oddsidemargin}{-1in}
+	\addtolength{\evensidemargin}{-1in}
+	\addtolength{\textwidth}{1.75in}
+	\addtolength{\topmargin}{-1.3in}
+	\addtolength{\textheight}{2in}
+\date{\vspace{-5ex}}
+\begin{document}
+
+\begin{itemize}
+\item Fixed some codes and changed some aesthetics
+	\begin{itemize}
+	\item[--] A lot more countries converged when using RWs for the hump component
+	\item[--] sometimes in a few countries it still fails to converge, needed tweaks in the initial values
+	\end{itemize}
+\item Currently the RW for the parameters of the hump components initiate in 1960, i.e. prior variance increases over time, will attempt to fit it backwards or look for a more even variance
+\item Used WPP $_5q_0$ estimates instead of IGME estimates for all countries for consistency
+	\begin{itemize}
+	\item[--] WPP only has $_5q_0$ estimates for total sex on the website, sex-specific estimates currently using are derived from their sex-specific abridged life tables
+	\item[--] WPP estimates are generally higher and smoother than the IGME estimates	
+	\item[--] use WPP only when IGME isn't complete?
+	\item[--] use WPP only in years where IGME do not have estimates?
+	\end{itemize}
+	\item Estimated $_{45}q_{15}$ are much lower than the GBD/WPP estimates in pre-DHS periods
+	\item Currently fitting 5-9 up to the age group before oag, would try and see if I could include oag back to the likelihood
+	\item Will try to center priors for the $\rho$'s at around 0.5 instead of 0
+	\item Increase prior mode for log-population hypervariance / Allow higher variance at older ages?
+\end{itemize}
+
+ 
+\end{document} 
