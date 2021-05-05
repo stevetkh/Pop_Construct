@@ -52,4 +52,228 @@
 \end{itemize}
 
  
+\section*{Angola:}
+\begin{itemize}
+\item only 1 census (in2014) from DYB after 1960 (also one in 1960 but at the moment using WPP 1960 for generality)
+\end{itemize}
+
+\section*{Benin:}
+\begin{itemize}
+\item unrealistic AB term
+\item $_{45}q_{15}$ crossing over 
+\item over-smoothed humps compared to DHS?
+\item female lambda $>$ male lambda
+\end{itemize}
+
+\section*{Burkina Faso:}
+\begin{itemize}
+\item consistent lower estimated $_5q_0$ compared to the WPP/IGME U5MR estimates 
+\item over-smoothed humps at early years?
+\item female lambda $>$ male lambda
+\end{itemize}
+
+\section*{Burundi}
+\begin{itemize}
+\item estimated epsilon too high?
+\end{itemize}
+
+\section*{Cameroon}
+\begin{itemize}
+\item shape of female lambda vs male lambda entirely different, questionable?
+\item female lambda $>$ male lambda
+\end{itemize}
+
+\section*{Chad}
+\begin{itemize}
+\item male estimated B wiggly
+\item female lambda $>$ male lambda
+\item female mort $>$ male mort at 10-14 and 15-19 at early years
+\end{itemize}
+
+\section*{Congo}
+\begin{itemize}
+\item fails to converge when only fitting to 5-9 to 70-74 using DHS 15-19 to 45-49
+\item female lambda $>$ male lambda
+\item check what happened around 1995-1999
+\item migration wiggly
+\end{itemize}
+
+
+\section*{Congo Democratic Republic}
+\begin{itemize}
+\item only 1 census from DYB after 1960
+\item some DDHarmony error that I have yet to look into
+\end{itemize}
+
+\section*{Cote d'Ivoire}
+\begin{itemize}
+\item female lambda $>$ male lambda
+\item estimated $_{45}q_{15}$ crossing over at early years
+\item questionable migration?
+\end{itemize}
+
+\section*{Eswatini}
+\begin{itemize}
+\item estimated epsilon might be too high?
+\item questionable migration?
+\end{itemize}
+
+\section*{Gabon}
+\begin{itemize}
+\item inconsistency in census period labeling, needs to go back to it
+\end{itemize}
+
+\section*{Gambia}
+\begin{itemize}
+\item requires different initial values (init marginal_prec = 2, rho = 2)
+\item whole thing is wrong, \textbf{experiment without DHS}
+\item female lambda $>$ male lambda when using full data
+\item unrealistic AB term
+\end{itemize}
+
+\section*{Guinea}
+\begin{itemize}
+\item estimated lambda wiggly
+\item female lambda $>$ male lambda
+\item estimated $_{45}q_{15}$ crossing over at early years
+\item over-smoothed humps?
+\end{itemize}
+
+\section*{Kenya}
+\begin{itemize}
+\item messy estimated B
+\item spike $_{45}q_{15}$ in 1975
+\item estimated mort schedules using full data vs restricted data differ a lot (coz of B)!
+\end{itemize}
+
+\section*{Lesotho}
+\begin{itemize}
+\item requires different prior means for the hump component to converge (lambda = 0.008, delta = 1)
+\item wouldn’t converge with restricted data
+\item unrealistic AB term
+\item female mort schedule too sharp at 15?
+\end{itemize}
+
+\section*{Liberia}
+\begin{itemize}
+\item  $_{45}q_{15}$ crossing over at the earliest year
+\end{itemize}
+
+\section*{Madagascar}
+\begin{itemize}
+\item requires different prior means for the hump component to converge (lambda = 0.003, delta = 0.2, i.e. hard-coded a flat hump)
+\item wouldn’t converge with restricted data
+\item these priors mean a very flat initial hump, otherwise extreme values for epsilon are returned, possibly due to the very flat mort schedule seen in DHS data.
+\end{itemize}
+
+\section*{Malawi}
+\begin{itemize}
+\item requires different initial values (init hump.marginal_prec = 0, rho = 0)
+\item female lambda $>$ male lambda (but possible?)
+\item unrealistic female A $>$ male A	
+\end{itemize}
+
+\section*{Mali}
+\begin{itemize}
+\item unrealistic female A
+\item female lambda $>$ male lambda
+\item estimated $_{45}q_{15}$ at early years
+\item male U5MR lower than WPP/IGME estimates in all years
+\item over-smoothed humps
+\item kink in mort schedules over time
+\end{itemize}
+
+\section*{Mozambique}
+\begin{itemize}
+\item female lambda $>$ male lambda
+\item unrealistic psi and AB term (coz of the spike in 1985 also seen in GBD estimates?)
+\item lower male U5MR than WPP/IGME
+\item need to double check spline estimates whether wiggly
+\end{itemize}
+
+\section*{Namibia}
+\begin{itemize}
+\item wouldn’t converge with restricted data
+\item female A $>$ male A
+\end{itemize}
+
+\section*{Niger}
+\begin{itemize}
+\item female lambda $>$ male lambda at most recent years
+\item questionable female A
+\item estimated $_{45}q_{15}$ crossing over at early years
+\item over-smoothed humps
+\item unrealistic migration
+\end{itemize}
+
+
+\section*{Nigeria}
+\begin{itemize}
+\item failed to converge with restricted data
+\item female lambda $>$ male lambda
+\item wiggly psi
+\item female A $>$ male A
+\item estimated $_{45}q_{15}$ crossing over at early years
+\item over-smoothed humps?
+\end{itemize}
+
+\section*{Rwanda}
+\begin{itemize}
+\item requires different initial values (init hump.marignal.prec=0, rho=2, marginal.prec=4)
+\item unrealistic AB term
+\item estimated epsilon too high?
+\item WPP U5MR seems unrealistic?
+\end{itemize}
+
+\section*{Senegal}
+\begin{itemize}
+\item requires different initial values (init hump.marignal.prec=2, rho=0, marginal.prec=3)
+\item female U5MR lower than WPP/IGME
+\end{itemize}
+
+\section*{Sierra Leone}
+\begin{itemize}
+\item requires different initial values (init hump.marignal.prec=2, rho=0, marginal.prec=3)
+\item failed to converge with restricted data
+\item messy results
+\item double check with spline estimates, see if wiggly over time as well?
+\end{itemize}
+
+\section*{South Africa}
+\begin{itemize}
+\item migration wonky
+\item deviation from initial fert values are large
+\item $_{45}q_{15}$ consistently lower than GBD/WPP
+\end{itemize}
+
+\section*{Tanzania}
+\begin{itemize}
+\item female A $>$ male A
+\end{itemize}
+
+\section*{Togo}
+\begin{itemize}
+\item requires different prior means for the initial hump (lambda = 0.003, delta = 0.3, i.e. flat hump)
+\item female lambda $>$ male lambda
+\item wiggly AB term
+\end{itemize}
+
+\section*{Uganda}
+\begin{itemize}
+\item AB term
+\item restricted data fails to converge
+\end{itemize}
+
+\section*{Zambia}
+\begin{itemize}
+\item female A $>$ male A
+\item AB term wiggly
+\item female estimated $_{45}q_{15}$ at the earliest year questionable
+\end{itemize}
+
+\section*{Zimbabwe}
+\begin{itemize}
+\item female A $>$ male A
+\end{itemize}
+
 \end{document} 

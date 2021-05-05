@@ -3,6 +3,19 @@ output: pdf_document
 geometry: margin=2cm
 params:
   country: "Zimbabwe"
+  lambda_f: 0.003
+  lambda_m: 0.003
+  delta_f: 0.3
+  delta_m: 0.3
+  epsilon_f: 30
+  epsilon_m: 35
+  log_phi_hyperprec: log(2/0.01)
+  log_psi_hyperprec: log(2/0.01)
+  log_lambda_hyperprec: log(2/0.01)
+  log_delta_hyperprec: log(2/0.01)
+  log_epsilon_hyperprec: log(2/0.01)
+  log_A_hyperprec: log(2/0.001)
+  log_B_hyperprec: log(2/0.001)
 ---
 
 ---
@@ -531,9 +544,9 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
                             log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
-                            log_lambda_mean_f = log(0.003), log_lambda_mean_m = log(0.003),
-                            log_delta_mean_f = log(0.3), log_delta_mean_m = log(0.3),
-                            log_epsilon_mean_f = log(30), log_epsilon_mean_m = log(35),
+                            log_lambda_mean_f = log(params$lambda_f), log_lambda_mean_m = log(params$lambda_m),
+                            log_delta_mean_f = log(params$delta_f), log_delta_mean_m = log(params$delta_m),
+                            log_epsilon_mean_f = log(params$epsilon_f), log_epsilon_mean_m = log(params$epsilon_m),
                             log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                             log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
                             
@@ -545,7 +558,15 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
                             null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
-                            penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix")
+                            penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
+                            
+                            log_phi_hypervar_prec = params$log_phi_hyperprec,
+                            log_psi_hypervar_prec = params$log_psi_hyperprec,
+                            log_lambda_hypervar_prec = params$log_lambda_hyperprec,
+                            log_delta_hypervar_prec = params$log_delta_hyperprec,
+                            log_epsilon_hypervar_prec = params$log_epsilon_hyperprec,
+                            log_A_hypervar_prec = params$log_A_hyperprec,
+                            log_B_hypervar_prec = params$log_B_hyperprec
                             )
 
 
@@ -564,21 +585,21 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 
                 log_dispersion_f = 1.3, log_dispersion_m = 1.3,
                 
-                log_phi_innov_f = rep(0, bf.idx5$n_periods), log_phi_innov_m = rep(0, bf.idx5$n_periods),
-                log_psi_innov_f = rep(0, bf.idx5$n_periods), log_psi_innov_m = rep(0, bf.idx5$n_periods),
-                log_lambda_innov_f = rep(0, bf.idx5$n_periods), log_lambda_innov_m = rep(0, bf.idx5$n_periods),
-                log_delta_innov_f = rep(0, bf.idx5$n_periods), log_delta_innov_m = rep(0, bf.idx5$n_periods),
-                log_epsilon_innov_f = rep(0, bf.idx5$n_periods), log_epsilon_innov_m = rep(0, bf.idx5$n_periods),
-                log_A_innov_f = rep(0, bf.idx5$n_periods), log_A_innov_m = rep(0, bf.idx5$n_periods),
-                log_B_innov_f = rep(0, bf.idx5$n_periods), log_B_innov_m = rep(0, bf.idx5$n_periods),
+                #log_phi_innov_f = rep(0, bf.idx5$n_periods), log_phi_innov_m = rep(0, bf.idx5$n_periods),
+                #log_psi_innov_f = rep(0, bf.idx5$n_periods), log_psi_innov_m = rep(0, bf.idx5$n_periods),
+                #log_lambda_innov_f = rep(0, bf.idx5$n_periods), log_lambda_innov_m = rep(0, bf.idx5$n_periods),
+                #log_delta_innov_f = rep(0, bf.idx5$n_periods), log_delta_innov_m = rep(0, bf.idx5$n_periods),
+                #log_epsilon_innov_f = rep(0, bf.idx5$n_periods), log_epsilon_innov_m = rep(0, bf.idx5$n_periods),
+                #log_A_innov_f = rep(0, bf.idx5$n_periods), log_A_innov_m = rep(0, bf.idx5$n_periods),
+                #log_B_innov_f = rep(0, bf.idx5$n_periods), log_B_innov_m = rep(0, bf.idx5$n_periods),
                 
                 log_phi_f = log(thiele.loghump.prior.f[1,]), log_phi_m = log(thiele.loghump.prior.m[1,]),
                 log_psi_f = log(thiele.loghump.prior.f[2,]), log_psi_m = log(thiele.loghump.prior.m[2,]),
-                log_lambda_f = rep(log(0.003), bf.idx5$n_periods), log_lambda_m = rep(log(0.003), bf.idx5$n_periods),
-                log_delta_f = rep(log(0.3), bf.idx5$n_periods), log_delta_m = rep(log(0.3), bf.idx5$n_periods),
-                log_epsilon_f = rep(log(30), bf.idx5$n_periods), log_epsilon_m = rep(log(35), bf.idx5$n_periods),
-                log_A_f = rep(0, bf.idx5$n_periods), log_A_m = rep(0, bf.idx5$n_periods),
-                log_B_f = rep(0, bf.idx5$n_periods), log_B_m = rep(0, bf.idx5$n_periods),
+                log_lambda_f = rep(log(params$lambda_f), bf.idx5$n_periods), log_lambda_m = rep(log(params$lambda_m), bf.idx5$n_periods),
+                log_delta_f = rep(log(params$delta_f), bf.idx5$n_periods), log_delta_m = rep(log(params$delta_m), bf.idx5$n_periods),
+                log_epsilon_f = rep(log(params$epsilon_f), bf.idx5$n_periods), log_epsilon_m = rep(log(params$epsilon_m), bf.idx5$n_periods),
+                log_A_f = log(thiele.loghump.prior.f[6,]), log_A_m = log(thiele.loghump.prior.f[6,]),
+                log_B_f = log(thiele.loghump.prior.f[7,]), log_B_m = log(thiele.loghump.prior.f[7,]),
                 
                 log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
                 log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
@@ -660,9 +681,9 @@ data.loghump.vec.RW.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_
                             
                             log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
                             log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
-                            log_lambda_mean_f = log(0.005), log_lambda_mean_m = log(0.005),
-                            log_delta_mean_f = log(0.7), log_delta_mean_m = log(0.7),
-                            log_epsilon_mean_f = log(20), log_epsilon_mean_m = log(25),
+                            log_lambda_mean_f = log(params$lambda_f), log_lambda_mean_m = log(params$lambda_m),
+                            log_delta_mean_f = log(params$delta_f), log_delta_mean_m = log(params$delta_m),
+                            log_epsilon_mean_f = log(params$epsilon_f), log_epsilon_mean_m = log(params$epsilon_m),
                             log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                             log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
                             
@@ -674,7 +695,15 @@ data.loghump.vec.RW.re <- list(log_basepop_mean_f = log(basepop.f), log_basepop_
                             
                             penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
                             null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
-                            penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix")
+                            penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
+                            
+                            log_phi_hypervar_prec = params$log_phi_hyperprec,
+                            log_psi_hypervar_prec = params$log_psi_hyperprec,
+                            log_lambda_hypervar_prec = params$log_lambda_hyperprec,
+                            log_delta_hypervar_prec = params$log_delta_hyperprec,
+                            log_epsilon_hypervar_prec = params$log_epsilon_hyperprec,
+                            log_A_hypervar_prec = params$log_A_hyperprec,
+                            log_B_hypervar_prec = params$log_B_hyperprec
                             )
 
 input.thiele.loghump.oag.vec.RW.re <- list(data = data.loghump.vec.RW.re, par_init = par.vec, model = "ccmpp_vr_tmb")
@@ -736,17 +765,17 @@ thiele.par.loghump <- lapply(loghump.models.list, par.func) %>%
       `colnames<-`(bf.idx5$periods) %>%
       reshape2::melt() %>%
       mutate(sex = "female", model = "Initial Values",
-             value = replace(value, Var1=="lambda", 0.005),
-             value = replace(value, Var1=="delta", 0.7),
-             value = replace(value, Var1=="epsilon", 20)) %>%
+             value = replace(value, Var1=="lambda", params$lambda_f),
+             value = replace(value, Var1=="delta", params$delta_f),
+             value = replace(value, Var1=="epsilon", params$epsilon_f)) %>%
       select(name = Var1, period5 = Var2, value, model, sex),
     thiele.loghump.prior.m %>%
       `colnames<-`(bf.idx5$periods) %>%
       reshape2::melt() %>%
       mutate(sex = "male", model = "Initial Values",
-             value = replace(value, Var1=="lambda", 0.005),
-             value = replace(value, Var1=="delta", 0.7),
-             value = replace(value, Var1=="epsilon", 25)) %>%
+             value = replace(value, Var1=="lambda", params$lambda_m),
+             value = replace(value, Var1=="delta", params$delta_m),
+             value = replace(value, Var1=="epsilon", params$epsilon_m)) %>%
       select(name = Var1, period5 = Var2, value, model, sex)
   ) %>%
   mutate(name = fct_inorder(name), model = fct_relevel(model, "Initial Values", "Thiele RW"))
@@ -798,7 +827,7 @@ q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>%
       select(model:sex),
     
     apply(apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * (seq(17, 57, by = 5)-2)) + 
-        0.005 * exp(-0.7 * ((log(seq(17, 57, by = 5)) - log(20))^2)) +
+        params$lambda_f * exp(- params$delta_f * ((log(seq(17, 57, by = 5)) - log(params$epsilon_f))^2)) +
         i[6] * exp(i[7] * (seq(17, 57, by = 5)-92))}) %>%
           `colnames<-`(bf.idx5$periods) %>% 
           `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
@@ -806,7 +835,7 @@ q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>%
       mutate(sex="female", model = "Initial Values", year = bf.idx5$periods),
     
     apply(apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * (seq(17, 57, by = 5)-2)) + 
-        0.005 * exp(-0.7 * ((log(seq(17, 57, by = 5)) - log(25))^2)) +
+        params$lambda_m * exp(- params$delta_m * ((log(seq(17, 57, by = 5)) - log(params$epsilon_m))^2)) +
         i[6] * exp(i[7] * (seq(17, 57, by = 5)-92))}) %>%
           `colnames<-`(bf.idx5$periods) %>% 
           `rownames<-`(seq(15, 55, by = 5)), 2, function(j){1-prod((1-2.5*j)/(1+2.5*j))}) %>%
@@ -843,11 +872,11 @@ q50.df.loghump <- lapply(loghump.models.list, q50.func) %>%
     as_tibble(exp(h.mean.f)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "female"),
     as_tibble(exp(h.mean.m)) %>% mutate(model="WPP Estimates", year=bf.idx5$periods, variable = NULL, sex = "male"),
    
-    as_tibble(5 * apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + 0.005 * exp(-0.7 * (log(2) - log(20))^2) + i[6] * exp(i[7] * (2-92))}) / 
-                (1 + 2.5 * apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + 0.005 * exp(-0.7 * (log(2) - log(25))^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
+    as_tibble(5 * apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + params$lambda_f * exp(- params$delta_f * (log(2) - log(params$epsilon_f))^2) + i[6] * exp(i[7] * (2-92))}) / 
+                (1 + 2.5 * apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * 0) + params$lambda_f * exp(- params$delta_f * (log(2) - log(params$epsilon_f))^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "female"),
-    as_tibble(5 * apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + 0.005 * exp(-0.7 * (log(2) - log(25))^2) + i[6] * exp(i[7] * (2-92))}) / 
-                (1 + 2.5 * apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + 0.005 * exp(-0.7 * (log(2) - log(25))^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
+    as_tibble(5 * apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + params$lambda_m * exp(- params$delta_m * (log(2) - log(params$epsilon_m))^2) + i[6] * exp(i[7] * (2-92))}) / 
+                (1 + 2.5 * apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * 0) + params$lambda_m * exp(- params$delta_m * (log(2) - log(params$epsilon_m))^2) + i[6] * exp(i[7] * (2-92))}) )) %>%
       mutate(model="Initial Values", year=bf.idx5$periods, variable = NULL, sex = "male")
   ) %>%
   mutate(model = fct_relevel(model, "WPP Estimates","IGME Estimates", "Thiele RW"),
@@ -1120,10 +1149,10 @@ thiele.decomp.loghump <- lapply(loghump.models.list, mx.mat.func, hump="log") %>
   bind_rows(
     lapply(
       list(Child = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
-           Hump = apply(thiele.loghump.prior.f, 2, function(i) {0.005 * exp(-0.7 * ((log(seq(2, 112, by = 5)) - log(20))^2))}),
+           Hump = apply(thiele.loghump.prior.f, 2, function(i) {params$lambda_f * exp(- params$delta_f * ((log(seq(2, 112, by = 5)) - log(params$epsilon_f))^2))}),
            Senescent = apply(thiele.loghump.prior.f, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
            Total = apply(thiele.loghump.prior.f, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
-               0.005 * exp(-0.7 * ((log(seq(2, 112, by = 5)) - log(20))^2)) +
+               params$lambda_f * exp(- params$delta_f * ((log(seq(2, 112, by = 5)) - log(params$epsilon_f))^2)) +
                i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%
@@ -1137,10 +1166,10 @@ thiele.decomp.loghump <- lapply(loghump.models.list, mx.mat.func, hump="log") %>
     
     lapply(
       list(Child = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5))}),
-           Hump = apply(thiele.loghump.prior.m, 2, function(i) {0.005 * exp(-0.7 * ((log(seq(2, 112, by = 5)) - log(25))^2))}),
+           Hump = apply(thiele.loghump.prior.m, 2, function(i) {params$lambda_m * exp(- params$delta_m * ((log(seq(2, 112, by = 5)) - log(params$epsilon_m))^2))}),
            Senescent = apply(thiele.loghump.prior.m, 2, function(i) {i[6] * exp(i[7] * seq(-90, 20, by = 5))}),
            Total = apply(thiele.loghump.prior.m, 2, function(i) {i[1] * exp(-i[2] * seq(0, 110, by = 5)) + 
-               0.005 * exp(-0.7 * ((log(seq(2, 112, by = 5)) - log(25))^2)) +
+               params$lambda_m * exp(- params$delta_m * ((log(seq(2, 112, by = 5)) - log(params$epsilon_m))^2)) +
                i[6] * exp(i[7] * seq(-90, 20, by = 5))})
       ), function(i) {
         i %>%

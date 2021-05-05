@@ -1,0 +1,54 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{float,times,graphicx,mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{natbib}
+\usepackage[space]{grffile}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{tikzsymbols}
+
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\tr}{tr}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}
+\graphicspath{{../Burkina Faso/12/}}  
+\addtolength{\oddsidemargin}{-1in}
+	\addtolength{\evensidemargin}{-1in}
+	\addtolength{\textwidth}{1.75in}
+	\addtolength{\topmargin}{-1.3in}
+	\addtolength{\textheight}{2in}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\begin{itemize}
+\item restricted population data likelihood to only up to 70-74
+\item given the hypervariance for the old age mortality parameters (AB term) a tighter prior
+\item used the estimated hump component from the LQ model in te initial year (1960) as prior mean for the initial states of the hump component
+\item re-centered priors for the $\rho$ to approximately around 0.5, i.e. logit$(\rho) \sim N(1.1, 3.0)$
+	\begin{itemize}
+	\item[--] converged for all countries without manual tweaking except for Angola (1 Census), Congo Democratic Republic (1 Census), Gabon (Census period mis-labelling), Togo (false convergence), Cote d'Ivoire
+	\item[--] results are much more sensible in terms of mortality schedules
+	\item[--] estimated migrations are now much smoother, not sure whether its because of the re-centering in $\rho$ or the strict priors given on the AB term
+	\item[--] estimated epsilon are much more sensible
+	\item[--] Burkina Faso male B term, Cameroon B term, Congo 1995, Eswatini crossing female mx and male mx, Gambia B term kink DHS data, Guinea crossing female mx and male mx, Liberia crossing female mx and male mx, Malawi male A < female A,
+	Niger crossing $_{45}q_{15}$, Nigeria migration, Rwanda male lambda and female B, Sierra Leone migration, Mozambique (crazy estimates)
+	\end{itemize}
+
+\item correlated RW walks between male and female hump components?
+\item maybe overall prior for hypervariance still too loose, will investigate tightening up all together
+\end{itemize}
+
+
+\end{document} 

@@ -75,6 +75,14 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(log_A_mean_m);
   DATA_VECTOR(log_B_mean_m);
 
+  DATA_SCALAR(log_phi_hypervar_prec);
+  DATA_SCALAR(log_psi_hypervar_prec);
+  DATA_SCALAR(log_lambda_hypervar_prec);
+  DATA_SCALAR(log_delta_hypervar_prec);
+  DATA_SCALAR(log_epsilon_hypervar_prec);
+  DATA_SCALAR(log_A_hypervar_prec);
+  DATA_SCALAR(log_B_hypervar_prec);
+
   DATA_SPARSE_MATRIX(penal_tp);
   DATA_SPARSE_MATRIX(penal_tp_0);
   DATA_SPARSE_MATRIX(null_penal_tp);
@@ -149,60 +157,61 @@ Type objective_function<Type>::operator() ()
   nll -= dlgamma(log_tau2_gx_m, Type(1.0), Type(1.0 / 0.0436), true);
   Type sigma_gx_m(exp(-0.5 * log_tau2_gx_m));
 
-  nll -= dnorm(logit_rho_g_x_f, Type(0.0), Type(5.0), 1);
-  nll -= dnorm(logit_rho_g_t_f, Type(0.0), Type(5.0), 1);
-  nll -= dnorm(logit_rho_g_x_m, Type(0.0), Type(5.0), 1);
-  nll -= dnorm(logit_rho_g_t_m, Type(0.0), Type(5.0), 1);  
+  nll -= dnorm(logit_rho_g_x_f, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_g_t_f, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_g_x_m, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_g_t_m, Type(1.1), Type(3.0), 1);  
 
   nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
   vector<Type> basepop_f(exp(log_basepop_f));
   nll -= dnorm(log_basepop_m, log_basepop_mean_m, sigma_logpop_m_base, true).sum();
   vector<Type> basepop_m(exp(log_basepop_m));
 
-  nll -= dlgamma(log_marginal_prec_phi_f, Type(1.0), Type(1.0 / 0.01), true);
+  //mode = exp(log_hypervar_prec)
+  nll -= dlgamma(log_marginal_prec_phi_f, Type(1.0), Type(exp(log_phi_hypervar_prec) / 2.0), true);
   Type sigma_phi_f(exp(-0.5 * log_marginal_prec_phi_f));
-  nll -= dlgamma(log_marginal_prec_phi_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_phi_m, Type(1.0), Type(exp(log_phi_hypervar_prec) / 2.0), true);
   Type sigma_phi_m(exp(-0.5 * log_marginal_prec_phi_m));
   
-  nll -= dlgamma(log_marginal_prec_psi_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_psi_f, Type(1.0), Type(exp(log_psi_hypervar_prec) / 2.0), true);
   Type sigma_psi_f(exp(-0.5 * log_marginal_prec_psi_f));
-  nll -= dlgamma(log_marginal_prec_psi_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_psi_m, Type(1.0), Type(exp(log_psi_hypervar_prec) / 2.0), true);
   Type sigma_psi_m(exp(-0.5 * log_marginal_prec_psi_m));  
 
-  nll -= dlgamma(log_marginal_prec_lambda_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_lambda_f, Type(1.0), Type(exp(log_lambda_hypervar_prec) / 2.0), true);
   Type sigma_lambda_f(exp(-0.5 * log_marginal_prec_lambda_f));
-  nll -= dlgamma(log_marginal_prec_lambda_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_lambda_m, Type(1.0), Type(exp(log_lambda_hypervar_prec) / 2.0), true);
   Type sigma_lambda_m(exp(-0.5 * log_marginal_prec_lambda_m));
   
-  nll -= dlgamma(log_marginal_prec_delta_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_delta_f, Type(1.0), Type(exp(log_delta_hypervar_prec) / 2.0), true);
   Type sigma_delta_f(exp(-0.5 * log_marginal_prec_delta_f));
-  nll -= dlgamma(log_marginal_prec_delta_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_delta_m, Type(1.0), Type(exp(log_delta_hypervar_prec) / 2.0), true);
   Type sigma_delta_m(exp(-0.5 * log_marginal_prec_delta_m));  
 
-  nll -= dlgamma(log_marginal_prec_epsilon_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_epsilon_f, Type(1.0), Type(exp(log_epsilon_hypervar_prec) / 2.0), true);
   Type sigma_epsilon_f(exp(-0.5 * log_marginal_prec_epsilon_f));
-  nll -= dlgamma(log_marginal_prec_epsilon_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_epsilon_m, Type(1.0), Type(exp(log_epsilon_hypervar_prec) / 2.0), true);
   Type sigma_epsilon_m(exp(-0.5 * log_marginal_prec_epsilon_m));
   
-  nll -= dlgamma(log_marginal_prec_A_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_A_f, Type(1.0), Type(exp(log_A_hypervar_prec) / 2.0), true);
   Type sigma_A_f(exp(-0.5 * log_marginal_prec_A_f));
-  nll -= dlgamma(log_marginal_prec_A_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_A_m, Type(1.0), Type(exp(log_A_hypervar_prec) / 2.0), true);
   Type sigma_A_m(exp(-0.5 * log_marginal_prec_A_m));
 
-  nll -= dlgamma(log_marginal_prec_B_f, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_B_f, Type(1.0), Type(exp(log_B_hypervar_prec) / 2.0), true);
   Type sigma_B_f(exp(-0.5 * log_marginal_prec_B_f));
-  nll -= dlgamma(log_marginal_prec_B_m, Type(1.0), Type(1.0 / 0.01), true);
+  nll -= dlgamma(log_marginal_prec_B_m, Type(1.0), Type(exp(log_B_hypervar_prec) / 2.0), true);
   Type sigma_B_m(exp(-0.5 * log_marginal_prec_B_m));
 
-  nll -= dnorm(logit_rho_phi_f, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_psi_f, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_A_f, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_B_f, Type(0.0), Type(10.0), 1);
+  nll -= dnorm(logit_rho_phi_f, Type(1.1), Type(3.0), 1); //1.1 approx log(3) -> rho=0.5
+  nll -= dnorm(logit_rho_psi_f, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_A_f, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_B_f, Type(1.1), Type(3.0), 1);
 
-  nll -= dnorm(logit_rho_phi_m, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_psi_m, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_A_m, Type(0.0), Type(10.0), 1);
-  nll -= dnorm(logit_rho_B_m, Type(0.0), Type(10.0), 1);
+  nll -= dnorm(logit_rho_phi_m, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_psi_m, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_A_m, Type(1.1), Type(3.0), 1);
+  nll -= dnorm(logit_rho_B_m, Type(1.1), Type(3.0), 1);
 
   nll -= dnorm(log_lambda_tp, Type(0.0), Type(5.0), 1);
   nll -= dnorm(log_lambda_tp_0_inflated_sd, Type(0.0), Type(5.0), 1);
@@ -225,22 +234,22 @@ Type objective_function<Type>::operator() ()
   nll += SCALE(AR1(rho_A_f), sigma_A_f)(log_A_f - log_A_mean_f);
   nll += SCALE(AR1(rho_B_f), sigma_B_f)(log_B_f - log_B_mean_f);
   nll -= dnorm(diff(log_lambda_f), Type(0.0), sigma_lambda_f, true).sum();
-  nll -= dnorm(log_lambda_f(0), log_lambda_mean_f, Type(2.5), true);
+  nll -= dnorm(log_lambda_f(0), log_lambda_mean_f, Type(2.0), true);
   nll -= dnorm(diff(log_delta_f), Type(0.0), sigma_delta_f, true).sum();
   nll -= dnorm(log_delta_f(0), log_delta_mean_f, Type(0.3), true);
   nll -= dnorm(diff(log_epsilon_f), Type(0.0), sigma_epsilon_f, true).sum();
-  nll -= dnorm(log_epsilon_f(0), log_epsilon_mean_f, Type(1.0), true);
+  nll -= dnorm(log_epsilon_f(0), log_epsilon_mean_f, Type(0.5), true);
 
   nll += SCALE(AR1(rho_phi_m), sigma_phi_m)(log_phi_m - log_phi_mean_m);
   nll += SCALE(AR1(rho_psi_m), sigma_psi_m)(log_psi_m - log_psi_mean_m);
   nll += SCALE(AR1(rho_A_m), sigma_A_m)(log_A_m - log_A_mean_m);
   nll += SCALE(AR1(rho_B_m), sigma_B_m)(log_B_m - log_B_mean_m);
   nll -= dnorm(diff(log_lambda_m), Type(0.0), sigma_lambda_m, true).sum();
-  nll -= dnorm(log_lambda_m(0), log_lambda_mean_m, Type(2.5), true);
+  nll -= dnorm(log_lambda_m(0), log_lambda_mean_m, Type(2.0), true);
   nll -= dnorm(diff(log_delta_m), Type(0.0), sigma_delta_m, true).sum();
   nll -= dnorm(log_delta_m(0), log_delta_mean_m, Type(0.3), true);
   nll -= dnorm(diff(log_epsilon_m), Type(0.0), sigma_epsilon_m, true).sum();
-  nll -= dnorm(log_epsilon_m(0), log_epsilon_mean_m, Type(1.0), true);
+  nll -= dnorm(log_epsilon_m(0), log_epsilon_mean_m, Type(0.5), true);
 
   Type rho_gx_f = 2.0 * invlogit(logit_rho_g_x_f) - 1.0;
   Type rho_gt_f = 2.0 * invlogit(logit_rho_g_t_f) - 1.0;
