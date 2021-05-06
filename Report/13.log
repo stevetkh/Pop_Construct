@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  6 MAY 2021 16:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  6 MAY 2021 18:29
 entering extended mode
 **./13.tex
 (13.tex
@@ -651,7 +651,7 @@ LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 3
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 )
-No file 13.aux.
+(13.aux)
 \openout1 = `13.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
@@ -733,34 +733,35 @@ LaTeX Font Info:    Trying to load font information for U+lasy on input line 39
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/base\ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
+[1
+
+{C:/Users/ktang3/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] [2] [3]
+[4]
 
 Package caption Warning: Unused \captionsetup[sub] on input line 18.
 See the caption package documentation for explanation.
 
-[1
-
-{C:/Users/ktang3/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] (13.aux) ) 
+[5] (13.aux) ) 
 Here is how much of TeX's memory you used:
- 17595 strings out of 479321
- 357564 string characters out of 2856107
- 656463 words of memory out of 3000000
+ 17597 strings out of 479321
+ 357630 string characters out of 2856107
+ 658454 words of memory out of 3000000
  34710 multiletter control sequences out of 15000+600000
  412425 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,5n,103p,449b,165s stack positions out of 5000i,500n,10000p,200000b,80000s
-{C:/
-Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/User
-s/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pf
-b><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
-/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/am
-sfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/
-public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/font
-s/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/M
-iKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/ktang3/AppData/Local/Programs/
-MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
-Output written on 13.pdf (1 page, 69925 bytes).
+ 102i,5n,103p,449b,182s stack positions out of 5000i,500n,10000p,200000b,80000s
+{C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/ba
+se/8r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmmi12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/
+public/amsfonts/cm/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fon
+ts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/ktang3/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
+Output written on 13.pdf (5 pages, 82464 bytes).
 PDF statistics:
- 38 PDF objects out of 1000 (max. 8388607)
+ 50 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

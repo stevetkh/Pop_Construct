@@ -35,15 +35,12 @@
 \begin{itemize}
 \item restricted population data likelihood to only up to 70-74
 \item given the hypervariance for the old age mortality parameters (AB term) a tighter prior
-\item used the estimated hump component from the LQ model in te initial year (1960) as prior mean for the initial states of the hump component
+\item used the estimated hump component from the LQ model in the initial year (1960) as prior mean for the initial states of the hump component
 \item re-centered priors for the $\rho$ to approximately around 0.5, i.e. logit$(\rho) \sim N(1.1, 3.0)$
 	\begin{itemize}
-	\item[--] converged for all countries without manual tweaking except for Angola (1 Census), Congo Democratic Republic (1 Census), Gabon (Census period mis-labelling), Togo (false convergence), Cote d'Ivoire
+	\item[--] converged for all countries without manual tweaking except for Angola (1 Census), Congo Democratic Republic (1 Census), Gabon (Census period mis-labelling)
 	\item[--] results are much more sensible in terms of mortality schedules
-	\item[--] estimated migrations are now much smoother, not sure whether its because of the re-centering in $\rho$ or the strict priors given on the AB term
 	\item[--] estimated epsilon are much more sensible
-	\item[--] Burkina Faso male B term, Burkina Faso female migration, Cameroon B term, Congo 1995, Eswatini crossing female mx and male mx, Gambia B term kink DHS data, Guinea crossing female mx and male mx, Liberia crossing female mx and male mx, Malawi male A < female A,
-	Niger crossing $_{45}q_{15}$, Nigeria migration, Rwanda male lambda and female B, Sierra Leone migration, Mozambique (crazy estimates)
 	\end{itemize}
 
 \item Also tried to have $A_m = A_f + A_d$
@@ -64,10 +61,185 @@
 
 \section*{Benin:}
 \begin{itemize}
-\item unrealistic AB term
-\item $_{45}q_{15}$ crossing over 
-\item over-smoothed humps compared to DHS?
-\item female lambda $>$ male lambda
+\item much sensible mortality schedules compared to before
+\item female $m_x$ $>$ male $m_x$ at young ages in the earliest years
+\item migration across ages too extreme?
 \end{itemize}
+
+\section*{Burkina Faso:}
+\begin{itemize}
+\item male B term
+\item female $m_x$ > male $m_x$ at young ages in the earliest years
+\item female migration insensible across time
+\end{itemize}
+
+\section*{Burundi}
+\begin{itemize}
+\item cannot converge with the initial values in 1960 given by the LogQuad
+\item requires a flatter hump in 1960 as initial values to converge (lambda = 0.005, delta = 0.3)
+\end{itemize}
+
+\section*{Cameroon}
+\begin{itemize}
+\item I still think some of the trend in lambda shifted to B
+\end{itemize}
+
+\section*{Chad}
+\begin{itemize}
+\item 
+\end{itemize}
+
+\section*{Congo}
+\begin{itemize}
+\item check what happened around 1995-1999
+\item some of the trend in lambda shifted to B?
+\item male migration over time insensible
+\end{itemize}
+
+\section*{Congo Democratic Republic}
+\begin{itemize}
+\item only 1 census from DYB after 1960
+\item some DDHarmony error that I have yet to look into
+\end{itemize}
+
+\section*{Cote d'Ivoire}
+\begin{itemize}
+\item some of the trend in lambda shifted to B?
+\end{itemize}
+
+\section*{Eswatini}
+\begin{itemize}
+\item female $m_x$ > male $m_x$ in te most recent years at some ages
+\item migration across age too un-smooth?
+\end{itemize}
+
+\section*{Gabon}
+\begin{itemize}
+\item inconsistency in census period labeling, need to go back to it
+\end{itemize}
+
+\section*{Gambia}
+\begin{itemize}
+\item estimated B kink at 2010, possibly due to DHS data
+\item estimated $_{45}q_{15}$ crossing over at early years
+\end{itemize}
+
+\section*{Guinea}
+\begin{itemize}
+\item wiggly estimated lambda
+\item female $m_x$ > male $m_x$ at young ages 
+\end{itemize}
+
+\section*{Kenya}
+\begin{itemize}
+\item messy estimated B
+\end{itemize}
+
+\section*{Lesotho}
+\begin{itemize}
+\item female mort schedule too sharp at 15?
+\end{itemize}
+
+\section*{Liberia}
+\begin{itemize}
+\item  female $m_x$ > male $m_x$ at some ages in the most recent years
+\end{itemize}
+
+\section*{Madagascar}
+\begin{itemize}
+\item cannot converge with the initial values in 1960 given by the LogQuad
+\item requires a flatter hump in 1960 as initial values to converge (lambda = 0.003, delta = 0.3)
+\item even when converged results are still insensible in pre-DHS and pre-census periods
+\item maybe migration?
+\end{itemize}
+
+\section*{Malawi}
+\begin{itemize}
+\item unrealistic female A $>>>$ male A
+\item $_{45}q_{15}$ crossing over coz of A
+\end{itemize}
+
+\section*{Mali}
+\begin{itemize}
+\item estimated male U5MR lower than WPP/IGME estimates in all years
+\end{itemize}
+
+\section*{Mozambique}
+\begin{itemize}
+\item messy estimated B
+\item (coz of the spike in 1985 also seen in GBD estimates?)
+\item need to double check spline estimates whether wiggly
+\end{itemize}
+
+\section*{Namibia}
+\begin{itemize}
+\item
+\end{itemize}
+
+\section*{Niger}
+\begin{itemize}
+\item estimated $_{45}q_{15}$ crossing over at early years
+\item estimated male B too flat?
+\item female $m_x$ > male $m_x$ at most ages
+\end{itemize}
+
+\section*{Nigeria}
+\begin{itemize}
+\item some of the trend in lambda shifted to B?
+\item wiggly male migration over time
+\end{itemize}
+
+\section*{Rwanda}
+\begin{itemize}
+\item some of the trend in lambda shifted to B? (genocide)
+\end{itemize}
+
+\section*{Senegal}
+\begin{itemize}
+\item
+\end{itemize}
+
+\section*{Sierra Leone}
+\begin{itemize}
+\item wiggly B
+\item wiggly migration
+\item double check with spline estimates, see if wiggly over time as well?
+\end{itemize}
+
+\section*{South Africa}
+\begin{itemize}
+\item migration wonky
+\item deviation from initial fertility values are large
+\item $_{45}q_{15}$ consistently lower than GBD/WPP
+\end{itemize}
+
+\section*{Tanzania}
+\begin{itemize}
+\item some of the trend in lambda shifted to B?
+\end{itemize}
+
+\section*{Togo}
+\begin{itemize}
+\item cannot converge with the initial values in 1960 given by the LogQuad
+\item requires a flatter hump in 1960 as initial values to converge (lambda = 0.003, delta = 0.3)
+\item some of the trend in lambda shifted to B?
+\item over-smoothed humps? coz of the flat hump initial values
+\end{itemize}
+
+\section*{Uganda}
+\begin{itemize}
+\item wiggly male migration over time
+\end{itemize}
+
+\section*{Zambia}
+\begin{itemize}
+\item some of the trend in lambda shifted to B?
+\end{itemize}
+
+\section*{Zimbabwe}
+\begin{itemize}
+\item some of the trend in lambda shifted to B?
+\end{itemize}
+
 
 \end{document} 

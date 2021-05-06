@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Nigeria"
+  country: "Burundi"
   log_phi_hyperprec: 5.298317
   log_psi_hyperprec: 5.298317
   log_lambda_hyperprec: 2.995732
@@ -510,7 +510,7 @@ data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(l
 }
   
 prec.init <- 3
-hump.prec.init <- 3
+hump.prec.init <- 2
 rho.init <- 0
 
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 

@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Uganda"
+  country: "Togo"
   log_phi_hyperprec: 5.298317
   log_psi_hyperprec: 5.298317
   log_lambda_hyperprec: 2.995732
@@ -509,14 +509,18 @@ if(country == "Zimbabwe"){
 data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
 }
   
-prec.init <- 2
-hump.prec.init <- 1
+prec.init <- 3
+hump.prec.init <- 2
 rho.init <- 0
 
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
 init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.prior.m[5,1]; 
-  
+
+#init_lambda_f <- 0.003; init_lambda_m <- 0.003; 
+#init_delta_f <- 0.3; init_delta_m <- 0.3; 
+#init_epsilon_f <- 22; init_epsilon_m <- 25; 
+
 data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                             log_fx_mean = log_fx_mean,
                             srb = rep(1.05, bf.idx5$n_periods),

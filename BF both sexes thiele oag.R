@@ -278,7 +278,7 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 open.age <- 85
 n_ages <- open.age / 5 + 1
 
-country <- "Nigeria"
+country <- "Burundi"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -545,7 +545,7 @@ if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
 }
 
-prec.init <- 5
+prec.init <- 2
 hump.prec.init <- 2
 rho.init <- 0
 
@@ -655,17 +655,17 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),
                             log_psi_mean_f = log(thiele.loghump.prior.f[2,]), log_psi_mean_m = log(thiele.loghump.prior.m[2,]),
-                            log_lambda_mean_f = log(thiele.loghump.prior.f[3,1]), log_lambda_mean_m = log(thiele.loghump.prior.m[3,1]),
-                            log_delta_mean_f = log(thiele.loghump.prior.f[4,1]), log_delta_mean_m = log(thiele.loghump.prior.m[4,1]),
-                            log_epsilon_mean_f = log(thiele.loghump.prior.f[5,1]), log_epsilon_mean_m = log(thiele.loghump.prior.m[5,1]),
+                            #log_lambda_mean_f = log(thiele.loghump.prior.f[3,1]), log_lambda_mean_m = log(thiele.loghump.prior.m[3,1]),
+                            #log_delta_mean_f = log(thiele.loghump.prior.f[4,1]), log_delta_mean_m = log(thiele.loghump.prior.m[4,1]),
+                            #log_epsilon_mean_f = log(thiele.loghump.prior.f[5,1]), log_epsilon_mean_m = log(thiele.loghump.prior.m[5,1]),
                             log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                             log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
                             
                             log_A_mean_d = log(thiele.loghump.prior.m[6,] - thiele.loghump.prior.f[6,]),
                               
-                            #log_lambda_mean_f = rep(log(0.005), bf.idx5$n_periods), log_lambda_mean_m = rep(log(0.008), bf.idx5$n_periods),
-                            #log_delta_mean_f = rep(log(1.2), bf.idx5$n_periods), log_delta_mean_m = rep(log(1.2), bf.idx5$n_periods), 
-                            #log_epsilon_mean_f = rep(log(22), bf.idx5$n_periods), log_epsilon_mean_m = rep(log(25), bf.idx5$n_periods), 
+                            log_lambda_mean_f = log(0.005), log_lambda_mean_m = log(0.005),
+                            log_delta_mean_f = log(0.3), log_delta_mean_m = log(0.3), 
+                            log_epsilon_mean_f = log(22), log_epsilon_mean_m = log(25), 
                             
                             thiele_age = thiele_age,
                             
@@ -678,8 +678,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             log_lambda_hypervar_prec = log(2/0.1),
                             log_delta_hypervar_prec = log(2/0.1),
                             log_epsilon_hypervar_prec = log(2/0.1),
-                            log_A_hypervar_prec = log(2/0.01),
-                            log_B_hypervar_prec = log(2/0.01)
+                            log_A_hypervar_prec = log(2/0.001),
+                            log_B_hypervar_prec = log(2/0.001)
                             )
 
 par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
@@ -707,12 +707,16 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 
                 log_phi_f = log(thiele.loghump.prior.f[1,]), log_phi_m = log(thiele.loghump.prior.m[1,]),
                 log_psi_f = log(thiele.loghump.prior.f[2,]), log_psi_m = log(thiele.loghump.prior.m[2,]),
-                log_lambda_f = rep(log(thiele.loghump.prior.f[3,1]), bf.idx5$n_periods), log_lambda_m = rep(log(thiele.loghump.prior.m[3,1]), bf.idx5$n_periods),
-                log_delta_f = rep(log(thiele.loghump.prior.f[4,1]), bf.idx5$n_periods), log_delta_m = rep(log(thiele.loghump.prior.m[4,1]), bf.idx5$n_periods),
-                log_epsilon_f = rep(log(thiele.loghump.prior.f[5,1]), bf.idx5$n_periods), log_epsilon_m = rep(log(thiele.loghump.prior.m[5,1]), bf.idx5$n_periods),
+                #log_lambda_f = rep(log(thiele.loghump.prior.f[3,1]), bf.idx5$n_periods), log_lambda_m = rep(log(thiele.loghump.prior.m[3,1]), bf.idx5$n_periods),
+                #log_delta_f = rep(log(thiele.loghump.prior.f[4,1]), bf.idx5$n_periods), log_delta_m = rep(log(thiele.loghump.prior.m[4,1]), bf.idx5$n_periods),
+                #log_epsilon_f = rep(log(thiele.loghump.prior.f[5,1]), bf.idx5$n_periods), log_epsilon_m = rep(log(thiele.loghump.prior.m[5,1]), bf.idx5$n_periods),
                 log_A_f = log(thiele.loghump.prior.f[6,]), log_A_m = log(thiele.loghump.prior.m[6,]),
                 log_B_f = log(thiele.loghump.prior.f[7,]), log_B_m = log(thiele.loghump.prior.m[7,]),
                 log_A_d = log(thiele.loghump.prior.m[6,] - thiele.loghump.prior.f[6,]),
+                
+                log_lambda_f = rep(log(0.005), bf.idx5$n_periods), log_lambda_m = rep(log(0.005), bf.idx5$n_periods),
+                log_delta_f = rep(log(0.3), bf.idx5$n_periods), log_delta_m = rep(log(0.3), bf.idx5$n_periods),
+                log_epsilon_f = rep(log(22), bf.idx5$n_periods), log_epsilon_m = rep(log(25), bf.idx5$n_periods),
                 
                 log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
                 log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
