@@ -278,7 +278,7 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 open.age <- 85
 n_ages <- open.age / 5 + 1
 
-country <- "Uganda"
+country <- "Nigeria"
 
 library(MortCast)
 load("~/cohort smooth 1900-2017.RData")
@@ -545,8 +545,8 @@ if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
 }
 
-prec.init <- 2
-hump.prec.init <- 1
+prec.init <- 5
+hump.prec.init <- 2
 rho.init <- 0
 
 data.vec <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
@@ -678,8 +678,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             log_lambda_hypervar_prec = log(2/0.1),
                             log_delta_hypervar_prec = log(2/0.1),
                             log_epsilon_hypervar_prec = log(2/0.1),
-                            log_A_hypervar_prec = log(2/0.001),
-                            log_B_hypervar_prec = log(2/0.001)
+                            log_A_hypervar_prec = log(2/0.01),
+                            log_B_hypervar_prec = log(2/0.01)
                             )
 
 par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
@@ -857,7 +857,10 @@ system.time(thiele.f.loghump.oag.RW.ori.Ad <- fit_tmb(input.thiele.loghump.oag.v
                                                                                                                   "log_B_f", "log_B_m"
                                                                                                                   ),
                                                       DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_Ad",
-                                                      stepmin = 1e-10, stepmax = 1
+                                                      stepmin = 1e-10, stepmax = 1,
+                                                      map = list(
+                                                        
+                                                        )
                                                       )
             ) 
 

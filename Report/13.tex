@@ -42,13 +42,32 @@
 	\item[--] results are much more sensible in terms of mortality schedules
 	\item[--] estimated migrations are now much smoother, not sure whether its because of the re-centering in $\rho$ or the strict priors given on the AB term
 	\item[--] estimated epsilon are much more sensible
-	\item[--] Burkina Faso male B term, Cameroon B term, Congo 1995, Eswatini crossing female mx and male mx, Gambia B term kink DHS data, Guinea crossing female mx and male mx, Liberia crossing female mx and male mx, Malawi male A < female A,
+	\item[--] Burkina Faso male B term, Burkina Faso female migration, Cameroon B term, Congo 1995, Eswatini crossing female mx and male mx, Gambia B term kink DHS data, Guinea crossing female mx and male mx, Liberia crossing female mx and male mx, Malawi male A < female A,
 	Niger crossing $_{45}q_{15}$, Nigeria migration, Rwanda male lambda and female B, Sierra Leone migration, Mozambique (crazy estimates)
+	\end{itemize}
+
+\item Also tried to have $A_m = A_f + A_d$
+	\begin{itemize}
+	\item[--] hard to converge, a lot failed
+	\item[--] for those that converged, estimates are similar to above
+	\item[--] Kenya AB term, Malawi insensible A, Mozambique AB term, Senegal AB, Uganda AB term
 	\end{itemize}
 
 \item correlated RW walks between male and female hump components?
 \item maybe overall prior for hypervariance still too loose, will investigate tightening up all together
 \end{itemize}
 
+\section*{Angola:}
+\begin{itemize}
+\item only 1 census (in2014) from DYB after 1960 (also one in 1960 but at the moment using WPP 1960 for generality)
+\end{itemize}
+
+\section*{Benin:}
+\begin{itemize}
+\item unrealistic AB term
+\item $_{45}q_{15}$ crossing over 
+\item over-smoothed humps compared to DHS?
+\item female lambda $>$ male lambda
+\end{itemize}
 
 \end{document} 
