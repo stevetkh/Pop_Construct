@@ -52,6 +52,7 @@
 
 \item correlated RW walks between male and female hump components?
 \item maybe overall prior for hypervariance still too loose, will investigate tightening up all together
+\item produce variance estimates
 \end{itemize}
 
 \section*{Angola:}
@@ -68,15 +69,16 @@
 
 \section*{Burkina Faso:}
 \begin{itemize}
+\item requires a init lambda = 0.005
 \item male B term
-\item female $m_x$ > male $m_x$ at young ages in the earliest years
+\item female $m_x$ $>$ male $m_x$ at young ages in the earliest years
 \item female migration insensible across time
 \end{itemize}
 
 \section*{Burundi}
 \begin{itemize}
 \item cannot converge with the initial values in 1960 given by the LogQuad
-\item requires a flatter hump in 1960 as initial values to converge (lambda = 0.005, delta = 0.3)
+\item used a sharper hump than LogQuad and higher B (lambda = 0.1, delta = 1.2, B = log(LQ) + 0.5)
 \end{itemize}
 
 \section*{Cameroon}
@@ -109,7 +111,7 @@
 
 \section*{Eswatini}
 \begin{itemize}
-\item female $m_x$ > male $m_x$ in te most recent years at some ages
+\item female $m_x$ $>$ male $m_x$ in te most recent years at some ages
 \item migration across age too un-smooth?
 \end{itemize}
 
@@ -127,7 +129,7 @@
 \section*{Guinea}
 \begin{itemize}
 \item wiggly estimated lambda
-\item female $m_x$ > male $m_x$ at young ages 
+\item female $m_x$ $>$ male $m_x$ at young ages 
 \end{itemize}
 
 \section*{Kenya}
@@ -142,7 +144,7 @@
 
 \section*{Liberia}
 \begin{itemize}
-\item  female $m_x$ > male $m_x$ at some ages in the most recent years
+\item  female $m_x$ $>$ male $m_x$ at some ages in the most recent years
 \end{itemize}
 
 \section*{Madagascar}
@@ -162,6 +164,7 @@
 \section*{Mali}
 \begin{itemize}
 \item estimated male U5MR lower than WPP/IGME estimates in all years
+\item $_{45}q_{15}$ crossing over in early years coz of later years
 \end{itemize}
 
 \section*{Mozambique}
@@ -180,7 +183,7 @@
 \begin{itemize}
 \item estimated $_{45}q_{15}$ crossing over at early years
 \item estimated male B too flat?
-\item female $m_x$ > male $m_x$ at most ages
+\item female $m_x$ $>$ male $m_x$ at most ages
 \end{itemize}
 
 \section*{Nigeria}
