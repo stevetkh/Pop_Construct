@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  10 APR 2021 15:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  8 MAY 2021 16:23
 entering extended mode
 **"./Note on sx.tex"
 (Note on sx.tex
@@ -360,22 +360,62 @@ Underfull \hbox (badness 10000) in paragraph at lines 34--38
 
  []
 
-! I can't write on file `"Note on sx.pdf"'.
-Please type another file name for output
-! Emergency stop.
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.62 \newpage
-             
-*** (job aborted, file error in nonstop mode)
+[1
 
- 
+{C:/Users/ktang3/AppData/Local/MiKTeX/pdftex/config/pdftex.map}]
+
+! LaTeX Error: There's no line here to end.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.78 \paragraph{LogQuad Model} \\~
+                                  \\
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (27.52469pt too wide) in paragraph at lines 83--84
+\OT1/ptm/m/n/12 group $\OT1/cmr/m/n/12 80[]$\OT1/ptm/m/n/12 . There-fore, the e
+s-ti-mated mor-tal-ity rates from the LogQuad Model at age groups $\OT1/cmr/m/n
+/12 80[]84\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 85[]89\OML/cmm/m/it/12 ; [] ; \OT1
+/cmr/m/n/12 110[]$
+ []
+
+
+Package caption Warning: Unused \captionsetup[sub] on input line 19.
+See the caption package documentation for explanation.
+
+[2] (Note on sx.aux) ) 
 Here is how much of TeX's memory you used:
- 5659 strings out of 479321
- 89269 string characters out of 2856107
+ 5671 strings out of 479321
+ 89448 string characters out of 2856107
  392187 words of memory out of 3000000
- 23038 multiletter control sequences out of 15000+600000
- 409419 words of font info for 50 fonts, out of 8000000 for 9000
+ 23041 multiletter control sequences out of 15000+600000
+ 415380 words of font info for 57 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 81i,14n,88p,323b,149s stack positions out of 5000i,500n,10000p,200000b,80000s
-!  ==> Fatal error occurred, no output PDF file produced!
+ 81i,14n,88p,365b,149s stack positions out of 5000i,500n,10000p,200000b,80000s
+{C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/
+dvips/base/8r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmex10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/ktang3/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/ktang3/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/ktang3/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/ktan
+g3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Us
+ers/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pf
+b><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
+/cmsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmsy6.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fo
+nts/type1/urw/times/utmb8a.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/f
+onts/type1/urw/times/utmr8a.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/
+fonts/type1/urw/times/utmri8a.pfb>
+Output written on "Note on sx.pdf" (2 pages, 128774 bytes).
+PDF statistics:
+ 62 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+
