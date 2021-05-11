@@ -352,8 +352,8 @@ Type objective_function<Type>::operator() ()
     sx_mat_f(0,i) = Type(1.0) / (Type(1.0) + Type(0.5) * interval * mx_mat_f(0,i));
     sx_mat_m(0,i) = Type(1.0) / (Type(1.0) + Type(0.5) * interval * mx_mat_m(0,i));
     //UDD open age group sx
-    sx_mat_f(mx_mat_aggr_f.rows(), i) = (1 - 2.5*mx_mat_aggr_f(mx_mat_aggr_f.rows() - 1, i)) / ((1 + 2.5*mx_mat_aggr_f(mx_mat_aggr_f.rows() - 1, i)));
-    sx_mat_m(mx_mat_aggr_m.rows(), i) = (1 - 2.5*mx_mat_aggr_m(mx_mat_aggr_m.rows() - 1, i)) / ((1 + 2.5*mx_mat_aggr_m(mx_mat_aggr_m.rows() - 1, i)));
+    sx_mat_f(mx_mat_aggr_f.rows(), i) = (1 - Type(0.5) * interval *mx_mat_aggr_f(mx_mat_aggr_f.rows() - 1, i)) / ((1 + Type(0.5) * interval*mx_mat_aggr_f(mx_mat_aggr_f.rows() - 1, i)));
+    sx_mat_m(mx_mat_aggr_m.rows(), i) = (1 - Type(0.5) * interval *mx_mat_aggr_m(mx_mat_aggr_m.rows() - 1, i)) / ((1 + Type(0.5) * interval*mx_mat_aggr_m(mx_mat_aggr_m.rows() - 1, i)));
     
     for(int j=0; j < (mx_mat_aggr_f.rows() - 1); j++) {
       sx_mat_f(j+1,i) = (Type(1.0) - Type(0.5) * interval * mx_mat_f(j,i)) / (Type(1.0) + Type(0.5) * interval * mx_mat_f(j+1,i));

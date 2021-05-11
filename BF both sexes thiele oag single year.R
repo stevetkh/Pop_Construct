@@ -35,7 +35,6 @@ stop_for_status(req)
 filelist <- unlist(lapply(content(req)$tree, "[", "path"), use.names = F)
 
 for (filename in filelist) {
-  
   one_function <- paste0("https://github.com/sarahertog/ddharmony/blob/main/", filename, "?raw=TRUE")
   source_url(one_function)
   rm(one_function)
@@ -216,7 +215,7 @@ wpp.qx$name <- str_replace(wpp.qx$name,"Democratic Republic of the Congo","Congo
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
-open.age <- 95
+open.age <- 76
 n_ages <- open.age + 1
 
 country <- params$country
@@ -352,7 +351,7 @@ pop.m.oag.singleyear <- bind_cols(Age = 0:open.age, pop.m.oag %>% summarise_at(v
 
 bf.idx5<-projection_indices(period_start = 1960,
                             #period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
-                            period_end = 2019,
+                            period_end = 2020,
                             interval = 1,
                             n_ages = n_ages,
                             fx_idx = 16L,
@@ -365,18 +364,27 @@ fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>%
          age = as.numeric(str_extract(variable,"\\d{2}"))) %>%
   select(year,age, fx)
 
+fx_init.singleyear <- fx %>%
+  slice(rep(1:98, each = 25)) %>%
+  mutate(year = rep(rep(1950:2019, 7), each = 5)) %>%
+  arrange(year) %>%
+  mutate(gae = rep(15:49, 70)) %>%
+  pivot_wider(names_from = year, values_from = fx) %>%
+  select(num_range("",bf.idx5$periods)) %>%
+  as.matrix()
+
 fx_init <-  fx %>% filter(year %in% bf.idx5$periods) %>%
   pivot_wider(names_from=year, values_from=fx) %>% 
   select(-age) %>% as.matrix()
 
-fx_init.singleyear <- reshape2::melt(fx_init) %>% 
-  slice(rep(rep(0:(ncol(fx_init)-1) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init), each = 5)) %>%
-  mutate(year = rep(bf.idx5$periods, each = nrow(fx_init)*5),
-         age = rep(bf.idx5$fertility_ages, bf.idx5$n_periods)) %>%
-  select(-2) %>%
-  pivot_wider(names_from = year, values_from = value) %>%
-  select(num_range("",bf.idx5$periods)) %>%
-  as.matrix()
+#fx_init.singleyear <- reshape2::melt(fx_init) %>% 
+#  slice(rep(rep(0:(ncol(fx_init)-2) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init), each = 5)) %>%
+#  mutate(year = rep(bf.idx5$periods, each = nrow(fx_init)*5),
+#         age = rep(bf.idx5$fertility_ages, bf.idx5$n_periods)) %>%
+#  select(-2) %>%
+#  pivot_wider(names_from = year, values_from = value) %>%
+#  select(num_range("",bf.idx5$periods)) %>%
+#  as.matrix()
 
 log_fx_mean <- as.vector(log(fx_init.singleyear))
 
@@ -476,11 +484,12 @@ thiele_age <- 0.5:97.5
 
 ##DHS data cohort smoothed
 bf5.smooth <- aggr.mat.cohort.0[[country]] %>%
+  filter(period %in% bf.idx5$periods) %>%
   group_by(mm1, tips, DHS, agegr, period) %>%
   summarise_at(vars(pyears, event, pyears2, adjusted), sum) %>%
   ungroup()
 
-bf5.smooth$period5 <- factor(bf5.smooth$period,levels=bf.idx5$periods)
+bf5.smooth$period <- factor(bf5.smooth$period,levels=bf.idx5$periods)
 bf5.smooth$tips <- factor(bf5.smooth$tips,levels=0:14)
 
 dhs.start.age <- 15
@@ -518,7 +527,7 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             fx_idx = 16L,
                             n_fx = 35L,
                             census_log_pop_f = data.f, census_log_pop_m = data.m,
-                            census_year_idx = match(bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval), bf.idx5$periods),
+                            census_year_idx = match(bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval), bf.idx5$periods_out),
                             census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
                             
                             open_idx = bf.idx5$n_ages,
@@ -530,7 +539,7 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                             Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
                             df_age = match(bf5.f.no0.smooth$agegr + 0.5, thiele_age), dm_age = match(bf5.m.no0.smooth$agegr + 0.5, thiele_age),
-                            df_time = match(bf5.f.no0.smooth$period5, levels(bf5.f.no0.smooth$period5)), dm_time = match(bf5.m.no0.smooth$period5, levels(bf5.m.no0.smooth$period5)),
+                            df_time = match(bf5.f.no0.smooth$period, levels(bf5.f.no0.smooth$period)), dm_time = match(bf5.m.no0.smooth$period, levels(bf5.m.no0.smooth$period)),
                             df_tp = c(bf5.f.no0.smooth$tips)-1, dm_tp = c(bf5.m.no0.smooth$tips)-1,
                             
                             log_phi_mean_f = log(thiele.loghump.prior.f[1,]), log_phi_mean_m = log(thiele.loghump.prior.m[1,]),

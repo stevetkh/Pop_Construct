@@ -1,5 +1,5 @@
 params <- list(
-  country = "Cameroon", 
+  country = "Namibia", 
   log_phi_hyperprec = log(2/0.01),
   log_psi_hyperprec = log(2/0.01),
   log_lambda_hyperprec = log(2/0.1),
