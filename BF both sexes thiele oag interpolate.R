@@ -1,5 +1,5 @@
 params <- list(
-  country = "Zimbabwe", 
+  country = "Namibia", 
   log_phi_hyperprec = log(2/0.01),
   log_psi_hyperprec = log(2/0.01),
   log_lambda_hyperprec = log(2/0.1),
@@ -800,7 +800,7 @@ q4515.func <- function(x){
 
 wpp.bf.q4515 <- filter(wpp.q4515, Name==country)
 
-gbd.bf.q4515 <- filter(gbd.q4515, location_name == country, year_id %in% (bf.idx5$periods+2), sex_name!="both") %>%
+gbd.bf.q4515 <- filter(gbd.q4515, location_name == country, year_id %in%bf.idx1$periods, sex_name!="both") %>%
   select(c(4,7,12))
 
 q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>% 
@@ -1457,9 +1457,9 @@ inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model,
 
 #fertility####
 get.fert<- function(x){
-  pop.mat <- matrix(x$mode$fx, bf.idx5$n_fx, bf.idx5$n_periods)
-  rownames(pop.mat) <- c(bf.idx5$fertility_ages)
-  colnames(pop.mat) <- bf.idx5$periods
+  pop.mat <- matrix(x$mode$fx_mat_expand, bf.idx1$n_fx, bf.idx1$n_periods)
+  rownames(pop.mat) <- c(bf.idx1$fertility_ages)
+  colnames(pop.mat) <- bf.idx1$periods
   reshape2::melt(pop.mat) %>% select(age = Var1, year = Var2, value = value)
 }
 
@@ -1474,9 +1474,9 @@ fx.df <- lapply(loghump.models.list, get.fert) %>%
   mutate(hump = "log-Normal hump",
          model = fct_relevel(model, c("Initial Values", "Thiele RW"))) 
 
-fx.var.df <- as_tibble(t(apply(sapply(thiele.var.sim, function(i){i$fx}), 1, quantile, c(0.025, 0.975)))) %>%
-  mutate(age = rep(bf.idx5$fertility_ages, bf.idx5$n_periods),
-         year = rep(bf.idx5$periods, each = bf.idx5$n_fx),
+fx.var.df <- as_tibble(t(apply(sapply(thiele.var.sim, function(i){i$fx_mat_expand}), 1, quantile, c(0.025, 0.975)))) %>%
+  mutate(age = rep(bf.idx1$fertility_ages, bf.idx1$n_periods),
+         year = rep(bf.idx1$periods, each = bf.idx1$n_fx),
          period5 = sprintf("%d-%d", year, year + interval-1))
 
 fx.df %>% filter(model != "Initial Values") %>%

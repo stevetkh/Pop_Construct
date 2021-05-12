@@ -715,7 +715,7 @@ q4515.func <- function(x){
 
 wpp.bf.q4515 <- filter(wpp.q4515, Name==country)
 
-gbd.bf.q4515 <- filter(gbd.q4515, location_name == country, year_id %in% (bf.idx5$periods+2), sex_name!="both") %>%
+gbd.bf.q4515 <- filter(gbd.q4515, location_name == country, year_id %in% 1960:2020, sex_name!="both") %>%
   select(c(4,7,12))
 
 q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>% 

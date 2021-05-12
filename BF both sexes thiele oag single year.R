@@ -41,7 +41,8 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_singleyear.cpp")
+load(paste0("~/",params$country," 2x2.RData"))
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_singleyear.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_singleyear"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
@@ -197,6 +198,7 @@ igme.5q0.m<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 male.cs
 igme.5q0.f<-read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/5q0 female.csv")
 wpp.fx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP fx.csv")
 wpp.pop <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP Pop estimates.csv")
+wpp.pop.age.specific <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP pop age specific.csv")
 wpp.q4515 <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP 45q15.csv")
 gbd.q4515 <- read.csv(file="C:/Users/ktang3/Desktop/Imperial/SSA_mort/GBD 45q15.csv",header=T)
 wpp.qx <- read.csv("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/WPP age specific.csv")
@@ -215,7 +217,7 @@ wpp.qx$name <- str_replace(wpp.qx$name,"Democratic Republic of the Congo","Congo
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
-open.age <- 76
+open.age <- 86
 n_ages <- open.age + 1
 
 country <- params$country
@@ -245,10 +247,22 @@ wpp.5q0 <- wpp.bf.qx %>% filter(AgeGrpStart %in% 0:1) %>% select(c(MidPeriod, Se
          year5 = MidPeriod - 3) %>%
   ungroup() %>% arrange(Sex, year5) %>%
   select(c(Sex, year5, q50))
+
+wpp.5q0.interpolate <- bind_rows(
+  approx(x = seq(1952, 2097, by = 5), y = wpp.5q0 %>% filter(Sex=="Female") %>% .$q50, xout=1952:2097)$y %>%
+    as_tibble() %>%
+    mutate(q50 = value,
+           Sex = "Female",
+           year = 1952:2097,
+           .keep = "none"),
   
-wpp.5q0.singleyear <- wpp.5q0 %>%
-  slice(rep(1:nrow(wpp.5q0), each = 5)) %>%
-  mutate(year = rep(min(year5):(max(year5)+4), 2))
+  approx(x = seq(1952, 2097, by = 5), y = wpp.5q0 %>% filter(Sex=="Male") %>% .$q50, xout=1952:2097)$y %>%
+    as_tibble() %>%
+    mutate(q50 = value,
+           Sex = "Male",
+           year = 1952:2097,
+           .keep = "none")
+)
   
 #DDHarmonized smoothed
 census_pop_counts <- DDharmonize_validate_PopCounts(locid = ifelse(country=="Cote d'Ivoire", 384, 
@@ -326,10 +340,10 @@ ddharm_bf_census_m_oag <- ddharm_census_m_smoothed %>%
   summarise_at(vars(-age), function(i){if(all(is.na(i))){NA} else {sum(i,na.rm=T)}})
 
 ##WPP Pop Estimates
-pop <- wpp.pop %>% filter(Name == country) %>% 
-  setNames(c(names(wpp.pop)[1:3], seq(0, 100, by = 5))) %>%
+pop <- wpp.pop.age.specific %>% filter(Name == country) %>% 
+  setNames(c(names(wpp.pop)[1:3], 0:100)) %>%
   reshape2::melt(id.vars=c("Name", "Sex", "Reference")) %>% 
-  mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
+  mutate(year = Reference, 
          value = as.numeric(str_replace_all(value, "\\s", "")) * 1000,
          age = variable) %>%
   select(Sex, year, age, value) %>%
@@ -346,9 +360,6 @@ pop.m.oag <- filter(pop, Sex=="male") %>% select(-Sex) %>%
   group_by(aggr.age) %>%
   summarise_at(vars(-age), sum, na.rm=T)
 
-pop.f.oag.singleyear <- bind_cols(Age = 0:open.age, pop.f.oag %>% summarise_at(vars(-aggr.age), DemoTools::graduate, Age=pop.f.oag$aggr.age, method="mono"))
-pop.m.oag.singleyear <- bind_cols(Age = 0:open.age, pop.m.oag %>% summarise_at(vars(-aggr.age), DemoTools::graduate, Age=pop.m.oag$aggr.age, method="mono"))
-
 bf.idx5<-projection_indices(period_start = 1960,
                             #period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
                             period_end = 2020,
@@ -357,6 +368,15 @@ bf.idx5<-projection_indices(period_start = 1960,
                             fx_idx = 16L,
                             n_fx = 35L,
                             n_sexes = 2)
+
+bf.idx2<-projection_indices(period_start = 1960,
+                            #period_end = max(floor(as.numeric(max(grep("\\d+", names(ddharm_bf_census_f), value=TRUE))) / 5)  * 5 + 5, 2015),
+                            period_end = 2016,
+                            interval = 2,
+                            n_ages = n_ages,
+                            fx_idx = 8L,
+                            n_fx = 18L,
+                            n_sexes = 2)
 ##WPP fx
 fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>% 
   mutate(year = as.numeric(str_extract(Reference,"\\d{4}")), 
@@ -364,71 +384,15 @@ fx <- wpp.fx %>% filter(Name == country) %>% reshape2::melt() %>%
          age = as.numeric(str_extract(variable,"\\d{2}"))) %>%
   select(year,age, fx)
 
-fx_init.singleyear <- fx %>%
-  slice(rep(1:98, each = 25)) %>%
-  mutate(year = rep(rep(1950:2019, 7), each = 5)) %>%
-  arrange(year) %>%
-  mutate(gae = rep(15:49, 70)) %>%
-  pivot_wider(names_from = year, values_from = fx) %>%
-  select(num_range("",bf.idx5$periods)) %>%
-  as.matrix()
-
-fx_init <-  fx %>% filter(year %in% bf.idx5$periods) %>%
+fx_init.singleyear <-  fx %>% filter(year %in% bf.idx5$periods) %>%
   pivot_wider(names_from=year, values_from=fx) %>% 
-  select(-age) %>% as.matrix()
-
-#fx_init.singleyear <- reshape2::melt(fx_init) %>% 
-#  slice(rep(rep(0:(ncol(fx_init)-2) * nrow(fx_init), each=nrow(fx_init) * 5) + 1:nrow(fx_init), each = 5)) %>%
-#  mutate(year = rep(bf.idx5$periods, each = nrow(fx_init)*5),
-#         age = rep(bf.idx5$fertility_ages, bf.idx5$n_periods)) %>%
-#  select(-2) %>%
-#  pivot_wider(names_from = year, values_from = value) %>%
-#  select(num_range("",bf.idx5$periods)) %>%
-#  as.matrix()
+  select(-age) %>% as.matrix() %>%
+  apply(1, function(i){approx(x=seq(1960, 2015, by = 5)+2, y=i, xout=1960:2020, rule=2)$y}) %>%
+  apply(1, function(i){approx(x=seq(15,45,by=5)+2 , y=i, xout=15:49, rule=2)$y}) %>%
+  `colnames<-`(1960:2020)
 
 log_fx_mean <- as.vector(log(fx_init.singleyear))
 
-thiele.prior <- function(h, sex) {
-  cat(h,"\n")
-  log.m0 <- h - log(1 - 0.5 * exp(h)) + log(0.2)
-  if(sex == "male"){
-    LQ.mx <- c(log.m0, as.matrix(LQcoef.m[,1:3]) %*% c(1, h, h^2))
-  } else if (sex == "female") {
-    LQ.mx <- c(log.m0, as.matrix(LQcoef.f[,1:3]) %*% c(1, h, h^2))
-  }
-  
-  #get priors for phi and psi using LQ mx at 0-4 to 10-14
-  child.coef <- lm((LQ.mx[2:3]-log.m0) ~ c(5, 10)-1)$coef
-  psi <- -child.coef[1]
-  
-  #get priors for lambda, delta and epsilon using 10-14 to 40-44
-  hump.coef <- lm(LQ.mx[3:9] ~  seq(12, 42, by = 5) + I(seq(12, 42, by = 5)^2))$coef
-  delta <- -hump.coef[3]
-  epsilon <- -hump.coef[2] / (2 * hump.coef[3])
-  lambda <- exp(hump.coef[1] - hump.coef[2]^2 / (4 * hump.coef[3]))
-  
-  lambda <- ifelse(lambda<1e-5 | lambda>0.015, 3e-3, lambda)
-  delta <- ifelse(delta<1e-5, 1e-3, delta)
-  epsilon <- ifelse(epsilon>40 | epsilon<10, 20, epsilon)
-  
-  #get priors for A and B using 65-69 to 90-94
-  old.coef <- lm(LQ.mx[14:19] ~ seq(67, 92, by = 5))$coef
-  A <- exp(old.coef[1])
-  B <- old.coef[2]
-  
-  thiele.min <- function(par, dat){
-    all.age <- seq(2, 92, by = 5)
-    par <- exp(par)
-    est <- par[1] * exp(-par[2] * (all.age-2)) + par[3] * exp(-par[4]*(all.age - par[5])^2) + par[6] * exp(par[7] * (all.age-92))
-    ess <- sum((log(est[-1]) - dat[-1])^2) + 1e4 * (log(est[1]) - dat[1])^2
-    return(ess)
-  }
-  #nlm <- nlminb(start = log(c(phi, psi, lambda, delta, epsilon, A, B)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-4))
-  nlm <- nlminb(start = log(c(exp(log.m0), psi, 2e-3, 5e-3, 24, exp(LQ.mx[19]), 0.1)), thiele.min, dat = LQ.mx[1:19], control = list(eval.max = 8000, iter.max = 8000, step.min = 1e-10, step.max = 1e-4))
-  cat(nlm$message,"\n")
-  stopifnot(nlm$convergence ==0)
-  return(setNames(exp(nlm$par), c("phi", "psi", "lambda", "delta", "epsilon", "A", "B")))
-}
 thiele.loghump.prior <- function(h, sex) {
   cat(h,"\n")
   log.m0 <- h - log(1 - 0.5 * exp(h)) + log(0.2)
@@ -471,12 +435,12 @@ thiele.loghump.prior <- function(h, sex) {
 }
 
 igme.h.mean.f <- igme.5q0.df %>% filter(Sex=="Female", year %in% bf.idx5$periods) %>% .$child.mort %>% log()
-h.mean.f <- wpp.5q0.singleyear %>% filter(Sex=="Female", year %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
+h.mean.f <- wpp.5q0.interpolate %>% filter(Sex=="Female", year %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
 #thiele.prior.f <- sapply(h.mean.f, thiele.prior, sex="female")
 thiele.loghump.prior.f <- sapply(h.mean.f, thiele.loghump.prior, sex="female")
 
 igme.h.mean.m <- igme.5q0.df %>% filter(Sex=="Male", year %in% bf.idx5$periods) %>% .$child.mort %>% log()
-h.mean.m <- wpp.5q0.singleyear %>% filter(Sex=="Male", year %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
+h.mean.m <- wpp.5q0.interpolate %>% filter(Sex=="Male", year %in% bf.idx5$periods) %>% .$q50 %>% log() ##Using WPP 5q0 estimates
 #thiele.prior.m <- sapply(h.mean.m, thiele.prior, sex="male")
 thiele.loghump.prior.m <- sapply(h.mean.m, thiele.loghump.prior, sex="male")
 
@@ -498,8 +462,8 @@ dhs.end.age <- 59
 bf5.f.no0.smooth <- bf5.smooth %>% filter(mm1=="female", agegr >= dhs.start.age, agegr <= dhs.end.age) %>% arrange(period,tips,agegr)
 bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", agegr >= dhs.start.age, agegr <= dhs.end.age) %>% arrange(period,tips,agegr)
 
-basepop.f <- ifelse(pop.f.oag.singleyear$`1960`==0, 1, pop.f.oag.singleyear$'1960')
-basepop.m <- ifelse(pop.m.oag.singleyear$`1960`==0, 1, pop.m.oag.singleyear$'1960')
+basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
+basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
 data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
 
@@ -528,17 +492,17 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             n_fx = 35L,
                             census_log_pop_f = data.f, census_log_pop_m = data.m,
                             census_year_idx = match(bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval), bf.idx5$periods_out),
-                            census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
+                            #census_year_grow_idx = as.numeric(colnames(data.f)) - bf.idx5$interval * floor(as.numeric(colnames(data.f)) / bf.idx5$interval),
                             
                             open_idx = bf.idx5$n_ages,
                             oag = apply(data.f, 2, function(i){length(na.omit(i))}),
-                            pop_start = rep(2, ncol(data.f)), 
+                            pop_start = rep(6, ncol(data.f)), 
                             pop_end = ifelse(apply(data.f, 2, function(i){length(na.omit(i))})-1 > 75 + 1, 75 + 1, apply(data.f, 2, function(i){length(na.omit(i))})-1),
                             #pop_end = apply(data.f, 2, function(i){length(na.omit(i))})-1,
                             
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                             Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
-                            df_age = match(bf5.f.no0.smooth$agegr + 0.5, thiele_age), dm_age = match(bf5.m.no0.smooth$agegr + 0.5, thiele_age),
+                            df_age = bf5.f.no0.smooth$agegr + 1, dm_age = bf5.m.no0.smooth$agegr + 1,
                             df_time = match(bf5.f.no0.smooth$period, levels(bf5.f.no0.smooth$period)), dm_time = match(bf5.m.no0.smooth$period, levels(bf5.m.no0.smooth$period)),
                             df_tp = c(bf5.f.no0.smooth$tips)-1, dm_tp = c(bf5.m.no0.smooth$tips)-1,
                             
@@ -569,45 +533,59 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             log_B_hypervar_prec = params$log_B_hyperprec
 )
 
+fit.2 <- thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.))
 
-par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
-                log_tau2_fx = 3,
-                log_tau2_gx_f = 2, log_tau2_gx_m = 2,
+par.vec <- list(log_tau2_logpop_f = fit.2$log_tau2_logpop_f, log_tau2_logpop_m = fit.2$log_tau2_logpop_m,
+                log_tau2_fx = fit.2$log_tau2_fx,
+                log_tau2_gx_f = fit.2$log_tau2_gx_f,
+                log_tau2_gx_m = fit.2$log_tau2_gx_m,
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
                 log_fx = log_fx_mean,
-                gx_f = rep(0, bf.idx5$n_ages * bf.idx5$n_periods), gx_m = rep(0, bf.idx5$n_ages * bf.idx5$n_periods),
-                logit_rho_g_x_f = 3, logit_rho_g_x_m = 3,
-                logit_rho_g_t_f = 2, logit_rho_g_t_m = 2,
+                gx_f = fit.2$gx_f %>% matrix(length(fit.2$log_basepop_f), length(fit.2$log_A_f)) %>% 
+                  apply(2, function(i){approx(x = 0:(length(fit.2$log_basepop_f)-1)*2, y= i, xout = bf.idx5$ages, rule = 2)$y}) %>%
+                  apply(1, function(i){approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y= i, xout = bf.idx5$periods, rule = 2)$y}) %>%
+                  c(), 
+                gx_m = fit.2$gx_m %>% matrix(length(fit.2$log_basepop_f), length(fit.2$log_A_f)) %>% 
+                  apply(2, function(i){approx(x = 0:(length(fit.2$log_basepop_f)-1)*2, y= i, xout = bf.idx5$ages, rule = 2)$y}) %>%
+                  apply(1, function(i){approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y= i, xout = bf.idx5$periods, rule = 2)$y}) %>%
+                  c(),
+                logit_rho_g_x_f = fit.2$logit_rho_g_x_f, logit_rho_g_x_m = fit.2$logit_rho_g_x_m,
+                logit_rho_g_t_f = fit.2$logit_rho_g_t_f, logit_rho_g_t_m = fit.2$logit_rho_g_t_m,
                 
-                log_lambda_tp = 1,
-                log_lambda_tp_0_inflated_sd = 0.3,
-                tp_params = rep(0,15),
+                log_lambda_tp = fit.2$log_lambda_tp,
+                log_lambda_tp_0_inflated_sd = fit.2$log_lambda_tp_0_inflated_sd,
+                tp_params = fit.2$tp_params,
                 
-                log_dispersion_f = 1.3, log_dispersion_m = 1.3,
+                log_dispersion_f = fit.2$log_dispersion_f, log_dispersion_m = fit.2$log_dispersion_m,
                 
-                log_phi_f = log(thiele.loghump.prior.f[1,]), log_phi_m = log(thiele.loghump.prior.m[1,]),
-                log_psi_f = log(thiele.loghump.prior.f[2,]), log_psi_m = log(thiele.loghump.prior.m[2,]),
-                log_lambda_f = rep(log(init_lambda_f), bf.idx5$n_periods), log_lambda_m = rep(log(init_lambda_m), bf.idx5$n_periods),
-                log_delta_f = rep(log(init_delta_f), bf.idx5$n_periods), log_delta_m = rep(log(init_delta_m), bf.idx5$n_periods),
-                log_epsilon_f = rep(log(init_epsilon_f), bf.idx5$n_periods), log_epsilon_m = rep(log(init_epsilon_m), bf.idx5$n_periods),
-                log_A_f = log(thiele.loghump.prior.f[6,]), log_A_m = log(thiele.loghump.prior.m[6,]),
-                log_B_f = log(thiele.loghump.prior.f[7,]), log_B_m = log(thiele.loghump.prior.m[7,]),
+                log_phi_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_phi_f, xout =  bf.idx5$periods, rule = 2)$y,
+                log_phi_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_phi_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_psi_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_psi_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_psi_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_psi_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_lambda_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_lambda_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_lambda_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_lambda_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_delta_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_delta_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_delta_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_delta_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_epsilon_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_epsilon_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_epsilon_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_epsilon_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_A_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_A_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_A_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_A_m, xout = bf.idx5$periods, rule = 2)$y,
+                log_B_f = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_B_f, xout = bf.idx5$periods, rule = 2)$y, 
+                log_B_m = approx(x = 1960 + 2*0:(length(fit.2$log_A_f)-1), y = fit.2$log_B_m, xout = bf.idx5$periods, rule = 2)$y,
                 
-                log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
-                log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
-                log_marginal_prec_lambda_f = hump.prec.init, log_marginal_prec_lambda_m = hump.prec.init,
-                log_marginal_prec_delta_f = hump.prec.init, log_marginal_prec_delta_m = hump.prec.init,
-                log_marginal_prec_epsilon_f = hump.prec.init, log_marginal_prec_epsilon_m = hump.prec.init,
-                log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
-                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
+                log_marginal_prec_phi_f = fit.2$log_marginal_prec_phi_f, log_marginal_prec_phi_m = fit.2$log_marginal_prec_phi_m,
+                log_marginal_prec_psi_f = fit.2$log_marginal_prec_psi_f, log_marginal_prec_psi_m = fit.2$log_marginal_prec_psi_m,
+                log_marginal_prec_lambda_f = fit.2$log_marginal_prec_lambda_f, log_marginal_prec_lambda_m = fit.2$log_marginal_prec_lambda_m,
+                log_marginal_prec_delta_f = fit.2$log_marginal_prec_delta_f, log_marginal_prec_delta_m = fit.2$log_marginal_prec_delta_m,
+                log_marginal_prec_epsilon_f = fit.2$log_marginal_prec_epsilon_f, log_marginal_prec_epsilon_m = fit.2$log_marginal_prec_epsilon_m,
+                log_marginal_prec_A_f = fit.2$log_marginal_prec_A_f, log_marginal_prec_A_m = fit.2$log_marginal_prec_A_m,
+                log_marginal_prec_B_f = fit.2$log_marginal_prec_B_f, log_marginal_prec_B_m = fit.2$log_marginal_prec_B_m,
                 
-                logit_rho_phi_f = rho.init, logit_rho_phi_m = rho.init,
-                logit_rho_psi_f = rho.init, logit_rho_psi_m = rho.init,
-                logit_rho_lambda_f = rho.init, logit_rho_lambda_m = rho.init,
-                logit_rho_delta_f = rho.init, logit_rho_delta_m = rho.init,
-                logit_rho_epsilon_f = rho.init, logit_rho_epsilon_m = rho.init,
-                logit_rho_A_f = rho.init, logit_rho_A_m = rho.init,
-                logit_rho_B_f = rho.init, logit_rho_B_m = rho.init
+                
+                logit_rho_phi_f = fit.2$logit_rho_phi_f, logit_rho_phi_m = fit.2$logit_rho_phi_m,
+                logit_rho_psi_f = fit.2$logit_rho_psi_f, logit_rho_psi_m = fit.2$logit_rho_psi_m,
+                logit_rho_A_f = fit.2$logit_rho_A_f, logit_rho_A_m = fit.2$logit_rho_A_m,
+                logit_rho_B_f = fit.2$logit_rho_B_f, logit_rho_B_m = fit.2$logit_rho_B_m
 )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")

@@ -21,7 +21,7 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(census_log_pop_f);
   DATA_MATRIX(census_log_pop_m);
   DATA_IVECTOR(census_year_idx);
-  DATA_IVECTOR(census_year_grow_idx);
+  //DATA_IVECTOR(census_year_grow_idx);
   DATA_IVECTOR(oag);
   DATA_SCALAR(interval);
   DATA_INTEGER(n_periods);
@@ -389,8 +389,10 @@ Type objective_function<Type>::operator() ()
   matrix<Type> census_proj_mat_m_oag(oag.maxCoeff(),census_year_idx.size());
 
   for(int i = 0; i < census_year_idx.size(); i++) {	
-	census_proj_mat_f.col(i) = vector<Type>(proj.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
-	census_proj_mat_m.col(i) = vector<Type>(proj_m.population.col(census_year_idx[i] - 1)).pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj_m.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
+	census_proj_mat_f.col(i) = vector<Type>(proj.population.col(census_year_idx[i] - 1));
+		//.pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
+	census_proj_mat_m.col(i) = vector<Type>(proj_m.population.col(census_year_idx[i] - 1));
+		//.pow(Type(1.0) - census_year_grow_idx[i] / interval) * vector<Type>(proj_m.population.col(census_year_idx[i])).pow(census_year_grow_idx[i] / interval);
 
 	census_proj_mat_f_oag.block(0, i, oag(i)-1, 1) = census_proj_mat_f.block(0, i, oag(i)-1, 1);
 	census_proj_mat_m_oag.block(0, i, oag(i)-1, 1) = census_proj_mat_m.block(0, i, oag(i)-1, 1);
