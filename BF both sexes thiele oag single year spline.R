@@ -639,8 +639,8 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
-gc()
+#rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
+#gc()
 
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
                                                                                                                   "log_fx_spline_params",
@@ -1477,10 +1477,10 @@ fx.var.df <- as_tibble(t(apply(sapply(thiele.var.sim, function(i){i$fx}), 1, qua
          year = rep(bf.idx5$periods, each = bf.idx5$n_fx),
          period5 = sprintf("%d-%d", year, year + 4))
 
-fx.df %>% filter(model != "Initial Values") %>%
+fx.df %>% filter(model != "Initial Values", year %in% c(1960, 1975, 1990, 2015)) %>%
   ggplot() + geom_line(aes(x = age, y = value, col = model), lwd = 1.2) +
-  geom_point(data = filter(fx.df, model=="Initial Values"), aes(x = age, y = value), size = 3) +
-  geom_ribbon(data = fx.var.df, aes(x = age, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill = 2) +
+  geom_point(data = filter(fx.df, model=="Initial Values", year %in% c(1960, 1975, 1990, 2015)), aes(x = age, y = value), size = 3) +
+  geom_ribbon(data = filter(fx.var.df, year %in% c(1960, 1975, 1990, 2015)), aes(x = age, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill = 2) +
   ggtitle(paste(country, "Estimated Fertility Rates")) +
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35),
