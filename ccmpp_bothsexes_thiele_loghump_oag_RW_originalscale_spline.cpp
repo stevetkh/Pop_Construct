@@ -23,7 +23,7 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(census_year_idx);
   //DATA_IVECTOR(census_year_grow_idx);
   DATA_IVECTOR(oag);
-  DATA_SCALAR(interval);
+  //DATA_SCALAR(interval);
   DATA_INTEGER(n_periods);
   DATA_INTEGER(fx_idx);
   DATA_INTEGER(n_fx);
@@ -36,16 +36,18 @@ Type objective_function<Type>::operator() ()
   PARAMETER(log_tau2_fx);
   PARAMETER(log_tau2_gx_f);
   PARAMETER(log_tau2_gx_m);
-  PARAMETER(logit_rho_g_x_f);
-  PARAMETER(logit_rho_g_t_f);
-  PARAMETER(logit_rho_g_x_m);
-  PARAMETER(logit_rho_g_t_m);
+  PARAMETER(log_lambda_gx_age_f);
+  PARAMETER(log_lambda_gx_age_m);
+  PARAMETER(log_lambda_gx_time_f);
+  PARAMETER(log_lambda_gx_time_m);
+  PARAMETER(log_lambda_gx_agetime_f);
+  PARAMETER(log_lambda_gx_agetime_m);
 
   PARAMETER_VECTOR(log_basepop_f);
   PARAMETER_VECTOR(log_basepop_m);
-  PARAMETER_VECTOR(log_fx);
-  PARAMETER_VECTOR(gx_f);
-  PARAMETER_VECTOR(gx_m);
+  PARAMETER_VECTOR(log_fx_spline_params);
+  PARAMETER_VECTOR(gx_f_spline_params);
+  PARAMETER_VECTOR(gx_m_spline_params);
 
   DATA_VECTOR(df);
   DATA_VECTOR(dm);
@@ -87,6 +89,13 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(penal_tp_0);
   DATA_SPARSE_MATRIX(null_penal_tp);
 
+  DATA_SPARSE_MATRIX(penal_age);
+  DATA_SPARSE_MATRIX(penal_time);
+  DATA_SPARSE_MATRIX(penal_agetime);
+  DATA_SPARSE_MATRIX(null_penal_gx);
+  DATA_SPARSE_MATRIX(D_time);
+  DATA_SPARSE_MATRIX(D_agetime);
+
   PARAMETER(log_lambda_tp);
   PARAMETER(log_lambda_tp_0_inflated_sd);
   PARAMETER(log_dispersion_f);
@@ -126,16 +135,6 @@ Type objective_function<Type>::operator() ()
   PARAMETER(log_marginal_prec_A_m);
   PARAMETER(log_marginal_prec_B_m);
 
-  PARAMETER(logit_rho_phi_f);
-  PARAMETER(logit_rho_psi_f);
-  PARAMETER(logit_rho_A_f);
-  PARAMETER(logit_rho_B_f);
-
-  PARAMETER(logit_rho_phi_m);
-  PARAMETER(logit_rho_psi_m);
-  PARAMETER(logit_rho_A_m);
-  PARAMETER(logit_rho_B_m);
-
   Type nll(0.0);
 
   //inverse gamma prior for variance with shape=1 and scale=0.0109  
@@ -153,14 +152,13 @@ Type objective_function<Type>::operator() ()
   Type sigma_fx(exp(-0.5 * log_tau2_fx));
 
   nll -= dlgamma(log_tau2_gx_f, Type(1.0), Type(1.0 / 0.0436), true);
-  Type sigma_gx_f(exp(-0.5 * log_tau2_gx_f));
   nll -= dlgamma(log_tau2_gx_m, Type(1.0), Type(1.0 / 0.0436), true);
-  Type sigma_gx_m(exp(-0.5 * log_tau2_gx_m));
-
-  nll -= dnorm(logit_rho_g_x_f, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_g_t_f, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_g_x_m, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_g_t_m, Type(1.1), Type(3.0), 1);  
+  nll -= dlgamma(log_lambda_gx_age_f, Type(1.0), Type(1.0 / 0.001), true);
+  nll -= dlgamma(log_lambda_gx_age_m, Type(1.0), Type(1.0 / 0.001), true);
+  nll -= dlgamma(log_lambda_gx_time_f, Type(1.0), Type(1.0 / 0.001), true);
+  nll -= dlgamma(log_lambda_gx_time_m, Type(1.0), Type(1.0 / 0.001), true);
+  nll -= dlgamma(log_lambda_gx_agetime_f, Type(1.0), Type(1.0 / 0.001), true);
+  nll -= dlgamma(log_lambda_gx_agetime_m, Type(1.0), Type(1.0 / 0.001), true);
 
   nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
   vector<Type> basepop_f(exp(log_basepop_f));
@@ -203,80 +201,55 @@ Type objective_function<Type>::operator() ()
   nll -= dlgamma(log_marginal_prec_B_m, Type(1.0), Type(exp(log_B_hypervar_prec) / 2.0), true);
   Type sigma_B_m(exp(-0.5 * log_marginal_prec_B_m));
 
-  nll -= dnorm(logit_rho_phi_f, Type(1.1), Type(3.0), 1); //1.1 approx log(3) -> rho=0.5
-  nll -= dnorm(logit_rho_psi_f, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_A_f, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_B_f, Type(1.1), Type(3.0), 1);
-
-  nll -= dnorm(logit_rho_phi_m, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_psi_m, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_A_m, Type(1.1), Type(3.0), 1);
-  nll -= dnorm(logit_rho_B_m, Type(1.1), Type(3.0), 1);
-
   nll -= dnorm(log_lambda_tp, Type(0.0), Type(5.0), 1);
   nll -= dnorm(log_lambda_tp_0_inflated_sd, Type(0.0), Type(5.0), 1);
 
   nll -= dnorm(log_dispersion_f, Type(0.0), Type(5.0), 1);
   nll -= dnorm(log_dispersion_m, Type(0.0), Type(5.0), 1);
 
-  Type rho_phi_f = 2.0 * invlogit(logit_rho_phi_f) - 1.0;
-  Type rho_psi_f = 2.0 * invlogit(logit_rho_psi_f) - 1.0;
-  Type rho_A_f = 2.0 * invlogit(logit_rho_A_f) - 1.0;
-  Type rho_B_f = 2.0 * invlogit(logit_rho_B_f) - 1.0;
+  nll -= dnorm(log_phi_f_spline_params, Type(0.0), sigma_phi_f, true).sum();
+  nll -= dnorm(log_psi_f_spline_params, Type(0.0), sigma_psi_f, true).sum();
+  nll -= dnorm(log_A_f_spline_params, Type(0.0), sigma_A_f, true).sum();
+  nll -= dnorm(log_B_f_spline_params, Type(0.0), sigma_B_f, true).sum();
+  nll -= dnorm(diff(log_lambda_f_spline_params), Type(0.0), sigma_lambda_f, true).sum();
+  nll -= dnorm(log_lambda_f_spline_params(0), log_lambda_mean_f, Type(2.0), true);
+  nll -= dnorm(diff(log_delta_f_spline_params), Type(0.0), sigma_delta_f, true).sum();
+  nll -= dnorm(log_delta_f_spline_params(0), log_delta_mean_f, Type(0.3), true);
+  nll -= dnorm(diff(log_epsilon_f_spline_params), Type(0.0), sigma_epsilon_f, true).sum();
+  nll -= dnorm(log_epsilon_f_spline_params(0), log_epsilon_mean_f, Type(0.5), true);
 
-  Type rho_phi_m = 2.0 * invlogit(logit_rho_phi_m) - 1.0;
-  Type rho_psi_m = 2.0 * invlogit(logit_rho_psi_m) - 1.0;
-  Type rho_A_m = 2.0 * invlogit(logit_rho_A_m) - 1.0;
-  Type rho_B_m = 2.0 * invlogit(logit_rho_B_m) - 1.0;
+  nll -= dnorm(log_phi_m_spline_params, Type(0.0), sigma_phi_m, true).sum();
+  nll -= dnorm(log_psi_m_spline_params, Type(0.0), sigma_psi_m, true).sum();
+  nll -= dnorm(log_A_m_spline_params, Type(0.0), sigma_A_m, true).sum();
+  nll -= dnorm(log_B_m_spline_params, Type(0.0), sigma_B_m, true).sum();
+  nll -= dnorm(diff(log_lambda_m_spline_params), Type(0.0), sigma_lambda_m, true).sum();
+  nll -= dnorm(log_lambda_m_spline_params(0), log_lambda_mean_m, Type(2.0), true);
+  nll -= dnorm(diff(log_delta_m_spline_params), Type(0.0), sigma_delta_m, true).sum();
+  nll -= dnorm(log_delta_m_spline_params(0), log_delta_mean_m, Type(0.3), true);
+  nll -= dnorm(diff(log_epsilon_m_spline_params), Type(0.0), sigma_epsilon_m, true).sum();
+  nll -= dnorm(log_epsilon_m_spline_params(0), log_epsilon_mean_m, Type(0.5), true);
 
-  nll += SCALE(AR1(rho_phi_f), sigma_phi_f)(log_phi_f - log_phi_mean_f);
-  nll += SCALE(AR1(rho_psi_f), sigma_psi_f)(log_psi_f - log_psi_mean_f);
-  nll += SCALE(AR1(rho_A_f), sigma_A_f)(log_A_f - log_A_mean_f);
-  nll += SCALE(AR1(rho_B_f), sigma_B_f)(log_B_f - log_B_mean_f);
-  nll -= dnorm(diff(log_lambda_f), Type(0.0), sigma_lambda_f, true).sum();
-  nll -= dnorm(log_lambda_f(0), log_lambda_mean_f, Type(2.0), true);
-  nll -= dnorm(diff(log_delta_f), Type(0.0), sigma_delta_f, true).sum();
-  nll -= dnorm(log_delta_f(0), log_delta_mean_f, Type(0.3), true);
-  nll -= dnorm(diff(log_epsilon_f), Type(0.0), sigma_epsilon_f, true).sum();
-  nll -= dnorm(log_epsilon_f(0), log_epsilon_mean_f, Type(0.5), true);
+  vector<Type> phi_f = exp(log_phi_mean_f + D_time * log_phi_f_spline_params);
+  vector<Type> psi_f = exp(log_psi_mean_f + D_time * log_psi_f_spline_params);
+  vector<Type> lambda_f = exp(D_time * log_lambda_f_spline_params);
+  vector<Type> delta_f = exp(D_time * log_delta_f_spline_params);
+  vector<Type> epsilon_f = exp(D_time * log_epsilon_f_spline_params);
+  vector<Type> A_f = exp(log_A_mean_f + D_time * log_A_f_spline_params);
+  vector<Type> B_f = exp(log_B_mean_f + D_time * log_B_f_spline_params);
 
-  nll += SCALE(AR1(rho_phi_m), sigma_phi_m)(log_phi_m - log_phi_mean_m);
-  nll += SCALE(AR1(rho_psi_m), sigma_psi_m)(log_psi_m - log_psi_mean_m);
-  nll += SCALE(AR1(rho_A_m), sigma_A_m)(log_A_m - log_A_mean_m);
-  nll += SCALE(AR1(rho_B_m), sigma_B_m)(log_B_m - log_B_mean_m);
-  nll -= dnorm(diff(log_lambda_m), Type(0.0), sigma_lambda_m, true).sum();
-  nll -= dnorm(log_lambda_m(0), log_lambda_mean_m, Type(2.0), true);
-  nll -= dnorm(diff(log_delta_m), Type(0.0), sigma_delta_m, true).sum();
-  nll -= dnorm(log_delta_m(0), log_delta_mean_m, Type(0.3), true);
-  nll -= dnorm(diff(log_epsilon_m), Type(0.0), sigma_epsilon_m, true).sum();
-  nll -= dnorm(log_epsilon_m(0), log_epsilon_mean_m, Type(0.5), true);
-
-  Type rho_gx_f = 2.0 * invlogit(logit_rho_g_x_f) - 1.0;
-  Type rho_gt_f = 2.0 * invlogit(logit_rho_g_t_f) - 1.0;
-  Type rho_gx_m = 2.0 * invlogit(logit_rho_g_x_m) - 1.0;
-  Type rho_gt_m = 2.0 * invlogit(logit_rho_g_t_m) - 1.0;
-
-  vector<Type> phi_f = exp(log_phi_f);
-  vector<Type> psi_f = exp(log_psi_f);
-  vector<Type> lambda_f = exp(log_lambda_f);
-  vector<Type> delta_f = exp(log_delta_f);
-  vector<Type> epsilon_f = exp(log_epsilon_f);
-  vector<Type> A_f = exp(log_A_f);
-  vector<Type> B_f = exp(log_B_f);
-
-  vector<Type> phi_m = exp(log_phi_m);
-  vector<Type> psi_m = exp(log_psi_m);
-  vector<Type> lambda_m = exp(log_lambda_m);
-  vector<Type> delta_m = exp(log_delta_m);
-  vector<Type> epsilon_m = exp(log_epsilon_m);
-  vector<Type> A_m = exp(log_A_m);
-  vector<Type> B_m = exp(log_B_m);
+  vector<Type> phi_m = exp(log_phi_mean_m + D_time * log_phi_m_spline_params);
+  vector<Type> psi_m = exp(log_psi_mean_m + D_time * log_psi_m_spline_params);
+  vector<Type> lambda_m = exp(D_time * log_lambda_m_spline_params);
+  vector<Type> delta_m = exp(D_time * log_delta_m_spline_params);
+  vector<Type> epsilon_m = exp(D_time * log_epsilon_m_spline_params);
+  vector<Type> A_m = exp(log_A_mean_m + D_time * log_A_m_spline_params);
+  vector<Type> B_m = exp(log_B_mean_m + D_time * log_B_m_spline_params);
 
   matrix<Type> mx_mat_f(thiele_age.size(), phi_f.size()); 
   matrix<Type> mx_mat_m(thiele_age.size(), phi_f.size()); 
   for(int i = 0; i < phi_f.size(); i++){
-    mx_mat_f.col(i) = phi_f(i)*exp(-psi_f(i)*(thiele_age - Type(2.0))) + lambda_f(i)*exp(-delta_f(i)*((log(thiele_age)-log_epsilon_f(i))*(log(thiele_age)-log_epsilon_f(i)))) + A_f(i)*exp(B_f(i)*(thiele_age - Type(92.0)));
-    mx_mat_m.col(i) = phi_m(i)*exp(-psi_m(i)*(thiele_age - Type(2.0))) + lambda_m(i)*exp(-delta_m(i)*((log(thiele_age)-log_epsilon_m(i))*(log(thiele_age)-log_epsilon_m(i)))) + A_m(i)*exp(B_m(i)*(thiele_age - Type(92.0)));
+    mx_mat_f.col(i) = phi_f(i)*exp(-psi_f(i)*(thiele_age - Type(2.0))) + lambda_f(i)*exp(-delta_f(i)*((log(thiele_age)-log(epsilon_f(i)))*(log(thiele_age)-log(epsilon_f(i))))) + A_f(i)*exp(B_f(i)*(thiele_age - Type(92.0)));
+    mx_mat_m.col(i) = phi_m(i)*exp(-psi_m(i)*(thiele_age - Type(2.0))) + lambda_m(i)*exp(-delta_m(i)*((log(thiele_age)-log(epsilon_m(i)))*(log(thiele_age)-log(epsilon_m(i))))) + A_m(i)*exp(B_m(i)*(thiele_age - Type(92.0)));
   }
 
   SparseMatrix<Type> QQ_tp = exp(log_lambda_tp)*penal_tp + exp(-2*log_lambda_tp_0_inflated_sd)*penal_tp_0 + null_penal_tp;
@@ -300,12 +273,12 @@ Type objective_function<Type>::operator() ()
   nll -= dnbinom2(dm, mum, varm, 1).sum();
 
   matrix<Type> weights_mat_f(mx_mat_f.rows() - open_idx + 1, n_periods);
-  weights_mat_f = Type(1.0) / (Type(1.0) + Type(0.5) * interval * mx_mat_f.block(open_idx - 1, 0, mx_mat_f.rows() - open_idx + 1, n_periods).array());
+  weights_mat_f = Type(1.0) / (Type(1.0) + Type(0.5) * mx_mat_f.block(open_idx - 1, 0, mx_mat_f.rows() - open_idx + 1, n_periods).array());
   
   for(int i=0; i < n_periods; i++) {
   	for(int j=open_idx - 1; j < mx_mat_f.rows()-1; j++) {
 		for(int k=j-open_idx+2; k < mx_mat_f.rows()-open_idx+1; k++) {
-  			weights_mat_f(k,i) *= (Type(1.0) - Type(0.5) * interval * mx_mat_f(j,i)) / (Type(1.0) + Type(0.5) * interval * mx_mat_f(j,i));
+  			weights_mat_f(k,i) *= (Type(1.0) - Type(0.5) * mx_mat_f(j,i)) / (Type(1.0) + Type(0.5) * mx_mat_f(j,i));
 		}
   	}
   }
@@ -317,12 +290,12 @@ Type objective_function<Type>::operator() ()
   }
   
   matrix<Type> weights_mat_m(mx_mat_m.rows() - open_idx + 1, n_periods);
-  weights_mat_m = Type(1.0) / (Type(1.0) + Type(0.5) * interval * mx_mat_m.block(open_idx - 1, 0, mx_mat_m.rows() - open_idx + 1, n_periods).array());
+  weights_mat_m = Type(1.0) / (Type(1.0) + Type(0.5) * mx_mat_m.block(open_idx - 1, 0, mx_mat_m.rows() - open_idx + 1, n_periods).array());
   
   for(int i=0; i < n_periods; i++) {
   	for(int j=open_idx - 1; j < mx_mat_m.rows()-1; j++) {
 		for(int k=j-open_idx+2; k < mx_mat_m.rows()-open_idx+1; k++) {
-  			weights_mat_m(k,i) *= (Type(1.0) - Type(0.5) * interval * mx_mat_m(j,i)) / (Type(1.0) + Type(0.5) * interval * mx_mat_m(j,i));
+  			weights_mat_m(k,i) *= (Type(1.0) - Type(0.5) * mx_mat_m(j,i)) / (Type(1.0) + Type(0.5) * mx_mat_m(j,i));
 		}
   	}
   }
@@ -361,26 +334,27 @@ Type objective_function<Type>::operator() ()
    }
 
   // prior for log(fx)
-  nll -= dnorm(log_fx, log_fx_mean, sigma_fx, true).sum();
-  vector<Type> fx(exp(log_fx));
+  nll -= dnorm(log_fx_spline_params, Type(0.0), sigma_fx, true).sum();
+  vector<Type> fx(exp(log_fx_mean + D_time * log_fx_spline_params));
   MapMatrixXXt fx_mat(fx.data(), n_fx, n_periods);
 
   // prior for gx
+  vector<Type> gx_f = D_agetime * gx_f_spline_params;
+  vector<Type> gx_m = D_agetime * gx_m_spline_params;
+
+  SparseMatrix<Type> QQ_gx_f = exp(log_lambda_gx_age_f) * penal_age + exp(log_lambda_gx_time_f) * penal_time + exp(log_lambda_gx_agetime_f) * penal_agetime + exp(log_tau2_gx_f) * null_penal_gx;
+  SparseMatrix<Type> QQ_gx_m = exp(log_lambda_gx_age_m) * penal_age + exp(log_lambda_gx_time_m) * penal_time + exp(log_lambda_gx_agetime_f) * penal_agetime + exp(log_tau2_gx_m) * null_penal_gx;
+
+  nll += GMRF(QQ_gx_f)(gx_f_spline_params) + GMRF(QQ_gx_m)(gx_m_spline_params);
+
   MapMatrixXXt gx_mat_f(gx_f.data(), basepop_f.size(), n_periods);
   MapMatrixXXt gx_mat_m(gx_m.data(), basepop_m.size(), n_periods);
-  array<Type> gx_f_array(basepop_f.size(), n_periods);
-  array<Type> gx_m_array(basepop_m.size(), n_periods);
-  gx_f_array = gx_mat_f.array();
-  gx_m_array = gx_mat_m.array();
-
-  nll += SCALE( SEPARABLE( AR1(rho_gt_f), AR1(rho_gx_f) ), sigma_gx_f ) (gx_f_array);
-  nll += SCALE( SEPARABLE( AR1(rho_gt_m), AR1(rho_gx_m) ), sigma_gx_m ) (gx_m_array);
 
   // population projection
   PopulationProjection<Type> proj(ccmpp<Type>(basepop_f, sx_mat_f, fx_mat, gx_mat_f,
-					      srb, interval, fx_idx-1));
+					      srb, Type(1.0), fx_idx-1));
   PopulationProjection_m<Type> proj_m(ccmpp_m<Type>(basepop_m, sx_mat_m, gx_mat_m,
-					      srb, interval, proj.births));
+					      srb, Type(1.0), proj.births));
 
   matrix<Type> census_proj_mat_f(basepop_f.size(),census_year_idx.size());
   matrix<Type> census_proj_mat_m(basepop_m.size(),census_year_idx.size());
