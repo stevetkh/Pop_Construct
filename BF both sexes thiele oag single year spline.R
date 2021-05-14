@@ -1,5 +1,5 @@
 params <- list(
-  country = "Namibia", 
+  country = "Zimbabwe", 
   log_phi_hyperprec = log(2/0.01),
   log_psi_hyperprec = log(2/0.01),
   log_lambda_hyperprec = log(2/0.1),
@@ -7,9 +7,10 @@ params <- list(
   log_epsilon_hyperprec = log(2/0.1),
   log_A_hyperprec = log(2/0.001),
   log_B_hyperprec = log(2/0.001),
-  prec.init = 3,
-  hump.prec.init = 3,
-  rho.init=0
+  prec.init = 1,
+  hump.prec.init = 1,
+  no.basis = 30,
+  no.basis.fert = 14
 )
 
 library(dplyr)
@@ -41,9 +42,10 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-load(paste0("~/",params$country," 2x2.RData"))
+#load(paste0("~/",params$country," 2x2.RData"))
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
+
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -219,8 +221,8 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
 open.age <- 86
 n_ages <- open.age + 1
-no.basis <- 30
-no.basis.fert <- 14
+no.basis <- params$no.basis
+no.basis.fert <- params$no.basis.fert
 interval <- 1 #just in case
 
 country <- params$country
@@ -529,7 +531,6 @@ if(country == "Zimbabwe"){
 
 prec.init <- params$prec.init
 hump.prec.init <- params$hump.prec.init
-rho.init <- params$rho.init
 
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
@@ -629,18 +630,13 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 log_marginal_prec_delta_f = hump.prec.init, log_marginal_prec_delta_m = hump.prec.init,
                 log_marginal_prec_epsilon_f = hump.prec.init, log_marginal_prec_epsilon_m = hump.prec.init,
                 log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
-                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
-                
-                logit_rho_phi_f = rho.init, logit_rho_phi_m = rho.init,
-                logit_rho_psi_f = rho.init, logit_rho_psi_m = rho.init,
-                logit_rho_A_f = rho.init, logit_rho_A_m = rho.init,
-                logit_rho_B_f = rho.init, logit_rho_B_m = rho.init
+                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init
 )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-#rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
-#gc()
+rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
+gc()
 
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
                                                                                                                   "log_fx_spline_params",
@@ -849,7 +845,7 @@ q4515.df.loghump %>%
   theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 
-#plot 5q5 estimates####
+#plot 5q0 estimates####
 q50.func <- function(x){
     as_tibble(apply(x$mode$mx_mat_f[1:5,],2,function(x){1-prod((1-0.5*x)/(1+0.5*x))})) %>%
       mutate(sex="female", year = bf.idx5$periods) %>%
