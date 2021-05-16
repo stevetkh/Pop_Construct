@@ -1,5 +1,5 @@
 params <- list(
-  country = "Zimbabwe", 
+  country = "Cote d'Ivoire", 
   log_phi_hyperprec = 5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
   log_psi_hyperprec = 5,
   log_A_hyperprec = 7.5,
@@ -668,7 +668,7 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                                                                                   "log_A_f_spline_params", "log_A_m_spline_params",
                                                                                                                   "log_B_f_spline_params", "log_B_m_spline_params"
 ),
-DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline",
+DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW",
 stepmin = 1e-10, stepmax = 1
 )
 ) 

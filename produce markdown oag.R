@@ -28,7 +28,7 @@ for(i in joint.countries[-11]){
 }
 
 
-
+setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData")
 for(i in joint.countries[-(1:11)]){
   tryCatch({
     rmarkdown::render(
