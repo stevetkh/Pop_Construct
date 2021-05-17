@@ -1,5 +1,5 @@
 setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData")
-load("~/cohort smooth 1900-2017.RData")
+load("C:/Users/ktang3/Documents/cohort smooth 1900-2017.RData")
 skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
 joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
 
@@ -33,8 +33,7 @@ for (filename in filelist) {
 rm(req, filelist, filename)
 
 #load(paste0("~/",params$country," 2x2.RData"))
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW.cpp")
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -169,7 +168,7 @@ fit_tmb <- function(tmb_input,
   f$par.fixed <- f$par
   f$par.full <- obj$env$last.par
   
-  #FreeADFun(obj)
+  FreeADFun(obj)
   
   objout <- make_tmb_obj(tmb_input$data,
                          tmb_input$par_init,
@@ -184,7 +183,7 @@ fit_tmb <- function(tmb_input,
   val <- c(f, obj = list(objout))
   class(val) <- "leapfrog_fit"
   
-  #FreeADFun(objout)
+  FreeADFun(objout)
   
   val
 }
@@ -217,9 +216,10 @@ library(MortCast)
 LQcoef.f <- LQcoef %>% filter(sex=="Female", !age%in%c("0","1-4")) %>% select(ax:vx)
 LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:vx)
 
-for(i in joint.countries[4:10]) {
+for(i in joint.countries[-(1:13)]) {
 tryCatch({
   cat(i,"\n")
+  dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
   params <- list(
     country = i, 
     log_phi_hyperprec = 5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
@@ -683,7 +683,8 @@ tryCatch({
   ) 
   
   save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," spline RW.RData"))
-
+  gc()
+  .rs.restartR()
   
 },error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
 )
