@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Zimbabwe"
+  country: "Angola"
 ---
 
 ---
@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 
 ```{r, include=FALSE}
 rm(list=ls()[-which(ls()=="params")])
-load(paste0("~/",params$country," spline.RData"))
+load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
 
 library(dplyr)
 library(tidyr)
@@ -57,8 +57,9 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline.cpp")
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -1323,8 +1324,21 @@ inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model,
   facet_wrap_paginate(~year, nrow=2, ncol=2, page=1, scales = "free_y")
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model, "Thiele RW")) %>%
+    filter(age %in% c(seq(0,80, by = 10))) %>%
   ggplot() + geom_line(aes(x = year, y = gx, col = sex, linetype=model), lwd = 1.2) +
-  geom_ribbon(data = mig.var.df,
+  geom_ribbon(data = mig.var.df %>% filter(age %in% c(seq(0,80, by = 10))),
+              aes(x = year, ymin = `2.5%`, ymax = `97.5%`, fill = sex), alpha=0.2) +
+  ggtitle(paste(country,"Estimated migration Proportions")) +
+  scale_color_manual(values = c("red", "blue")) +
+  scale_fill_manual(values = c("red", "blue")) +
+  theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
+  facet_wrap_paginate(~age, nrow=2, ncol=2, scales="free_y", page=1)
+
+inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model, "Thiele RW")) %>%
+    filter(age %in% c(seq(0,80, by = 10))) %>%
+  ggplot() + geom_line(aes(x = year, y = gx, col = sex, linetype=model), lwd = 1.2) +
+  geom_ribbon(data = mig.var.df %>% filter(age %in% c(seq(0,80, by = 10))),
               aes(x = year, ymin = `2.5%`, ymax = `97.5%`, fill = sex), alpha=0.2) +
   ggtitle(paste(country,"Estimated migration Proportions")) +
   scale_color_manual(values = c("red", "blue")) +
@@ -1334,15 +1348,16 @@ inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model,
   facet_wrap_paginate(~age, nrow=2, ncol=2, scales="free_y", page=2)
 
 inner_join(mig.df, pop.df) %>% mutate(gx = mig/value, model = fct_relevel(model, "Thiele RW")) %>%
+   filter(cohort %in% c(seq(1950, 1970, by = 4))) %>%
   ggplot() + geom_line(aes(x = age, y = gx, col = sex, linetype = model), lwd = 1.2) +
-  geom_ribbon(data = mig.var.df,
+  geom_ribbon(data = mig.var.df %>%  filter(cohort %in% c(seq(1950, 1970, by = 4))),
               aes(x = age, ymin = `2.5%`, ymax = `97.5%`, fill = sex), alpha=0.2) +
   ggtitle(paste(country,"Estimated migration Proportions")) +
   scale_color_manual(values = c("red", "blue")) +
   scale_fill_manual(values = c("red", "blue")) +
   theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35)) +
-  facet_wrap_paginate(~cohort, nrow=2, ncol=2, page=20)
+  facet_wrap_paginate(~cohort, nrow=2, ncol=2, page=1)
 
 ```
 

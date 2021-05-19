@@ -173,9 +173,7 @@ fit_tmb <- function(tmb_input,
   
   f$par.fixed <- f$par
   f$par.full <- obj$env$last.par
-  
-  FreeADFun(obj)
-  
+
   objout <- make_tmb_obj(tmb_input$data,
                          tmb_input$par_init,
                          model = tmb_input$model,
@@ -188,9 +186,7 @@ fit_tmb <- function(tmb_input,
   
   val <- c(f, obj = list(objout))
   class(val) <- "leapfrog_fit"
-  
-  FreeADFun(objout)
-  
+
   val
 }
 
@@ -686,3 +682,4 @@ LQcoef.m <- LQcoef %>% filter(sex=="Male", !age%in%c("0","1-4")) %>% select(ax:v
     ) 
     
     save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," spline RW.RData"))
+    

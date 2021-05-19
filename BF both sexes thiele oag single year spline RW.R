@@ -1,5 +1,5 @@
 params <- list(
-  country = "Cote d'Ivoire", 
+  country = "Rwanda", 
   log_phi_hyperprec = 5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
   log_psi_hyperprec = 5,
   log_A_hyperprec = 7.5,
@@ -49,7 +49,11 @@ for (filename in filelist) {
 rm(req, filelist, filename)
 
 #load(paste0("~/",params$country," 2x2.RData"))
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW.cpp")
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
+
+
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
