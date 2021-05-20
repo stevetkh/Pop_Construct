@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Angola"
+  country: "Zimbabwe"
 ---
 
 ---
@@ -26,7 +26,8 @@ knitr::opts_chunk$set(
 
 ```{r, include=FALSE}
 rm(list=ls()[-which(ls()=="params")])
-load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
+load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
+#load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
 
 library(dplyr)
 library(tidyr)
@@ -59,7 +60,7 @@ rm(req, filelist, filename)
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline.cpp")
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -233,7 +234,7 @@ wpp.qx$name <- str_replace(wpp.qx$name,"Democratic Republic of the Congo","Congo
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
-open.age <- 86
+open.age <- 85
 n_ages <- open.age + 1
 interval <- 1 #just in case
 
