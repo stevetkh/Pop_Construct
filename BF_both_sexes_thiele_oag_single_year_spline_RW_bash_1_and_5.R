@@ -11,8 +11,8 @@ joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
 
 params <- list(
   country = joint.countries[myvar], 
-  log_phi_hyperprec = 5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
-  log_psi_hyperprec = 5,
+  log_phi_hyperprec = 7.5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
+  log_psi_hyperprec = 7.5,
   log_A_hyperprec = 7.5,
   log_B_hyperprec = 7.5,
   
@@ -59,7 +59,7 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -703,7 +703,7 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
                             
                             penal_time = as(crossprod(diff(diag(no.basis), differences = 2)),"sparseMatrix"),
-                            penal_time_1 = as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
+                            #penal_time_1 = as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
                             null_penal_time = as(diag(no.basis),"sparseMatrix"),
                             
                             penal_age_gx = diag(no.basis) %x% as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
@@ -749,7 +749,7 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
                 log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
                 log_lambda_f_spline_params = rep(0, no.basis), log_lambda_m_spline_params = rep(0, no.basis),
-                log_delta_f_spline_params = rep(l0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
+                log_delta_f_spline_params = rep(0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
                 log_epsilon_f_spline_params = rep(0, no.basis), log_epsilon_m_spline_params = rep(0, no.basis),
                 log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
                 log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
@@ -767,9 +767,9 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 log_lambda_A_f = lambda.init, log_lambda_A_m = lambda.init, 
                 log_lambda_B_f = lambda.init, log_lambda_B_m = lambda.init,
                 
-                log_lambda_lambda_1_f = lambda.init, log_lambda_lambda_1_m = lambda.init, 
-                log_lambda_delta_1_f = lambda.init, log_lambda_delta_1_m = lambda.init, 
-                log_lambda_epsilon_1_f = lambda.init, log_lambda_epsilon_1_m = lambda.init
+                logit_lambda_slope_rho_f = 0, logit_lambda_slope_rho_m = 0, 
+                logit_delta_slope_rho_f = 0, logit_delta_slope_rho_m = 0, 
+                logit_epsilon_slope_rho_f = 0, logit_epsilon_slope_rho_m = 0
 )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
@@ -789,9 +789,9 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                                                                                   "log_A_f_spline_params", "log_A_m_spline_params",
                                                                                                                   "log_B_f_spline_params", "log_B_m_spline_params"
 ),
-DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr",
+DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA",
 stepmin = 1e-10, stepmax = 1
 )
 ) 
 
-save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," spline P2 + P1 P2.RData"))
+save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," spline ARIMA.RData"))

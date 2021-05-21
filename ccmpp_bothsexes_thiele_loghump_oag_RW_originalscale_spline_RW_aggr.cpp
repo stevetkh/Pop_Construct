@@ -178,12 +178,12 @@ Type objective_function<Type>::operator() ()
   PARAMETER(log_lambda_A_m);
   PARAMETER(log_lambda_B_m);
 
-  PARAMETER(log_lambda_lambda_1_f);
-  PARAMETER(log_lambda_delta_1_f);
-  PARAMETER(log_lambda_epsilon_1_f);
-  PARAMETER(log_lambda_lambda_1_m);
-  PARAMETER(log_lambda_delta_1_m);
-  PARAMETER(log_lambda_epsilon_1_m);
+  //PARAMETER(log_lambda_lambda_1_f);
+  //PARAMETER(log_lambda_delta_1_f);
+  //PARAMETER(log_lambda_epsilon_1_f);
+  //PARAMETER(log_lambda_lambda_1_m);
+  //PARAMETER(log_lambda_delta_1_m);
+  //PARAMETER(log_lambda_epsilon_1_m);
 
   Type nll(0.0);
 
@@ -236,18 +236,18 @@ Type objective_function<Type>::operator() ()
 
   nll -= dlgamma(log_lambda_lambda_f, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
   nll -= dlgamma(log_lambda_lambda_m, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_lambda_1_f, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_lambda_1_m, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_lambda_1_f, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_lambda_1_m, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true);
 
   nll -= dlgamma(log_lambda_delta_f, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
   nll -= dlgamma(log_lambda_delta_m, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_delta_1_f, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_delta_1_m, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_delta_1_f, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_delta_1_m, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true);
 
   nll -= dlgamma(log_lambda_epsilon_f, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
   nll -= dlgamma(log_lambda_epsilon_m, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_epsilon_1_f, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
-  nll -= dlgamma(log_lambda_epsilon_1_m, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_epsilon_1_f, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
+  //nll -= dlgamma(log_lambda_epsilon_1_m, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true);
 
   nll -= dlgamma(log_lambda_A_f, Type(1.0), Type(exp(log_A_hyperlambda) / 2.0), true);
   nll -= dlgamma(log_lambda_A_m, Type(1.0), Type(exp(log_A_hyperlambda) / 2.0), true);
@@ -265,11 +265,11 @@ Type objective_function<Type>::operator() ()
   nll += GMRF(QQ_phi_f)(log_phi_f_spline_params);
   SparseMatrix<Type> QQ_psi_f =  exp(log_lambda_psi_f) * penal_time + exp(log_marginal_prec_psi_f) * null_penal_time;
   nll += GMRF(QQ_psi_f)(log_psi_f_spline_params);
-  SparseMatrix<Type> QQ_lambda_f =  exp(log_lambda_lambda_f) * penal_time + exp(log_lambda_lambda_1_f) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_lambda_f =  exp(log_lambda_lambda_f) * penal_time + exp(log_lambda_lambda_f) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_lambda_f)(log_lambda_f_spline_params);
-  SparseMatrix<Type> QQ_delta_f =  exp(log_lambda_delta_f) * penal_time + exp(log_lambda_delta_1_f) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_delta_f =  exp(log_lambda_delta_f) * penal_time + exp(log_lambda_delta_f) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_delta_f)(log_delta_f_spline_params);
-  SparseMatrix<Type> QQ_epsilon_f =  exp(log_lambda_epsilon_f) * penal_time + exp(log_lambda_epsilon_1_f) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_epsilon_f =  exp(log_lambda_epsilon_f) * penal_time + exp(log_lambda_epsilon_f) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_epsilon_f)(log_epsilon_f_spline_params);
 
   SparseMatrix<Type> QQ_A_f =  exp(log_lambda_A_f) * penal_time + exp(log_marginal_prec_A_f) * null_penal_time;
@@ -281,11 +281,11 @@ Type objective_function<Type>::operator() ()
   nll += GMRF(QQ_phi_m)(log_phi_m_spline_params);
   SparseMatrix<Type> QQ_psi_m =  exp(log_lambda_psi_m) * penal_time + exp(log_marginal_prec_psi_m) * null_penal_time;
   nll += GMRF(QQ_psi_m)(log_psi_m_spline_params);
-  SparseMatrix<Type> QQ_lambda_m =  exp(log_lambda_lambda_m) * penal_time + exp(log_lambda_lambda_1_m) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_lambda_m =  exp(log_lambda_lambda_m) * penal_time + exp(log_lambda_lambda_m) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_lambda_m)(log_lambda_m_spline_params);
-  SparseMatrix<Type> QQ_delta_m =  exp(log_lambda_delta_m) * penal_time + exp(log_lambda_delta_1_m) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_delta_m =  exp(log_lambda_delta_m) * penal_time + exp(log_lambda_delta_m) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_delta_m)(log_delta_m_spline_params);
-  SparseMatrix<Type> QQ_epsilon_m =  exp(log_lambda_epsilon_m) * penal_time + exp(log_lambda_epsilon_1_m) * penal_time_1 + Type(0.001)* null_penal_time;
+  SparseMatrix<Type> QQ_epsilon_m =  exp(log_lambda_epsilon_m) * penal_time + exp(log_lambda_epsilon_m) * Type(0.001) * penal_time_1 + Type(0.001)* null_penal_time;
   nll += GMRF(QQ_epsilon_m)(log_epsilon_m_spline_params);  
   SparseMatrix<Type> QQ_A_m =  exp(log_lambda_A_m) * penal_time + exp(log_marginal_prec_A_m) * null_penal_time;
   nll += GMRF(QQ_A_m)(log_A_m_spline_params);
