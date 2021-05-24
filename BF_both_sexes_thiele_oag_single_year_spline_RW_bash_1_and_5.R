@@ -748,9 +748,9 @@ par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
                 
                 log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
                 log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
-                log_lambda_f_spline_params = rep(0, no.basis), log_lambda_m_spline_params = rep(0, no.basis),
-                log_delta_f_spline_params = rep(0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
-                log_epsilon_f_spline_params = rep(0, no.basis), log_epsilon_m_spline_params = rep(0, no.basis),
+                log_lambda_f_spline_params = rep(log(init_lambda_f), no.basis), log_lambda_m_spline_params = rep(log(init_lambda_m), no.basis),
+                log_delta_f_spline_params = rep(log(init_delta_f), no.basis), log_delta_m_spline_params = rep(log(init_delta_m), no.basis),
+                log_epsilon_f_spline_params = rep(log(init_epsilon_f), no.basis), log_epsilon_m_spline_params = rep(log(init_epsilon_m), no.basis),
                 log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
                 log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
                 

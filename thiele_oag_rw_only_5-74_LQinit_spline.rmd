@@ -26,8 +26,8 @@ knitr::opts_chunk$set(
 
 ```{r, include=FALSE}
 rm(list=ls()[-which(ls()=="params")])
-load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
-#load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
+#load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
+load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
 
 library(dplyr)
 library(tidyr)

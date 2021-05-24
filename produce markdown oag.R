@@ -116,3 +116,16 @@ for(i in joint.countries[-(11)]){
   },error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
   )
 }
+
+for(i in joint.countries[-(11)]){
+  tryCatch({
+    rmarkdown::render(
+      "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_oag_RW_only_5-74_LQinit_spline_1_and_5.rmd",
+      params=list(country=i),
+      output_file= paste0(gsub("\\s|'","_",i),"_ARIMA_1_and_5.pdf"),
+      output_dir = "C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_spline_ARIMA_reports/"
+    )
+  },error=function(e){cat("ERROR :",conditionMessage(e), "\n")}
+  )
+}
+

@@ -1,0 +1,68 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{float,times,graphicx,mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{natbib}
+\usepackage[space]{grffile}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{tikzsymbols}
+
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\tr}{tr}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}
+\graphicspath{{../Burkina Faso/12/}}  
+\addtolength{\oddsidemargin}{-1in}
+	\addtolength{\evensidemargin}{-1in}
+	\addtolength{\textwidth}{1.75in}
+	\addtolength{\topmargin}{-1.3in}
+	\addtolength{\textheight}{2in}
+\date{\vspace{-5ex}}
+
+\begin{document}
+
+\begin{itemize}
+\item For child and old age component, spline coefficients are given the usual 2nd order penalties $+$ shrinkage towards 0 around the LQ derived priors
+
+\item For the hump component, as discussed last week, want:
+	\begin{itemize}
+	\item[--] want smooth trends defined by 2nd order differences
+	\item[--] does not want the linear trend to continue in periods without sufficient data
+	\item[--] want extrapolation of the parameters into periods without data to converge approximately at the current levels
+	\item[--] did not use an AR process in the end, but an ARIMA(1,1,0), below is my thought process
+	\item[\hookrightarrow] the 2nd order smoothness penalty implies
+	\begin{align*}
+	\beta_{t+1} &= 2 \beta_t - \beta_{t-1} + \varepsilon_{t+1} \\
+	&= \beta_t \, + \underbrace{(\beta_t - \beta_{t-1})}_{\text{continuation of the trend}} + \varepsilon_{t+1}
+	\end{align*}
+	introduce $\rho \in (0,1)$ such that $\beta_{t+1} &= \beta_t + \rho(\beta_t - \beta_{t-1}) + \varepsilon_{t+1}$, i.e. the next beta does not continue the current trend entirely
+	\begin{itemize}
+	\item[\cdot] when $\rho \to 0$, a RW1 is obtained, so future coefficients maintain the current level (flat line)
+	\item[\cdot] when $\rho \to 1$, a RW2 is obtained, so future coefficients maintain the current trend (linear line)
+	\item[\cdot] varying $\rho \in (0,1)$ maintains a trade of between smoothness in the linear trend sense and staying approximately at the current level
+	\item[\cdot] \textcolor{red}{I think} this is equivalent to having $\lambda_1 (\boldsymbol{D_1'D_1}) + \lambda_2 (\boldsymbol{D_2'D_2})$ as penalty, where $\boldsymbol{D_i}$ is the $i$-th order difference matrix, based on previous work on the ICAR representation of the spline coefficients
+	\item[\cdot] this suggests using an ARIMA(1,1,0) on the coefficients with $\rho$ restricted to be in (0,1), but in practice I used $\rho \in (-1, 1)$ to be consistent with time-series, might not be logical in the smoothing penalty sense? Should I restrict them to be in (0, 1)?
+	\end{itemize}
+\item[--] will change smoothness priors on gx to be 2nd order diff
+\item[--] flatter priors on smoothness penalties? 
+\item[--] male B under-smoothed
+\item[--] will set males and females lambda to be the same
+\item[--] investigating how to set informative priors on the smoothness penalties, as these are difficult to elicit due to the dependency on knot spacing, number of basis, design matrix etc.
+\item[--] converged for most countries, except for Gambia (outder mgc exploding), Lesotho (only converged when $\rho$ restricted to (0,1)), etc.
+	\end{itemize}
+	
+
+\end{itemize}
+
+\end{document} 
