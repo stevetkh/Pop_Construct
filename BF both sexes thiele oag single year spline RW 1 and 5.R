@@ -51,19 +51,23 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr.cpp")
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr"))
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_err.cpp")
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_err"))
 
-
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA.cpp")
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_01rho.cpp")
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_01rho"))
+
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_vec.cpp")
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_vec"))
+
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -713,8 +717,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             #spline_params_timescale = 1:no.basis,
                             #spline_params_errmat = t(solve(tcrossprod(diff(diag(no.basis), differences=2)), diff(diag(no.basis), differences=2))),
                             
-                            penal_age_gx = diag(no.basis) %x% as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
-                            penal_time_gx = as(crossprod(diff(diag(no.basis))),"sparseMatrix") %x% diag(no.basis),
+                            penal_age_gx = diag(no.basis) %x% as(crossprod(diff(diag(no.basis),differences=2)),"sparseMatrix"),
+                            penal_time_gx = as(crossprod(diff(diag(no.basis),differences=2)),"sparseMatrix") %x% diag(no.basis),
                             penal_agetime_gx = as(crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))),"sparseMatrix"),
                             null_penal_gx = as(diag(no.basis * no.basis), "sparseMatrix"),
                             
@@ -737,21 +741,21 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
 )
 
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
-                log_tau2_fx = 3,
-                log_tau2_gx_f = 2, log_tau2_gx_m = 2,
-                log_lambda_gx_age_f = 3, log_lambda_gx_age_m = 3,
-                log_lambda_gx_time_f = 3, log_lambda_gx_time_m = 3,
-                log_lambda_gx_agetime_f = 3, log_lambda_gx_agetime_m = 3,
+                #log_tau2_fx = 3,
+                #log_tau2_gx_f = 2, log_tau2_gx_m = 2,
+                #log_lambda_gx_age_f = 3, log_lambda_gx_age_m = 3,
+                #log_lambda_gx_time_f = 3, log_lambda_gx_time_m = 3,
+                #log_lambda_gx_agetime_f = 3, log_lambda_gx_agetime_m = 3,
                 
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
                 log_fx_spline_params = rep(0, no.basis.fert * no.basis),
                 gx_f_spline_params = rep(0, no.basis*no.basis), gx_m_spline_params = rep(0, no.basis*no.basis),
                 
                 log_lambda_tp = 0,
-                log_lambda_tp_0_inflated_sd = 0,
+                log_lambda_tp_0_inflated_sd = -0.5,
                 tp_params = rep(0,15),
                 
-                log_dispersion_f = 0.5, log_dispersion_m = 0.5,
+                #log_dispersion_f = 0.5, log_dispersion_m = 0.5,
                 
                 log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
                 log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
@@ -767,22 +771,44 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
                 log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
                 
-                log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
-                log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
-                log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
-                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
+                #log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
+                #log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
+                #log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
+                #log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
                 
-                log_lambda_phi_f = lambda.init, log_lambda_phi_m = lambda.init, 
-                log_lambda_psi_f = lambda.init, log_lambda_psi_m = lambda.init, 
-                log_lambda_lambda_f = lambda.init, log_lambda_lambda_m = lambda.init, 
-                log_lambda_delta_f = lambda.init, log_lambda_delta_m = lambda.init, 
-                log_lambda_epsilon_f = lambda.init, log_lambda_epsilon_m = lambda.init,
-                log_lambda_A_f = lambda.init, log_lambda_A_m = lambda.init, 
-                log_lambda_B_f = lambda.init, log_lambda_B_m = lambda.init,
+                #log_lambda_phi_f = lambda.init, log_lambda_phi_m = lambda.init, 
+                #log_lambda_psi_f = lambda.init, log_lambda_psi_m = lambda.init, 
+                #log_lambda_lambda_f = lambda.init, log_lambda_lambda_m = lambda.init, 
+                #log_lambda_delta_f = lambda.init, log_lambda_delta_m = lambda.init, 
+                #log_lambda_epsilon_f = lambda.init, log_lambda_epsilon_m = lambda.init,
+                #log_lambda_A_f = lambda.init, log_lambda_A_m = lambda.init, 
+                #log_lambda_B_f = lambda.init, log_lambda_B_m = lambda.init,
                 
-                logit_lambda_slope_rho_f = 1.2, logit_lambda_slope_rho_m = 1.2, 
-                logit_delta_slope_rho_f = 1.2, logit_delta_slope_rho_m = 1.2, 
-                logit_epsilon_slope_rho_f = 1.2, logit_epsilon_slope_rho_m = 1.2
+                #logit_lambda_slope_rho_f = 1.2, logit_lambda_slope_rho_m = 1.2, 
+                #logit_delta_slope_rho_f = 1.2, logit_delta_slope_rho_m = 1.2, 
+                #logit_epsilon_slope_rho_f = 1.2, logit_epsilon_slope_rho_m = 1.2,
+                
+                log_sigma_fx = -1.5, 
+                log_sigma_gx = c(-2.5, -2.5),
+                log_sigma_gx_age = c(-2, -2),
+                log_sigma_gx_time = c(-2, -2),
+                log_sigma_gx_agetime = c(-2, -2),
+                
+                log_sigma_phi = c(-2, -2),
+                log_sigma_psi = c(-2, -2),
+                log_sigma_A = c(-2, -2),
+                log_sigma_B = c(-2, -2),
+                
+                log_sigma_lambda = c(-1.5, -1.5),
+                log_sigma_delta = c(-1.5, -1.5),
+                log_sigma_epsilon = c(-1.5, -1.5),
+                
+                logit_lambda_slope_rho = c(0, 0),
+                logit_delta_slope_rho = c(0, 0),
+                logit_epsilon_slope_rho = c(0, 0),
+                
+                log_tau2_logpop = c(2,4,2,4),
+                log_dispersion = c(1.3, 1.3)
                 
                 #log_lambda_f_intercept = log(init_lambda_f), log_lambda_m_intercept = log(init_lambda_m), 
                 #log_delta_f_intercept = log(init_delta_f), log_delta_m_intercept = log(init_delta_m), 
@@ -805,6 +831,52 @@ input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = p
 
 #rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
 #gc()
+
+
+
+obj <- make_tmb_obj(data = input.thiele.loghump.oag.vec.RW$data,
+                    par = input.thiele.loghump.oag.vec.RW$par_init,
+                    model = input.thiele.loghump.oag.vec.RW$model,
+                    inner_verbose = TRUE,
+                    calc_outputs = 0L,
+                    random = c("log_basepop_f","log_basepop_m",
+                               "log_fx_spline_params",
+                               "gx_f_spline_params","gx_m_spline_params",
+                               "tp_params",
+                               "log_phi_f_spline_params", "log_phi_m_spline_params",
+                               "log_psi_f_spline_params", "log_psi_m_spline_params",
+                               "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+                               "log_delta_f_spline_params", "log_delta_m_spline_params",
+                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+                               "log_A_f_spline_params", "log_A_m_spline_params",
+                               "log_B_f_spline_params", "log_B_m_spline_params"
+                    ),
+                    DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_vec",
+                    map = list(log_tau2_logpop = factor(c(1, 2, 3, 4)),
+                               log_sigma_gx = factor(c(1,1)),
+                               log_sigma_gx_age = factor(c(1,1)),
+                               log_sigma_gx_time = factor(c(1,1)),
+                               log_sigma_gx_agetime = factor(c(1,1)),
+                               log_sigma_phi = factor(c(1,1)),
+                               log_sigma_psi = factor(c(1,1)),
+                               log_sigma_A = factor(c(1,1)),
+                               log_sigma_B = factor(c(1,1)),
+                               log_sigma_lambda = factor(c(1,1)),
+                               log_sigma_delta = factor(c(1,1)),
+                               log_sigma_epsilon = factor(c(1,1)),
+                               logit_lambda_slope_rho = factor(c(1,1)),
+                               logit_delta_slope_rho = factor(c(1,1)),
+                               logit_epsilon_slope_rho = factor(c(1,1))
+                    )
+)
+
+fit <- stats::nlminb(obj$par, obj$fn, obj$gr,
+                control = list(trace = 1,
+                               iter.max = 5000,
+                               step.min = 1e-7,
+                               step.max = 1))
+
+obj$gr(obj$env$last.par.ok)
 
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
                                                                                                                   "log_fx_spline_params",
@@ -845,6 +917,40 @@ map = list(log_tau2_logpop_f = factor(c(NA, 1)),
            log_tau2_logpop_m = factor(c(NA, 1))
 ),
 stepmin = 1e-10, stepmax = 1e-3
+)
+) 
+
+
+system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
+                                                                                                                  "log_fx_spline_params",
+                                                                                                                  "gx_f_spline_params","gx_m_spline_params",
+                                                                                                                  "tp_params",
+                                                                                                                  "log_phi_f_spline_params", "log_phi_m_spline_params",
+                                                                                                                  "log_psi_f_spline_params", "log_psi_m_spline_params",
+                                                                                                                  "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+                                                                                                                  "log_delta_f_spline_params", "log_delta_m_spline_params",
+                                                                                                                  "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+                                                                                                                  "log_A_f_spline_params", "log_A_m_spline_params",
+                                                                                                                  "log_B_f_spline_params", "log_B_m_spline_params"
+),
+DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA_vec",
+map = list(log_tau2_logpop = factor(c(1, 2, 3, 4)),
+           log_sigma_gx = factor(c(1,1)),
+           log_sigma_gx_age = factor(c(1,1)),
+           log_sigma_gx_time = factor(c(1,1)),
+           log_sigma_gx_agetime = factor(c(1,1)),
+           log_sigma_phi = factor(c(1,1)),
+           log_sigma_psi = factor(c(1,1)),
+           log_sigma_A = factor(c(1,1)),
+           log_sigma_B = factor(c(1,1)),
+           log_sigma_lambda = factor(c(1,1)),
+           log_sigma_delta = factor(c(1,1)),
+           log_sigma_epsilon = factor(c(1,1)),
+           logit_lambda_slope_rho = factor(c(1,1)),
+           logit_delta_slope_rho = factor(c(1,1)),
+           logit_epsilon_slope_rho = factor(c(1,1))
+           ),
+stepmin = 1e-10, stepmax = 1
 )
 ) 
 
@@ -1137,7 +1243,7 @@ q4515.df.loghump <-  lapply(loghump.models.list, q4515.func) %>%
   bind_rows(
     reshape2::melt(wpp.bf.q4515[,-c(1,3,4)]) %>% 
       mutate(model = "WPP Estimates",
-             year = as.numeric(gsub("X|\\.5","",variable)),
+             year = as.numeric(gsub("X|\\.\\d{4}","",variable)),
              value = value/1000,
              sex = Sex) %>%
       select(-c(variable, Sex)),

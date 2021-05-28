@@ -1,0 +1,49 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{float,times,graphicx,mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{natbib}
+\usepackage[space]{grffile}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{tikzsymbols}
+
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\tr}{tr}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}
+\graphicspath{{../Burkina Faso/12/}}  
+\addtolength{\oddsidemargin}{-1in}
+	\addtolength{\evensidemargin}{-1in}
+	\addtolength{\textwidth}{1.75in}
+	\addtolength{\topmargin}{-1.3in}
+	\addtolength{\textheight}{2in}
+\date{\vspace{-5ex}}
+
+\begin{document}
+\begin{itemize}
+\item I have tried to use a half-Normal prior on the "standard deviation" of the spline coefficients, $\lambda^{-1/2}$, but it failed to converge even for Zimbabwe
+\item Explored the PC priors and trimmed down the number of parameters, as well as added spikes for TiPS at 5 and 10 that were previously missing
+	\begin{itemize}
+	\item[--]  For $\phi, \psi, A$ and $B$, these are previously given GMRF with precision matrix $\boldsymbol{Q} = \lambda_1 (\boldsymbol{D'D} + \lambda_2 \boldsymbol{I})$. The ratio between $\lambda_1$ and $\lambda_2$ controls how much the linear extrapolation is shrunk towards 0. Writing the penalty (precision matrix) as $\boldsymbol{Q} = \tau (\boldsymbol{D'D} + c \boldsymbol{I}) = \tau \boldsymbol{R}$, under the PC priors, we elicit information on the effective degrees of freedom (EDF) and translate this into a prior for $\lambda$. Following Ventrucci and Rue (2016), the EDF is approximated by the trace of the hat matrix under the classical linear regression model. Consider:
+	\begin{align*}
+	 \boldsymbol{y} &= \boldsymbol{B \beta} + \boldsymbol{\varepsilon} \\
+	\text{where} \quad \varepsilon &\sim N(0, \tau_{\varepsilon}^{-1}) \\
+	\text{with penalty} \quad   &\tau \boldsymbol{\beta'R\beta},
+	\end{align*}
+the hat matrix is $(\boldsymbol{B'B} + \frac{\tau}{\tau_{\varepsilon}}\boldsymbol{R})^{-1}\boldsymbol{B'B}$ and hence the EDF is $tr(\boldsymbol{I} + \frac{\tau}{\tau_{\varepsilon}}\boldsymbol{R(B'B)}^{-1})^{-1} = $
+	
+	\end{itemize}
+\end{itemize}
+
+\end{document}

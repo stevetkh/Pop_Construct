@@ -51,12 +51,12 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(pop_start_5);
   DATA_IVECTOR(pop_end_5);
 
-  PARAMETER_VECTOR(log_tau2_logpop); \\1 = WPP males, 2 = data males, 3 = WPP females, 4 = data females
-  PARAMETER(log_tau2_fx);
-  PARAMETER_VECTOR(log_tau2_gx); \\1 = male, 2 = female
-  PARAMETER_VECTOR(log_lambda_gx_age);
-  PARAMETER_VECTOR(log_lambda_gx_time);
-  PARAMETER_VECTOR(log_lambda_gx_agetime);
+  PARAMETER_VECTOR(log_tau2_logpop); //1 = WPP males, 2 = data males, 3 = WPP females, 4 = data females
+  PARAMETER(log_sigma_fx);
+  PARAMETER_VECTOR(log_sigma_gx); //1 = male, 2 = female
+  PARAMETER_VECTOR(log_sigma_gx_age);
+  PARAMETER_VECTOR(log_sigma_gx_time);
+  PARAMETER_VECTOR(log_sigma_gx_agetime);
 
   PARAMETER_VECTOR(log_basepop_f);
   PARAMETER_VECTOR(log_basepop_m);
@@ -92,19 +92,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(log_A_mean_m);
   DATA_VECTOR(log_B_mean_m);
 
-  DATA_SCALAR(log_phi_hypervar_prec);
-  DATA_SCALAR(log_psi_hypervar_prec);
-  DATA_SCALAR(log_A_hypervar_prec);
-  DATA_SCALAR(log_B_hypervar_prec);
-
-  DATA_SCALAR(log_phi_hyperlambda);
-  DATA_SCALAR(log_psi_hyperlambda);
-  DATA_SCALAR(log_lambda_hyperlambda);
-  DATA_SCALAR(log_delta_hyperlambda);
-  DATA_SCALAR(log_epsilon_hyperlambda);
-  DATA_SCALAR(log_A_hyperlambda);
-  DATA_SCALAR(log_B_hyperlambda);
-
   DATA_SPARSE_MATRIX(penal_tp);
   DATA_SPARSE_MATRIX(penal_tp_0);
   DATA_SPARSE_MATRIX(null_penal_tp);
@@ -122,7 +109,7 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER(log_lambda_tp);
   PARAMETER(log_lambda_tp_0_inflated_sd);
-  PARAMETER_VECTOR(log_dispersion); \\1 = male, 2 = female
+  PARAMETER_VECTOR(log_dispersion); //1 = male, 2 = female
 
   PARAMETER_VECTOR(tp_params);
 
@@ -142,18 +129,14 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_A_m_spline_params);
   PARAMETER_VECTOR(log_B_m_spline_params);
 
-  PARAMETER_VECTOR(log_marginal_prec_phi); \\1 = male, 2 = female
-  PARAMETER_VECTOR(log_marginal_prec_psi);
-  PARAMETER_VECTOR(log_marginal_prec_A);
-  PARAMETER_VECTOR(log_marginal_prec_B);
+  PARAMETER_VECTOR(log_sigma_phi); //1 = male, 2 = female
+  PARAMETER_VECTOR(log_sigma_psi);
+  PARAMETER_VECTOR(log_sigma_A);
+  PARAMETER_VECTOR(log_sigma_B);
 
-  PARAMETER_VECTOR(log_lambda_phi);
-  PARAMETER_VECTOR(log_lambda_psi);
-  PARAMETER_VECTOR(log_lambda_lambda);
-  PARAMETER_VECTOR(log_lambda_delta);
-  PARAMETER_VECTOR(log_lambda_epsilon);
-  PARAMETER_VECTOR(log_lambda_A);
-  PARAMETER_VECTOR(log_lambda_B);
+  PARAMETER_VECTOR(log_sigma_lambda);
+  PARAMETER_VECTOR(log_sigma_delta);
+  PARAMETER_VECTOR(log_sigma_epsilon);
 
   PARAMETER_VECTOR(logit_lambda_slope_rho);
   PARAMETER_VECTOR(logit_delta_slope_rho);
@@ -162,45 +145,76 @@ Type objective_function<Type>::operator() ()
   Type nll(0.0);
 
   //inverse gamma prior for variance with shape=1 and scale=0.0109  
-  nll -= dlgamma(log_tau2_logpop, Type(1.0), Type(1.0 / 0.1), true).sum(); //change to uniform? i.e. Jeffery's on sigma
+  nll -= dlgamma(log_tau2_logpop, Type(1.0), Type(1.0 / 0.1), true).sum();
   Type sigma_logpop_m_base(exp(-0.5 * log_tau2_logpop(0)));
   Type sigma_logpop_m(exp(-0.5 * log_tau2_logpop(1)));
   Type sigma_logpop_f_base(exp(-0.5 * log_tau2_logpop(2)));
   Type sigma_logpop_f(exp(-0.5 * log_tau2_logpop(3)));
 
-  nll -= dlgamma(log_tau2_fx, Type(1.0), Type(1.0 / 0.0109), true);
-  Type sigma_fx(exp(-0.5 * log_tau2_fx));
+  Type sigma_fx = exp(log_sigma_fx);
+  nll -= dnorm(sigma_fx, Type(0.0), Type(5.0), true);
+  nll -= log_sigma_fx;
 
-  nll -= dlgamma(log_tau2_gx, Type(1.0), Type(1.0 / 0.0436), true).sum();
-  nll -= dlgamma(log_lambda_gx_age, Type(1.0), Type(1.0 / 0.001), true).sum();
-  nll -= dlgamma(log_lambda_gx_time, Type(1.0), Type(1.0 / 0.001), true).sum();
-  nll -= dlgamma(log_lambda_gx_agetime, Type(1.0), Type(1.0 / 0.001), true).sum();
+  nll -= dnorm(exp(log_sigma_gx), Type(0.0), Type(5.0), true).sum();
+  nll -= dnorm(exp(log_sigma_gx_age), Type(0.0), Type(5.0), true).sum();
+  nll -= dnorm(exp(log_sigma_gx_time), Type(0.0), Type(5.0), true).sum();
+  nll -= dnorm(exp(log_sigma_gx_agetime), Type(0.0), Type(5.0), true).sum();
+  nll -= log_sigma_gx.sum();
+  nll -= log_sigma_gx_age.sum();
+  nll -= log_sigma_gx_time.sum();
+  nll -= log_sigma_gx_agetime.sum();
+  Type lambda_gx_m = exp(-Type(2.0) * log_sigma_gx(0));
+  Type lambda_gx_age_m = exp(-Type(2.0) * log_sigma_gx_age(0));
+  Type lambda_gx_time_m = exp(-Type(2.0) * log_sigma_gx_time(0));
+  Type lambda_gx_agetime_m = exp(-Type(2.0) * log_sigma_gx_agetime(0));
+  Type lambda_gx_f = exp(-Type(2.0) * log_sigma_gx(1));
+  Type lambda_gx_age_f = exp(-Type(2.0) * log_sigma_gx_age(1));
+  Type lambda_gx_time_f = exp(-Type(2.0) * log_sigma_gx_time(1));
+  Type lambda_gx_agetime_f = exp(-Type(2.0) * log_sigma_gx_agetime(1));
 
   nll -= dnorm(log_basepop_f, log_basepop_mean_f, sigma_logpop_f_base, true).sum();
   vector<Type> basepop_f(exp(log_basepop_f));
   nll -= dnorm(log_basepop_m, log_basepop_mean_m, sigma_logpop_m_base, true).sum();
   vector<Type> basepop_m(exp(log_basepop_m));
 
-  //mode = exp(log_hypervar_prec)
-  nll -= dlgamma(log_marginal_prec_phi, Type(1.0), Type(exp(log_phi_hypervar_prec) / 2.0), true).sum();
-  nll -= dlgamma(log_marginal_prec_psi, Type(1.0), Type(exp(log_psi_hypervar_prec) / 2.0), true).sum();
-  nll -= dlgamma(log_marginal_prec_A, Type(1.0), Type(exp(log_A_hypervar_prec) / 2.0), true).sum();
-  nll -= dlgamma(log_marginal_prec_B, Type(1.0), Type(exp(log_B_hypervar_prec) / 2.0), true).sum();
+  Type sigma_phi_m = exp(log_sigma_phi(0));
+  Type sigma_phi_f = exp(log_sigma_phi(1));
+  Type sigma_psi_m = exp(log_sigma_psi(0));
+  Type sigma_psi_f = exp(log_sigma_psi(1));
+  Type sigma_A_m = exp(log_sigma_A(0));
+  Type sigma_A_f = exp(log_sigma_A(1));
+  Type sigma_B_m = exp(log_sigma_B(0));
+  Type sigma_B_f = exp(log_sigma_B(1));
 
-  nll -= dlgamma(log_lambda_phi, Type(1.0), Type(exp(log_phi_hyperlambda) / 2.0), true).sum();
-  nll -= dlgamma(log_lambda_psi, Type(1.0), Type(exp(log_psi_hyperlambda) / 2.0), true).sum();
-  nll -= dlgamma(log_lambda_lambda, Type(1.0), Type(exp(log_lambda_hyperlambda) / 2.0), true).sum();
-  Type sigma_lambda_m = exp(-0.5 * log_lambda_lambda(0));
-  Type sigma_lambda_f = exp(-0.5 * log_lambda_lambda(1));
-  nll -= dlgamma(log_lambda_delta, Type(1.0), Type(exp(log_delta_hyperlambda) / 2.0), true).sum();
-  Type sigma_delta_m = exp(-0.5 * log_lambda_delta(0));
-  Type sigma_delta_f = exp(-0.5 * log_lambda_delta(1));
-  nll -= dlgamma(log_lambda_epsilon, Type(1.0), Type(exp(log_epsilon_hyperlambda) / 2.0), true).sum();
-  Type sigma_epsilon_m = exp(-0.5 * log_lambda_epsilon_f(0));
-  Type sigma_epsilon_f = exp(-0.5 * log_lambda_epsilon_f(1));
+  nll -= dnorm(sigma_phi_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_phi_f, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_psi_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_psi_f, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_A_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_A_f, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_B_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_B_f, Type(0.0), Type(5.0), true);
+  nll -= log_sigma_phi.sum();
+  nll -= log_sigma_psi.sum();
+  nll -= log_sigma_A.sum();
+  nll -= log_sigma_B.sum();
 
-  nll -= dlgamma(log_lambda_A, Type(1.0), Type(exp(log_A_hyperlambda) / 2.0), true).sum();
-  nll -= dlgamma(log_lambda_B, Type(1.0), Type(exp(log_B_hyperlambda) / 2.0), true).sum();
+  Type sigma_lambda_m = exp(log_sigma_lambda(0));
+  Type sigma_lambda_f = exp(log_sigma_lambda(1));
+  Type sigma_delta_m = exp(log_sigma_delta(0));
+  Type sigma_delta_f = exp(log_sigma_delta(1));
+  Type sigma_epsilon_m = exp(log_sigma_epsilon(0));
+  Type sigma_epsilon_f = exp(log_sigma_epsilon(1));
+
+  nll -= dnorm(sigma_lambda_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_lambda_f, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_delta_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_delta_f, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_epsilon_m, Type(0.0), Type(5.0), true);
+  nll -= dnorm(sigma_epsilon_f, Type(0.0), Type(5.0), true);
+  nll -= log_sigma_lambda.sum();
+  nll -= log_sigma_delta.sum();
+  nll -= log_sigma_epsilon.sum();
 
   nll -= dnorm(log_lambda_tp, Type(0.0), Type(5.0), 1);
   nll -= dnorm(log_lambda_tp_0_inflated_sd, Type(0.0), Type(5.0), 1);
@@ -217,14 +231,10 @@ Type objective_function<Type>::operator() ()
   Type rho_epsilon_m = 2.0 * invlogit(logit_epsilon_slope_rho(0)) - 1.0;
   Type rho_epsilon_f = 2.0 * invlogit(logit_epsilon_slope_rho(1)) - 1.0;
 
-  SparseMatrix<Type> QQ_phi_f =  exp(log_lambda_phi(1)) * penal_time + exp(log_marginal_prec_phi(1)) * null_penal_time;
-  nll += GMRF(QQ_phi_f)(log_phi_f_spline_params);
-  SparseMatrix<Type> QQ_psi_f =  exp(log_lambda_psi(1)) * penal_time + exp(log_marginal_prec_psi(1)) * null_penal_time;
-  nll += GMRF(QQ_psi_f)(log_psi_f_spline_params);
-  SparseMatrix<Type> QQ_A_f =  exp(log_lambda_A(1)) * penal_time + exp(log_marginal_prec_A(1)) * null_penal_time;
-  nll += GMRF(QQ_A_f)(log_A_f_spline_params);
-  SparseMatrix<Type> QQ_B_f =  exp(log_lambda_B(1)) * penal_time + exp(log_marginal_prec_B(1)) * null_penal_time;
-  nll += GMRF(QQ_B_f)(log_B_f_spline_params);
+  nll -= dnorm(log_phi_f_spline_params, Type(0.0), sigma_phi_f, true).sum();
+  nll -= dnorm(log_psi_f_spline_params, Type(0.0), sigma_psi_f, true).sum();
+  nll -= dnorm(log_A_f_spline_params, Type(0.0), sigma_A_f, true).sum();
+  nll -= dnorm(log_B_f_spline_params, Type(0.0), sigma_B_f, true).sum();
 
   nll -= dnorm(log_lambda_f_spline_params(0), log_lambda_mean_f, Type(2.0), true);
   nll += SCALE(AR1(rho_lambda_f), sigma_lambda_f)(diff(log_lambda_f_spline_params));
@@ -233,14 +243,10 @@ Type objective_function<Type>::operator() ()
   nll -= dnorm(log_epsilon_f_spline_params(0), log_epsilon_mean_f, Type(0.5), true);
   nll += SCALE(AR1(rho_epsilon_f), sigma_epsilon_f)(diff(log_epsilon_f_spline_params));
 
-  SparseMatrix<Type> QQ_phi_m =  exp(log_lambda_phi(0)) * penal_time + exp(log_marginal_prec_phi(0)) * null_penal_time;
-  nll += GMRF(QQ_phi_m)(log_phi_m_spline_params);
-  SparseMatrix<Type> QQ_psi_m =  exp(log_lambda_psi(0)) * penal_time + exp(log_marginal_prec_psi(0)) * null_penal_time;
-  nll += GMRF(QQ_psi_m)(log_psi_m_spline_params);
-  SparseMatrix<Type> QQ_A_m =  exp(log_lambda_A(0)) * penal_time + exp(log_marginal_prec_A(0)) * null_penal_time;
-  nll += GMRF(QQ_A_m)(log_A_m_spline_params);
-  SparseMatrix<Type> QQ_B_m =  exp(log_lambda_B(0)) * penal_time + exp(log_marginal_prec_B(0)) * null_penal_time;
-  nll += GMRF(QQ_B_m)(log_B_m_spline_params);
+  nll -= dnorm(log_phi_m_spline_params, Type(0.0), sigma_phi_m, true).sum();
+  nll -= dnorm(log_psi_m_spline_params, Type(0.0), sigma_psi_m, true).sum();
+  nll -= dnorm(log_A_m_spline_params, Type(0.0), sigma_A_m, true).sum();
+  nll -= dnorm(log_B_m_spline_params, Type(0.0), sigma_B_m, true).sum();
 
   nll -= dnorm(log_lambda_m_spline_params(0), log_lambda_mean_m, Type(2.0), true);
   nll += SCALE(AR1(rho_lambda_m), sigma_lambda_m)(diff(log_lambda_m_spline_params));
@@ -362,8 +368,8 @@ Type objective_function<Type>::operator() ()
   vector<Type> gx_f = D_agetime * gx_f_spline_params;
   vector<Type> gx_m = D_agetime * gx_m_spline_params;
 
-  SparseMatrix<Type> QQ_gx_f = exp(log_lambda_gx_age(1)) * penal_age_gx + exp(log_lambda_gx_time(1)) * penal_time_gx + exp(log_lambda_gx_agetime(1)) * penal_agetime_gx + exp(log_tau2_gx(1)) * null_penal_gx;
-  SparseMatrix<Type> QQ_gx_m = exp(log_lambda_gx_age(0)) * penal_age_gx + exp(log_lambda_gx_time(0)) * penal_time_gx + exp(log_lambda_gx_agetime(0)) * penal_agetime_gx + exp(log_tau2_gx(0)) * null_penal_gx;
+  SparseMatrix<Type> QQ_gx_f = lambda_gx_age_f * penal_age_gx + lambda_gx_time_f * penal_time_gx + lambda_gx_agetime_f * penal_agetime_gx + lambda_gx_f * null_penal_gx;
+  SparseMatrix<Type> QQ_gx_m = lambda_gx_age_m * penal_age_gx + lambda_gx_time_m * penal_time_gx + lambda_gx_agetime_m * penal_agetime_gx + lambda_gx_m * null_penal_gx;
 
   nll += GMRF(QQ_gx_f)(gx_f_spline_params) + GMRF(QQ_gx_m)(gx_m_spline_params);
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  25 MAY 2021 00:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  27 MAY 2021 09:02
 entering extended mode
 **./17.tex
 (17.tex
@@ -710,270 +710,33 @@ Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
 Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
 )
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 3
-6.
+5.
 
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 36.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 35.
 
 
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 36.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 35.
 
 
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+lasy on input line 36
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 35
 .
 
 (C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/base\ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-! Missing $ inserted.
-<inserted text> 
-                $
-l.44 	\item[\hookrightarrow]
-                             the 2nd order smoothness penalty implies
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.44 	\item[\hookrightarrow]
-                             the 2nd order smoothness penalty implies
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.44 	\item[\hookrightarrow]
-                             the 2nd order smoothness penalty implies
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.44 	\item[\hookrightarrow]
-                             the 2nd order smoothness penalty implies
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Misplaced alignment tab character &.
-l.49 ... $\rho \in (0,1)$ such that $\beta_{t+1} &
-                                                  = \beta_t + \rho(\beta_t -...
-I can't figure out why you would want to use a tab mark
-here. If you just want an ampersand, the remedy is
-simple: Just type `I\&' now. But if some right brace
-up above has ended a previous alignment prematurely,
-you're probably due for more error messages, and you
-might try typing `S' now just to see what is salvageable.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.51 	\item[\cdot]
-                   when $\rho \to 0$, a RW1 is obtained, so future coefficie...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.51 	\item[\cdot]
-                   when $\rho \to 0$, a RW1 is obtained, so future coefficie...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.51 	\item[\cdot]
-                   when $\rho \to 0$, a RW1 is obtained, so future coefficie...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.51 	\item[\cdot]
-                   when $\rho \to 0$, a RW1 is obtained, so future coefficie...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.52 	\item[\cdot]
-                   when $\rho \to 1$, a RW2 is obtained, so future coefficie...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.52 	\item[\cdot]
-                   when $\rho \to 1$, a RW2 is obtained, so future coefficie...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.52 	\item[\cdot]
-                   when $\rho \to 1$, a RW2 is obtained, so future coefficie...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.52 	\item[\cdot]
-                   when $\rho \to 1$, a RW2 is obtained, so future coefficie...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.53 	\item[\cdot]
-                   varying $\rho \in (0,1)$ maintains a trade of between smo...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.53 	\item[\cdot]
-                   varying $\rho \in (0,1)$ maintains a trade of between smo...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.53 	\item[\cdot]
-                   varying $\rho \in (0,1)$ maintains a trade of between smo...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.53 	\item[\cdot]
-                   varying $\rho \in (0,1)$ maintains a trade of between smo...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.54 	\item[\cdot]
-                   \textcolor{red}{I think} this is equivalent to having $\l...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.54 	\item[\cdot]
-                   \textcolor{red}{I think} this is equivalent to having $\l...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.54 	\item[\cdot]
-                   \textcolor{red}{I think} this is equivalent to having $\l...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.54 	\item[\cdot]
-                   \textcolor{red}{I think} this is equivalent to having $\l...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <8> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 54.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 38.
 LaTeX Font Info:    Font shape `U/lasy/b/n' in size <6> not available
-(Font)              Font shape `U/lasy/m/n' tried instead on input line 54.
-! Missing $ inserted.
-<inserted text> 
-                $
-l.55 	\item[\cdot]
-                   this suggests using an ARIMA(1,1,0) on the coefficients w...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Extra }, or forgotten $.
-\llap  #1->\hb@xt@ \z@ {\hss #1}
-                                
-l.55 	\item[\cdot]
-                   this suggests using an ARIMA(1,1,0) on the coefficients w...
-I've deleted a group-closing symbol because it seems to be
-spurious, as in `$x}$'. But perhaps the } is legitimate and
-you forgot something else, as in `\hbox{$x}'. In such cases
-the way to recover is to insert both the forgotten and the
-deleted material, e.g., by typing `I$}'.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.55 	\item[\cdot]
-                   this suggests using an ARIMA(1,1,0) on the coefficients w...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.55 	\item[\cdot]
-                   this suggests using an ARIMA(1,1,0) on the coefficients w...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
+(Font)              Font shape `U/lasy/m/n' tried instead on input line 38.
 
 
 Package caption Warning: Unused \captionsetup[sub] on input line 18.
@@ -983,30 +746,30 @@ See the caption package documentation for explanation.
 
 {C:/Users/ktang3/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] (17.aux) ) 
 Here is how much of TeX's memory you used:
- 17618 strings out of 479321
- 357843 string characters out of 2856107
- 659451 words of memory out of 3000000
+ 17617 strings out of 479321
+ 357837 string characters out of 2856107
+ 654454 words of memory out of 3000000
  34722 multiletter control sequences out of 15000+600000
- 415259 words of font info for 64 fonts, out of 8000000 for 9000
+ 414181 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,15n,103p,449b,281s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 102i,12n,103p,712b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
 {C:/
 Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}<C:/User
 s/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmbs
 y8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
-ts/cm/cmbx8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/publ
-ic/amsfonts/cm/cmex10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Pro
-grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/ktang3/AppDat
-a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb><C:/User
-s/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb
-><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
-cmr8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsf
-onts/cm/cmsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/p
-ublic/amsfonts/cm/cmsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/font
-s/type1/urw/times/utmr8a.pfb>
-Output written on 17.pdf (1 page, 102821 bytes).
+ts/cm/cmbx12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cm/cmmi12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiK
+TeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/ktang3/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib6.pfb><C:/Users/ktang3/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb><C
+:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
+12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTe
+X/fonts/type1/urw/times/utmr8a.pfb>
+Output written on 17.pdf (1 page, 103382 bytes).
 PDF statistics:
  58 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Zimbabwe"
+  country: "Namibia"
 ---
 
 ---
@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 rm(list=ls()[-which(ls()=="params")])
 #load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
-load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline 1 and 5 RData/",params$country," spline ARIMA.RData"))
+load(paste0("~/",params$country," tau Gumbel P1.RData"))
 
 library(dplyr)
 library(tidyr)
@@ -62,7 +62,8 @@ rm(req, filelist, filename)
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline.cpp")
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
