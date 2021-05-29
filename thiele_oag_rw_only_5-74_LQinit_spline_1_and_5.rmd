@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Namibia"
+  country: "Gambia"
 ---
 
 ---

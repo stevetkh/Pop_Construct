@@ -1,5 +1,5 @@
 params <- list(
-  country = "Benin", 
+  country = "Niger", 
   no.basis = 30,
   no.basis.fert = 14
 )
@@ -612,11 +612,11 @@ basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
 data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))
+data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!matches(colnames(data.f)))))
 
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
-  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f)))))
+  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f)))))
   
 }
 
@@ -826,6 +826,8 @@ map = list(log_tau2_logpop = factor(c(1, 2, 3, 4)),
            log_lambda_epsilon = factor(c(1,1))),
 stepmin = 1e-10, stepmax = 1)
 )
+
+save(thiele.f.loghump.oag.RW.ori, file=paste(params$country, "tau Gumbel P1.RData"))
 
 loghump.models.list <- list("Thiele RW" = thiele.f.loghump.oag.RW.ori)
 
