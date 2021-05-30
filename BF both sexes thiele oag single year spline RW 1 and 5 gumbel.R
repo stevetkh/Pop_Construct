@@ -1,5 +1,5 @@
 params <- list(
-  country = "Niger", 
+  country = "Uganda", 
   no.basis = 30,
   no.basis.fert = 14
 )
@@ -35,7 +35,10 @@ for (filename in filelist) {
 rm(req, filelist, filename)
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
+
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -611,8 +614,8 @@ bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", agegr >= dhs.start.age, a
 basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
-data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!matches(colnames(data.f)))))
+data.f <- if(nrow(ddharm_bf_census_f)!=0) {as.matrix(log(ddharm_bf_census_f_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}; data.m <- if(nrow(ddharm_bf_census_m)!=0) {as.matrix(log(ddharm_bf_census_m_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}
+data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_f_oag_5[,-1]))}; data.m.5 <- if(!is.null(data.m)){as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_m_oag_5[,-1]))}
 
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
@@ -858,6 +861,36 @@ var.sample <- function(fit, nsample){
 }
 
 thiele.var.sim <-  apply(var.sample(thiele.f.loghump.oag.RW.ori, 1000), 1, thiele.f.loghump.oag.RW.ori$obj$report)
+
+#plot tips####
+
+tp <- thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params
+tp[6] <- tp[6] + thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params_5
+tp[11] <- tp[11] + thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params_1
+
+`colnames<-`(bf.idx1$periods) %>%
+  
+
+tips.func <- function(x){
+  bind_rows(phi = x$mode$phi_f,
+            psi = x$mode$psi_f,
+            lambda = x$mode$lambda_f,
+            delta = x$mode$delta_f,
+            epsilon = x$mode$epsilon_f,
+            A = x$mode$A_f,
+            B = x$mode$B_f) %>%
+    mutate(sex="female", period5 = bf.idx1$periods)  %>%
+    bind_rows(
+      bind_rows(phi = x$mode$phi_m,
+                psi = x$mode$psi_m,
+                lambda = x$mode$lambda_m,
+                delta = x$mode$delta_m,
+                epsilon = x$mode$epsilon_m,
+                A = x$mode$A_m,
+                B = x$mode$B_m) %>%
+        mutate(sex="male", period5 = bf.idx1$periods)
+    )
+}
 
 #plot par estimates####
 par.func <- function(x){
