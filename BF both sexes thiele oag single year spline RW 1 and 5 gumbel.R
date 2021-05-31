@@ -1,5 +1,5 @@
 params <- list(
-  country = "Uganda", 
+  country = "Rwanda", 
   no.basis = 30,
   no.basis.fert = 14
 )
@@ -35,9 +35,9 @@ for (filename in filelist) {
 rm(req, filelist, filename)
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
-#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
@@ -652,6 +652,8 @@ gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) 
 gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(2)
 gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
 
+gumbel.theta.tp <- -log(0.01) * 1.96/1
+
 # get.tau <- function(tau, max.df, tau.e, v.values) {
 #   (max.df - sum(1/(1 + (tau/tau.e) * v.values)))^2
 # }
@@ -715,7 +717,12 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             full_penal_time = full.penal.time,
                             
                             full_penal_gx = full.penal.gx,
-                          
+                            
+                            penal_tp = as(crossprod(diff(diag(15))), "sparseMatrix"), #only penalising the latter 14 coefficients 
+                            penal_tp_0 = as(diag(c(1, rep(0, 14))), "sparseMatrix"),
+                            null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0, 11))),"sparseMatrix"),
+                            tp_mean = -2:12,
+                         
                             D_time = as(A.year, "sparseMatrix"),
                             D_agetime = as(te.spline, "sparseMatrix"),
                             D_agetime_fert = as(te.spline.fert, "sparseMatrix"),
@@ -728,7 +735,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             theta_delta = gumbel.theta.delta,
                             theta_epsilon = gumbel.theta.epsilon,
                             theta_A = gumbel.theta.A,
-                            theta_B = gumbel.theta.B
+                            theta_B = gumbel.theta.B,
+                            theta_tp = gumbel.theta.tp
                             )
 
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
@@ -737,7 +745,7 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 log_fx_spline_params = rep(0, no.basis.fert * no.basis),
                 gx_f_spline_params = rep(0, no.basis*no.basis), gx_m_spline_params = rep(0, no.basis*no.basis),
                 
-                log_lambda_tp = 2,
+                log_lambda_tp = 5,
                 tp_params = rep(0,15),
                 
                 tp_slope = 0,
@@ -753,17 +761,27 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
                 
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
-                log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
+                log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
+                #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
                 
-                log_lambda_phi = rep(log((gumbel.theta.phi/-log(0.01))^2) + 0.1 , 2),
-                log_lambda_psi = rep(log((gumbel.theta.psi/-log(0.01))^2) + 0.1 , 2),
-                log_lambda_A = rep(log((gumbel.theta.A/-log(0.01))^2) + 0.1 , 2),
-                log_lambda_B = rep(log((gumbel.theta.B/-log(0.01))^2) + 0.1 , 2),
+                log_lambda_phi = log((gumbel.theta.phi/-log(0.01))^2) + 0.1,
+                log_lambda_psi = log((gumbel.theta.psi/-log(0.01))^2) + 0.1,
+                log_lambda_A = log((gumbel.theta.A/-log(0.01))^2) + 0.1,
+                log_lambda_B = log((gumbel.theta.B/-log(0.01))^2) + 0.1,
                 
-                log_lambda_lambda = rep(log((gumbel.theta.lambda/-log(0.01))^2) + 0.1 , 2),
-                log_lambda_delta = rep(log((gumbel.theta.delta/-log(0.01))^2) + 0.1 , 2),
-                log_lambda_epsilon = rep(log((gumbel.theta.epsilon/-log(0.01))^2) + 0.1 , 2),
+                log_lambda_lambda = log((gumbel.theta.lambda/-log(0.01))^2) + 0.1,
+                log_lambda_delta = log((gumbel.theta.delta/-log(0.01))^2) + 0.1,
+                log_lambda_epsilon = log((gumbel.theta.epsilon/-log(0.01))^2) + 0.1,
                 
+                # log_lambda_phi = rep(log((gumbel.theta.phi/-log(0.01))^2) + 0.1 , 2),
+                # log_lambda_psi = rep(log((gumbel.theta.psi/-log(0.01))^2) + 0.1 , 2),
+                # log_lambda_A = rep(log((gumbel.theta.A/-log(0.01))^2) + 0.1 , 2),
+                # log_lambda_B = rep(log((gumbel.theta.B/-log(0.01))^2) + 0.1 , 2),
+                # 
+                # log_lambda_lambda = rep(log((gumbel.theta.lambda/-log(0.01))^2) + 0.1 , 2),
+                # log_lambda_delta = rep(log((gumbel.theta.delta/-log(0.01))^2) + 0.1 , 2),
+                # log_lambda_epsilon = rep(log((gumbel.theta.epsilon/-log(0.01))^2) + 0.1 , 2),
+                # 
                 log_tau2_logpop = c(log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2), log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2)),
                 log_dispersion = c(1.3, 1.3)
                 )
@@ -803,6 +821,32 @@ input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = p
 #                                     iter.max = 5000,
 #                                     step.min = 1e-7,
 #                                     step.max = 1))
+# 
+# 
+# system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
+#                                                    random = c("log_basepop_f","log_basepop_m",
+#                                                               "log_fx_spline_params",
+#                                                               "gx_f_spline_params","gx_m_spline_params",
+#                                                               "tp_params",
+#                                                               "log_phi_f_spline_params", "log_phi_m_spline_params",
+#                                                               "log_psi_f_spline_params", "log_psi_m_spline_params",
+#                                                               "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+#                                                               "log_delta_f_spline_params", "log_delta_m_spline_params",
+#                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+#                                                               "log_A_f_spline_params", "log_A_m_spline_params",
+#                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
+# DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel",
+# map = list(log_tau2_logpop = factor(c(1, 2, 3, 4)),
+#            log_lambda_gx = factor(c(1,1)),
+#            log_lambda_phi = factor(c(1,1)),
+#            log_lambda_psi = factor(c(1,1)),
+#            log_lambda_A = factor(c(1,1)),
+#            log_lambda_B = factor(c(1,1)),
+#            log_lambda_lambda = factor(c(1,1)),
+#            log_lambda_delta = factor(c(1,1)),
+#            log_lambda_epsilon = factor(c(1,1))),
+# stepmin = 1e-10, stepmax = 1)
+# )
 
 
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
@@ -817,20 +861,12 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
                                                               "log_A_f_spline_params", "log_A_m_spline_params",
                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
-DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel",
-map = list(log_tau2_logpop = factor(c(1, 2, 3, 4)),
-           log_lambda_gx = factor(c(1,1)),
-           log_lambda_phi = factor(c(1,1)),
-           log_lambda_psi = factor(c(1,1)),
-           log_lambda_A = factor(c(1,1)),
-           log_lambda_B = factor(c(1,1)),
-           log_lambda_lambda = factor(c(1,1)),
-           log_lambda_delta = factor(c(1,1)),
-           log_lambda_epsilon = factor(c(1,1))),
-stepmin = 1e-10, stepmax = 1)
-)
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common",
+                                                   stepmin = 1e-10, stepmax = 1)
+            )
 
-save(thiele.f.loghump.oag.RW.ori, file=paste(params$country, "tau Gumbel P1.RData"))
+
+save(thiele.f.loghump.oag.RW.ori, file=paste(params$country, "tau Gumbel P1 common sp.RData"))
 
 loghump.models.list <- list("Thiele RW" = thiele.f.loghump.oag.RW.ori)
 

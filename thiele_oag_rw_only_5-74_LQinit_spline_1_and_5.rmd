@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Gambia"
+  country: "Zimbabwe"
 ---
 
 ---
@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 rm(list=ls()[-which(ls()=="params")])
 #load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
-load(paste0("~/",params$country," tau Gumbel P1.RData"))
+load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_wrong_tips_and_priors/",params$country," tau Gumbel P1.RData"))
 
 library(dplyr)
 library(tidyr)
@@ -597,14 +597,15 @@ bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", agegr >= dhs.start.age, a
 basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
-data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))
+data.f <- if(nrow(ddharm_bf_census_f)!=0) {as.matrix(log(ddharm_bf_census_f_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}; data.m <- if(nrow(ddharm_bf_census_m)!=0) {as.matrix(log(ddharm_bf_census_m_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}
+data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_f_oag_5[,-1]))}; data.m.5 <- if(!is.null(data.m)){as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_m_oag_5[,-1]))}
 
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
-  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f)))))
+  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f)))))
   
 }
+
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
 init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.prior.m[5,1]; 
