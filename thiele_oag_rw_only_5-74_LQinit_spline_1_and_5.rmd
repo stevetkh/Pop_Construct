@@ -1488,7 +1488,7 @@ mfr.df %>% filter(model != "Initial Values") %>%
   ggplot() + geom_line(aes(x = year, y = value, col = model), lwd = 1.2) +
   geom_point(data = filter(mfr.df, model=="Initial Values"), aes(x = year, y = value), size = 3) +
   geom_ribbon(data = mfr.var.df, aes(x = year, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill = 2) +
-  ggtitle(paste(country, "Estimated Total Fertility Rates")) +
+  ggtitle(paste(country, "Mean Age at Birth")) +
   theme(text = element_text(size=25),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35),
         legend.key.width = unit(2,"cm")) 

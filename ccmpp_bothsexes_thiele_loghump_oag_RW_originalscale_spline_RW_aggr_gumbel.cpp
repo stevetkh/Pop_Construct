@@ -106,11 +106,6 @@ Type objective_function<Type>::operator() ()
   DATA_SPARSE_MATRIX(D_agetime);
   DATA_SPARSE_MATRIX(D_agetime_fert);
 
-  DATA_SPARSE_MATRIX(penal_tp);
-  DATA_SPARSE_MATRIX(penal_tp_0);
-  DATA_SPARSE_MATRIX(null_penal_tp);
-  DATA_VECTOR(tp_mean);
-  
   PARAMETER_VECTOR(log_dispersion); //1 = male, 2 = female
 
   PARAMETER(log_lambda_tp);
@@ -153,8 +148,6 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(theta_epsilon);
   DATA_SCALAR(theta_A);
   DATA_SCALAR(theta_B);
-  
-  DATA_SCALAR(theta_tp);
 
   Type nll(0.0);
 
@@ -219,14 +212,12 @@ Type objective_function<Type>::operator() ()
   nll -= log_lambda_delta.sum();
   nll -= log_lambda_epsilon.sum();
 
-  Type lambda_tp = exp(log_lambda_tp);
-  nll -= gumbel_density(lambda_tp, theta_tp);
-
-  SparseMatrix<Type> QQ_tp = lambda_tp * penal_tp + 4 * penal_tp_0 + null_penal_tp;
-  nll += GMRF(QQ_tp)(tp_params - tp_slope * tp_mean);
+  nll -= dnorm(tp_params(0), Type(0.0), Type(0.5), true);
   nll -= dnorm(tp_slope, Type(0.0), Type(0.3), true);
   nll -= dnorm(tp_params_5, Type(0.0), Type(0.3), true);
   nll -= dnorm(tp_params_10, Type(0.0), Type(0.3), true);
+  nll -= dlgamma(log_lambda_tp, Type(1.0), Type(1.0 / 0.1), true);
+  nll -= dnorm(vector<Type>(diff(tp_params) - tp_slope), Type(0.0), exp(-0.5 * log_lambda_tp), true).sum();
   tp_params(5) += tp_params_5;
   tp_params(10) += tp_params_10;
 

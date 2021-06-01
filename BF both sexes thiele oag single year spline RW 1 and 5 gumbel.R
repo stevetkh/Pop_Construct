@@ -34,7 +34,7 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
