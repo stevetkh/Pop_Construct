@@ -1,5 +1,5 @@
 params <- list(
-  country = "Rwanda", 
+  country = "Zimbabwe", 
   no.basis = 30,
   no.basis.fert = 14
 )
@@ -34,8 +34,8 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
+#compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel.cpp")
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
 
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
@@ -615,7 +615,7 @@ basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
 data.f <- if(nrow(ddharm_bf_census_f)!=0) {as.matrix(log(ddharm_bf_census_f_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}; data.m <- if(nrow(ddharm_bf_census_m)!=0) {as.matrix(log(ddharm_bf_census_m_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}
-data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_f_oag_5[,-1]))}; data.m.5 <- if(!is.null(data.m)){as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_m_oag_5[,-1]))}
+data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!matches(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_f_oag_5[,-1]))}; data.m.5 <- if(!is.null(data.m)){as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!matches(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_m_oag_5[,-1]))}
 
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
@@ -636,17 +636,21 @@ full.penal.gx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis),diffe
                       #0.5 * crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))) +
                       1e-3 * diag(no.basis * no.basis), "sparseMatrix")
 
+full.penal.fx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis.fert))) +
+                      0.5 * crossprod(diff(diag(no.basis))) %x% diag(no.basis.fert) +
+                      1e-3 * diag(no.basis.fert * no.basis), "sparseMatrix")
+  
 #full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 2)) + 1e-3 * diag(no.basis),"sparseMatrix")
 full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 1)) + 1e-3 * diag(no.basis),"sparseMatrix")
 
 
-gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(tcrossprod(te.spline.fert)))) * 1.96 / log(1.5)
+gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.5)
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
-gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
-gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
-gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
-gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 
 gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
 gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(2)
@@ -717,6 +721,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             full_penal_time = full.penal.time,
                             
                             full_penal_gx = full.penal.gx,
+                            
+                            full_penal_fx = full.penal.fx,
                             
                             penal_tp = as(crossprod(diff(diag(15))), "sparseMatrix"), #only penalising the latter 14 coefficients 
                             penal_tp_0 = as(diag(c(1, rep(0, 14))), "sparseMatrix"),
@@ -896,37 +902,33 @@ var.sample <- function(fit, nsample){
   smp
 }
 
-thiele.var.sim <-  apply(var.sample(thiele.f.loghump.oag.RW.ori, 1000), 1, thiele.f.loghump.oag.RW.ori$obj$report)
+thiele.par.sim <- var.sample(thiele.f.loghump.oag.RW.ori, 1000)
+thiele.var.sim <-  apply(thiele.par.sim, 1, thiele.f.loghump.oag.RW.ori$obj$report)
 
 #plot tips####
-
-tp <- thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params
-tp[6] <- tp[6] + thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params_5
-tp[11] <- tp[11] + thiele.f.loghump.oag.RW.ori$par.full %>% split(names(.)) %>% .$tp_params_1
-
-`colnames<-`(bf.idx1$periods) %>%
-  
-
 tips.func <- function(x){
-  bind_rows(phi = x$mode$phi_f,
-            psi = x$mode$psi_f,
-            lambda = x$mode$lambda_f,
-            delta = x$mode$delta_f,
-            epsilon = x$mode$epsilon_f,
-            A = x$mode$A_f,
-            B = x$mode$B_f) %>%
-    mutate(sex="female", period5 = bf.idx1$periods)  %>%
-    bind_rows(
-      bind_rows(phi = x$mode$phi_m,
-                psi = x$mode$psi_m,
-                lambda = x$mode$lambda_m,
-                delta = x$mode$delta_m,
-                epsilon = x$mode$epsilon_m,
-                A = x$mode$A_m,
-                B = x$mode$B_m) %>%
-        mutate(sex="male", period5 = bf.idx1$periods)
-    )
+  tp <- x$par.full %>% split(names(.)) %>% .$tp_params
+  tp[6] <- tp[6] + x$par.full %>% split(names(.)) %>% .$tp_params_5
+  tp[11] <- tp[11] + x$par.full %>% split(names(.)) %>% .$tp_params_10
+  exp(tp)
 }
+
+tp.df <- as_tibble(tips.func(thiele.f.loghump.oag.RW.ori)) %>% mutate(tips = 0:14)
+
+tp.var.df <-   as_tibble(t(apply(apply(thiele.par.sim, 1, function(i){
+  tp <- i %>% split(names(.)) %>% .$tp_params
+  tp[6] <- tp[6] + i %>% split(names(.)) %>% .$tp_params_5
+  tp[11] <- tp[11] + i %>% split(names(.)) %>% .$tp_params_10
+  exp(tp)
+}), 1, quantile, c(0.025, 0.975)))) %>% mutate(tips = 0:14)
+
+tp.df %>% 
+  ggplot() + geom_line(aes(x = tips, y = value), lwd = 1.2, col="purple") + 
+  coord_flip() + xlab("TiPS") +
+  geom_ribbon(data = tp.var.df, aes(x = tips, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill="purple") +
+  ggtitle(paste0(country, "Estimated TiPS")) +
+  theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 
 #plot par estimates####
 par.func <- function(x){

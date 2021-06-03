@@ -102,6 +102,8 @@ Type objective_function<Type>::operator() ()
 
   DATA_SPARSE_MATRIX(full_penal_gx);
 
+  DATA_SPARSE_MATRIX(full_penal_fx);
+
   DATA_SPARSE_MATRIX(D_time);
   DATA_SPARSE_MATRIX(D_agetime);
   DATA_SPARSE_MATRIX(D_agetime_fert);
@@ -333,7 +335,8 @@ Type objective_function<Type>::operator() ()
    }
 
   // prior for log(fx)
-  nll -= dnorm(log_fx_spline_params, Type(0.0), exp(-0.5 * log_lambda_fx), true).sum();
+  SparseMatrix<Type> QQ_fx = lambda_fx * full_penal_fx;
+  nll += GMRF(QQ_fx)(log_fx_spline_params);
   vector<Type> fx(exp(log_fx_mean + D_agetime_fert * log_fx_spline_params));
   MapMatrixXXt fx_mat(fx.data(), n_fx, n_periods);
 

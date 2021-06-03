@@ -4,28 +4,12 @@ print(args) #list the command line arguments.
 myvar <- as.numeric(args[1])
 
 .libPaths(c("C:/Users/ktang3/Documents/R/win-library/4.0", .libPaths()))
-setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline 1 and 5 RData")
+setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5")
 load("C:/Users/ktang3/Documents/cohort smooth 1900-2017.RData")
 skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
 joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
-
 params <- list(
   country = joint.countries[myvar], 
-  log_phi_hyperprec = 7.5, #mean log(precision) = 5 - log(2), mode sigma = 1/2 * 2/exp(5) = 1/exp(5)
-  log_psi_hyperprec = 7.5,
-  log_A_hyperprec = 7.5,
-  log_B_hyperprec = 7.5,
-  
-  log_phi_hyperlambda = 5, # mean log(precision) = 5 - log(2), mode log(precision) = 0
-  log_psi_hyperlambda = 5,
-  log_lambda_hyperlambda = 5,
-  log_delta_hyperlambda = 5,
-  log_epsilon_hyperlambda = 5,
-  log_A_hyperlambda = 5,
-  log_B_hyperlambda = 5,
-  
-  prec.init = 6-log(2),
-  lambda.init = 5-log(2),
   no.basis = 30,
   no.basis.fert = 14
 )
@@ -59,7 +43,7 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -634,25 +618,45 @@ bf5.m.no0.smooth <- bf5.smooth %>% filter(mm1=="male", agegr >= dhs.start.age, a
 basepop.f <- ifelse(pop.f.oag$`1960`==0, 1, pop.f.oag$'1960')
 basepop.m <- ifelse(pop.m.oag$`1960`==0, 1, pop.m.oag$'1960')
 
-data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-1])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-1]))
-data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!all_of(colnames(data.f)))))
+data.f <- if(nrow(ddharm_bf_census_f)!=0) {as.matrix(log(ddharm_bf_census_f_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}; data.m <- if(nrow(ddharm_bf_census_m)!=0) {as.matrix(log(ddharm_bf_census_m_oag[,-1]))} else {as.matrix(tibble(.rows=open.age+1))}
+data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>% select(!matches(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_f_oag_5[,-1]))}; data.m.5 <- if(!is.null(data.m)){as.matrix(log(ddharm_bf_census_m_oag_5[,-1] %>% select(!matches(colnames(data.f)))))} else {as.matrix(log(ddharm_bf_census_m_oag_5[,-1]))}
 
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
-  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!all_of(colnames(data.f)))))
+  data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f)))))
   
 }
-
-prec.init <- params$prec.init
-lambda.init <- params$lambda.init
 
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
 init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.prior.m[5,1]; 
 
-#init_lambda_f <- 0.003; init_lambda_m <- 0.003; 
-#init_delta_f <- 0.3; init_delta_m <- 0.3; 
-#init_epsilon_f <- 22; init_epsilon_m <- 25; 
+full.penal.gx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis),differences=2)) +
+                      0.5 * crossprod(diff(diag(no.basis),differences=2)) %x% diag(no.basis) +
+                      #0.5 * crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))) +
+                      1e-3 * diag(no.basis * no.basis), "sparseMatrix")
+
+full.penal.fx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis.fert))) +
+                      0.5 * crossprod(diff(diag(no.basis))) %x% diag(no.basis.fert) +
+                      1e-3 * diag(no.basis.fert * no.basis), "sparseMatrix")
+
+#full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 2)) + 1e-3 * diag(no.basis),"sparseMatrix")
+full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 1)) + 1e-3 * diag(no.basis),"sparseMatrix")
+
+
+gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.5)
+gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
+
+gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+
+gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
+gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(2)
+gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
+
+gumbel.theta.tp <- -log(0.01) * 1.96/1
 
 data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                             log_fx_mean = log_fx_mean,
@@ -692,106 +696,90 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             log_A_mean_f = log(thiele.loghump.prior.f[6,]), log_A_mean_m = log(thiele.loghump.prior.m[6,]),
                             log_B_mean_f = log(thiele.loghump.prior.f[7,]), log_B_mean_m = log(thiele.loghump.prior.m[7,]),
                             
-                            #log_lambda_mean_f = rep(log(0.005), bf.idx1$n_periods), log_lambda_mean_m = rep(log(0.008), bf.idx1$n_periods),
-                            #log_delta_mean_f = rep(log(1.2), bf.idx1$n_periods), log_delta_mean_m = rep(log(1.2), bf.idx1$n_periods), 
-                            #log_epsilon_mean_f = rep(log(22), bf.idx1$n_periods), log_epsilon_mean_m = rep(log(25), bf.idx1$n_periods), 
-                            
                             thiele_age = thiele_age,
                             
-                            penal_tp = as(crossprod(diff(diag(15))),"sparseMatrix"),
-                            null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0,11))),"sparseMatrix"),
-                            penal_tp_0 = as(tcrossprod(c(1,rep(0,14))),"sparseMatrix"),
+                            full_penal_time = full.penal.time,
                             
-                            penal_time = as(crossprod(diff(diag(no.basis), differences = 2)),"sparseMatrix"),
-                            #penal_time_1 = as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
-                            null_penal_time = as(diag(no.basis),"sparseMatrix"),
+                            full_penal_gx = full.penal.gx,
                             
-                            penal_age_gx = diag(no.basis) %x% as(crossprod(diff(diag(no.basis))),"sparseMatrix"),
-                            penal_time_gx = as(crossprod(diff(diag(no.basis))),"sparseMatrix") %x% diag(no.basis),
-                            penal_agetime_gx = as(crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))),"sparseMatrix"),
-                            null_penal_gx = as(diag(no.basis * no.basis), "sparseMatrix"),
+                            full_penal_fx = full.penal.fx,
+                            
+                            penal_tp = as(crossprod(diff(diag(15))), "sparseMatrix"), #only penalising the latter 14 coefficients 
+                            penal_tp_0 = as(diag(c(1, rep(0, 14))), "sparseMatrix"),
+                            null_penal_tp = as(exp(15)*tcrossprod(c(0,1,1,1,rep(0, 11))),"sparseMatrix"),
+                            tp_mean = -2:12,
                             
                             D_time = as(A.year, "sparseMatrix"),
                             D_agetime = as(te.spline, "sparseMatrix"),
                             D_agetime_fert = as(te.spline.fert, "sparseMatrix"),
                             
-                            log_phi_hypervar_prec = params$log_phi_hyperprec,
-                            log_psi_hypervar_prec = params$log_psi_hyperprec,
-                            log_A_hypervar_prec = params$log_A_hyperprec,
-                            log_B_hypervar_prec = params$log_B_hyperprec,
-                            
-                            log_phi_hyperlambda =  params$log_phi_hyperlambda,
-                            log_psi_hyperlambda =  params$log_psi_hyperlambda,
-                            log_lambda_hyperlambda =  params$log_lambda_hyperlambda,
-                            log_delta_hyperlambda =  params$log_delta_hyperlambda,
-                            log_epsilon_hyperlambda =  params$log_epsilon_hyperlambda,
-                            log_A_hyperlambda =  params$log_A_hyperlambda,
-                            log_B_hyperlambda =  params$log_B_hyperlambda
+                            theta_fx = gumbel.theta.fx,
+                            theta_gx = gumbel.theta.gx,
+                            theta_phi = gumbel.theta.phi,
+                            theta_psi = gumbel.theta.psi,
+                            theta_lambda = gumbel.theta.lambda,
+                            theta_delta = gumbel.theta.delta,
+                            theta_epsilon = gumbel.theta.epsilon,
+                            theta_A = gumbel.theta.A,
+                            theta_B = gumbel.theta.B,
+                            theta_tp = gumbel.theta.tp
 )
 
-par.vec <- list(log_tau2_logpop_f = c(2,4), log_tau2_logpop_m = c(2,4),
-                log_tau2_fx = 3,
-                log_tau2_gx_f = 2, log_tau2_gx_m = 2,
-                log_lambda_gx_age_f = 5, log_lambda_gx_age_m = 5,
-                log_lambda_gx_time_f = 5, log_lambda_gx_time_m = 5,
-                log_lambda_gx_agetime_f = 5, log_lambda_gx_agetime_m = 5,
+par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
                 log_fx_spline_params = rep(0, no.basis.fert * no.basis),
                 gx_f_spline_params = rep(0, no.basis*no.basis), gx_m_spline_params = rep(0, no.basis*no.basis),
                 
-                log_lambda_tp = 1,
-                log_lambda_tp_0_inflated_sd = 0.3,
+                log_lambda_tp = 5,
                 tp_params = rep(0,15),
                 
-                log_dispersion_f = 1.3, log_dispersion_m = 1.3,
+                tp_slope = 0,
+                tp_params_5 = 0.3,
+                tp_params_10 = 0.3,
                 
                 log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
                 log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
-                log_lambda_f_spline_params = rep(log(init_lambda_f), no.basis), log_lambda_m_spline_params = rep(log(init_lambda_m), no.basis),
-                log_delta_f_spline_params = rep(log(init_delta_f), no.basis), log_delta_m_spline_params = rep(log(init_delta_m), no.basis),
-                log_epsilon_f_spline_params = rep(log(init_epsilon_f), no.basis), log_epsilon_m_spline_params = rep(log(init_epsilon_m), no.basis),
+                log_lambda_f_spline_params = rep(0, no.basis), log_lambda_m_spline_params = rep(0, no.basis),
+                log_delta_f_spline_params = rep(0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
+                log_epsilon_f_spline_params = rep(0, no.basis), log_epsilon_m_spline_params = rep(0, no.basis),
                 log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
                 log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
                 
-                log_marginal_prec_phi_f = prec.init, log_marginal_prec_phi_m = prec.init,
-                log_marginal_prec_psi_f = prec.init, log_marginal_prec_psi_m = prec.init,
-                log_marginal_prec_A_f = prec.init, log_marginal_prec_A_m = prec.init,
-                log_marginal_prec_B_f = prec.init, log_marginal_prec_B_m = prec.init,
+                log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
+                log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
+                #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
                 
-                log_lambda_phi_f = lambda.init, log_lambda_phi_m = lambda.init, 
-                log_lambda_psi_f = lambda.init, log_lambda_psi_m = lambda.init, 
-                log_lambda_lambda_f = lambda.init, log_lambda_lambda_m = lambda.init, 
-                log_lambda_delta_f = lambda.init, log_lambda_delta_m = lambda.init, 
-                log_lambda_epsilon_f = lambda.init, log_lambda_epsilon_m = lambda.init,
-                log_lambda_A_f = lambda.init, log_lambda_A_m = lambda.init, 
-                log_lambda_B_f = lambda.init, log_lambda_B_m = lambda.init,
+                log_lambda_phi = log((gumbel.theta.phi/-log(0.01))^2) + 0.1,
+                log_lambda_psi = log((gumbel.theta.psi/-log(0.01))^2) + 0.1,
+                log_lambda_A = log((gumbel.theta.A/-log(0.01))^2) + 0.1,
+                log_lambda_B = log((gumbel.theta.B/-log(0.01))^2) + 0.1,
                 
-                logit_lambda_slope_rho_f = 0, logit_lambda_slope_rho_m = 0, 
-                logit_delta_slope_rho_f = 0, logit_delta_slope_rho_m = 0, 
-                logit_epsilon_slope_rho_f = 0, logit_epsilon_slope_rho_m = 0
+                log_lambda_lambda = log((gumbel.theta.lambda/-log(0.01))^2) + 0.1,
+                log_lambda_delta = log((gumbel.theta.delta/-log(0.01))^2) + 0.1,
+                log_lambda_epsilon = log((gumbel.theta.epsilon/-log(0.01))^2) + 0.1,
+                
+                log_tau2_logpop = c(log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2), log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2)),
+                log_dispersion = c(1.3, 1.3)
 )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-#rm(list=ls()[-which(ls()%in%c("input.thiele.loghump.oag.vec.RW", "fit_tmb", "make_tmb_obj"))])
-#gc()
 
-system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW,inner_verbose=TRUE, random = c("log_basepop_f","log_basepop_m",
-                                                                                                                  "log_fx_spline_params",
-                                                                                                                  "gx_f_spline_params","gx_m_spline_params",
-                                                                                                                  "tp_params",
-                                                                                                                  "log_phi_f_spline_params", "log_phi_m_spline_params",
-                                                                                                                  "log_psi_f_spline_params", "log_psi_m_spline_params",
-                                                                                                                  "log_lambda_f_spline_params", "log_lambda_m_spline_params",
-                                                                                                                  "log_delta_f_spline_params", "log_delta_m_spline_params",
-                                                                                                                  "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
-                                                                                                                  "log_A_f_spline_params", "log_A_m_spline_params",
-                                                                                                                  "log_B_f_spline_params", "log_B_m_spline_params"
-),
-DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA",
-stepmin = 1e-10, stepmax = 1
+system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
+                                                   random = c("log_basepop_f","log_basepop_m",
+                                                              "log_fx_spline_params",
+                                                              "gx_f_spline_params","gx_m_spline_params",
+                                                              "tp_params",
+                                                              "log_phi_f_spline_params", "log_phi_m_spline_params",
+                                                              "log_psi_f_spline_params", "log_psi_m_spline_params",
+                                                              "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+                                                              "log_delta_f_spline_params", "log_delta_m_spline_params",
+                                                              "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+                                                              "log_A_f_spline_params", "log_A_m_spline_params",
+                                                              "log_B_f_spline_params", "log_B_m_spline_params"),
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common",
+                                                   stepmin = 1e-10, stepmax = 1)
 )
-) 
 
-save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," spline ARIMA.RData"))
+save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," tau Gumbel.RData"))
