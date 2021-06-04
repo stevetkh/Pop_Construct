@@ -1,7 +1,7 @@
 params <- list(
   country = "Zimbabwe", 
-  no.basis = 30,
-  no.basis.fert = 14
+  age.knot.space = 2.5,
+  year.knot.space = 2.5
 )
 
 library(dplyr)
@@ -214,8 +214,6 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
 open.age <- 85
 n_ages <- open.age + 1
-no.basis <- params$no.basis
-no.basis.fert <- params$no.basis.fert
 interval <- 1 #just in case
 
 country <- params$country
@@ -495,33 +493,29 @@ bf.idx5<-projection_indices(period_start = 1960,
                             n_sexes = 2)
 
 #spline basis
-knots<-seq(0,1,length=no.basis-2)
-dk<-knots[2]-knots[1]	
-knots<-c(knots[1]-dk*(3:1),knots,knots[no.basis-2]+dk*(1:3))
-age<-seq(0,1,length=bf.idx1$n_ages)
-year<-seq(0,1,length=bf.idx1$n_periods)
+knots.age <- seq(-3 * params$age.knot.space, open.age + 3 * params$age.knot.space, by = params$age.knot.space)
+knots.time <- seq(-3 * params$year.knot.space + 1960, 2020 + 3 * params$year.knot.space, by = params$year.knot.space)
+no.basis.age <- length(knots.age) - 4
+no.basis.time <- length(knots.time) - 4
 
 A.age<-c()
-for(j in 1:no.basis) {
-  A.age<-cbind(A.age,bspline(age,knots,j))
+for(j in 1:no.basis.age) {
+  A.age<-cbind(A.age,bspline(bf.idx1$ages,knots.age,j))
 }
 
 A.year<-c()
-for(j in 1:no.basis) {
-  A.year<-cbind(A.year,bspline(year,knots,j))
+for(j in 1:no.basis.time) {
+  A.year<-cbind(A.year,bspline(bf.idx1$periods,knots.time,j))
 }
 
 te.spline<-A.year%x%A.age
 
-
-fert.knots<-seq(0,1,length=no.basis.fert-2)
-fert.dk<-fert.knots[2]-fert.knots[1]	
-fert.knots<-c(fert.knots[1]-fert.dk*(3:1),fert.knots,fert.knots[no.basis.fert-2]+fert.dk*(1:3))
-fert.age<-seq(0,1,length=bf.idx1$n_fx)
-
+knots.fert <- seq(-3 * params$age.knot.space + min(bf.idx1$fertility_ages), 3 * params$age.knot.space + max(bf.idx1$fertility_ages), by = params$age.knot.space)
+no.basis.fert <- length(knots.fert) - 4
+  
 A.age.fert<-c()
 for(j in 1:no.basis.fert) {
-  A.age.fert<-cbind(A.age.fert,bspline(fert.age,fert.knots,j))
+  A.age.fert<-cbind(A.age.fert,bspline(bf.idx1$fertility_ages, knots.fert, j))
 }
 
 te.spline.fert <- A.year %x% A.age.fert 
@@ -631,20 +625,21 @@ init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.
 #init_delta_f <- 0.3; init_delta_m <- 0.3; 
 #init_epsilon_f <- 22; init_epsilon_m <- 25; 
 
-full.penal.gx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis),differences=2)) +
-                      0.5 * crossprod(diff(diag(no.basis),differences=2)) %x% diag(no.basis) +
-                      #0.5 * crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))) +
-                      1e-3 * diag(no.basis * no.basis), "sparseMatrix")
+full.penal.gx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.age),differences=1)) +
+                      0.5 * crossprod(diff(diag(no.basis.time),differences=1)) %x% diag(no.basis.age) +
+                      #0.5 * crossprod(diff(diag(no.basis.time))%x%diff(diag(no.basis.age))) +
+                      1e-3 * diag(no.basis.time * no.basis.age), "sparseMatrix")
 
-full.penal.fx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis.fert))) +
-                      0.5 * crossprod(diff(diag(no.basis))) %x% diag(no.basis.fert) +
-                      1e-3 * diag(no.basis.fert * no.basis), "sparseMatrix")
+full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
+                      0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
+                      1e-3 * diag(no.basis.time * no.basis.fert), "sparseMatrix")
+                      #exp(15) * tcrossprod(rep(1, no.basis.time * no.basis.fert)), "sparseMatrix")
   
-#full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 2)) + 1e-3 * diag(no.basis),"sparseMatrix")
-full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 1)) + 1e-3 * diag(no.basis),"sparseMatrix")
+#full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 2)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
+full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 
 
-gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.5)
+gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
 gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
@@ -652,9 +647,9 @@ gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*%
 gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 
-gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
-gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(2)
-gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
+gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(4)
+gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(4)
+gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(4)
 
 gumbel.theta.tp <- -log(0.01) * 1.96/1
 
@@ -748,8 +743,8 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
 
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
-                log_fx_spline_params = rep(0, no.basis.fert * no.basis),
-                gx_f_spline_params = rep(0, no.basis*no.basis), gx_m_spline_params = rep(0, no.basis*no.basis),
+                log_fx_spline_params = rep(0, no.basis.fert * no.basis.time),
+                gx_f_spline_params = rep(0, no.basis.time * no.basis.age), gx_m_spline_params = rep(0, no.basis.time * no.basis.age),
                 
                 log_lambda_tp = 5,
                 tp_params = rep(0,15),
@@ -758,13 +753,13 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 tp_params_5 = 0.3,
                 tp_params_10 = 0.3,
 
-                log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
-                log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
-                log_lambda_f_spline_params = rep(0, no.basis), log_lambda_m_spline_params = rep(0, no.basis),
-                log_delta_f_spline_params = rep(0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
-                log_epsilon_f_spline_params = rep(0, no.basis), log_epsilon_m_spline_params = rep(0, no.basis),
-                log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
-                log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
+                log_phi_f_spline_params = rep(0, no.basis.time), log_phi_m_spline_params = rep(0, no.basis.time),
+                log_psi_f_spline_params = rep(0, no.basis.time), log_psi_m_spline_params = rep(0, no.basis.time),
+                log_lambda_f_spline_params = rep(0, no.basis.time), log_lambda_m_spline_params = rep(0, no.basis.time),
+                log_delta_f_spline_params = rep(0, no.basis.time), log_delta_m_spline_params = rep(0, no.basis.time),
+                log_epsilon_f_spline_params = rep(0, no.basis.time), log_epsilon_m_spline_params = rep(0, no.basis.time),
+                log_A_f_spline_params = rep(0, no.basis.time), log_A_m_spline_params = rep(0, no.basis.time),
+                log_B_f_spline_params = rep(0, no.basis.time), log_B_m_spline_params = rep(0, no.basis.time),
                 
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
                 log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
