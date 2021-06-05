@@ -373,7 +373,6 @@ Type objective_function<Type>::operator() ()
   array<Type> gx_m_array(basepop_m.size(), n_periods);
   gx_f_array = gx_mat_f.array();
   gx_m_array = gx_mat_m.array();
-
   nll += SCALE( SEPARABLE( AR1(rho_gt_f), AR1(rho_gx_f) ), sigma_gx_f ) (gx_f_array);
   nll += SCALE( SEPARABLE( AR1(rho_gt_m), AR1(rho_gx_m) ), sigma_gx_m ) (gx_m_array);
 

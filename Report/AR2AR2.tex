@@ -1,0 +1,71 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{float,times,graphicx,mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{natbib}
+\usepackage[space]{grffile}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{tikzsymbols}
+\usepackage{pdflscape}
+
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\tr}{tr}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}
+\graphicspath{{../Burkina Faso/12/}}  
+\addtolength{\oddsidemargin}{-1in}
+	\addtolength{\evensidemargin}{-1in}
+	\addtolength{\textwidth}{1.75in}
+	\addtolength{\topmargin}{-1.3in}
+	\addtolength{\textheight}{2in}
+\date{\vspace{-5ex}}
+
+\begin{document}
+\begin{landscape}
+\section*{AR2:AR2 Separable process}
+Let
+\begin{align*}
+\boldsymbol{Q}(\rho) = \begin{pmatrix}
+\rho & -2\rho & 1 & 0 & 0 & \dots \\
+0 & \rho & -2\rho & 1 & 0 & \dots \\
+\vdots & & &\ddots  & & \\
+& & & \rho & -2\rho & 1 
+\end{pmatrix},
+\end{align*}
+i.e the half precision matrix of an AR2 process. When $\rho = 1$, this corresponds to a RW2 process.
+
+Then the Kronecker 
+\begin{align*}
+\boldsymbol{Q}(\rho_t) \otimes \boldsymbol{Q}(\rho_x) = 
+\begin{pmatrix}
+\rho_x \rho_t & -2\rho_x \rho_t & \rho_t & 0 & 0 & \dots & -2\rho_x \rho_t & 4\rho_x \rho_t & -2\rho_t & 0 & \dots & \rho_x & -2\rho_x & 1 & 0 & \dots \\
+0 & \rho_x \rho_t & -2\rho_x \rho_t & \rho_t  & 0 & \dots & 0 & -2\rho_x \rho_t & 4\rho_x \rho_t & -2\rho_t & \dots & 0 & \rho_x & -2\rho_t & x & \dots \\
+\vdots & & & & \ddots & & & & & & & & & & &
+\end{pmatrix}
+\end{align*}
+is the half precision matrix of an AR2:AR2 process (marginal variances ignored).
+
+The matrix applies penalty on 
+\begin{align*}
+&\beta_{x,t} - 2 \rho_x \beta_{x-1, t}  +  \rho_x \beta_{x-2, t} - 2\rho_t \beta_{x, t-1} + 4\rho_x\rho_t\beta_{x-1, t-1} -2\rho_x\rho_t \beta_{x-2, t-1} + \rho_t \beta_{x, t-2} -2\rho_x\rho_t \beta_{x-1, t-2} + \rho_x\rho_t \beta_{x-2, t-2} \\
+=& \beta_{x,t} -\rho_x (2\beta_{x-1, t} - \beta_{x-2, t}) - \rho_t (2\beta_{x, t-1} - \beta_{x, t-2}) + 4\rho_x\rho_t \beta_{x-1, t-1} - 2 \rho_x\rho_t \beta_{x-2, t-1} - 2\rho_x\rho_t \beta_{x-1, t-2} + \rho_x \rho_t \beta_{x-2, t-2}\\
+=& \beta_{x,t} \textcolor{red}{ - \rho_x (2\beta_{x-1, t} - \beta_{x-2, t})} \textcolor{blue}{ - \rho_t (2\beta_{x, t-1} - \beta_{x, t-2})} \textcolor{orange}{+ \frac{1}{2} [2(2\beta_{x-1, t-1} - \beta_{x-2, t-1}) - (2\beta_{x-1, t-2} - \beta_{x-2, t-2})]} \textcolor{purple}{+ \frac{1}{2} [2(2\beta_{x-1, t-1} - \beta_{x-1, t-2}) - (2\beta_{x-2, t-1} - \beta_{x-2, t-2})]}
+\end{align*}
+
+Therefore, the penalty draws the current $\beta_{x,t}$ towards a weighted average of the linearly extrapolated values in age, time dimensions.
+The \textcolor{red}{first term} is the linearly extrapolated value
+
+\end{landscape}
+
+\end{document}

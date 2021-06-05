@@ -40,6 +40,10 @@ rm(req, filelist, filename)
 #compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
 
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2.cpp")
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
+
+
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
   
@@ -639,9 +643,11 @@ full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.f
 full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 
 
-gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
+gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.2)
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
+gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(tcrossprod(te.spline)))) * 1.96 / 0.08 
+  
 gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
@@ -737,7 +743,9 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             theta_epsilon = gumbel.theta.epsilon,
                             theta_A = gumbel.theta.A,
                             theta_B = gumbel.theta.B,
-                            theta_tp = gumbel.theta.tp
+                            theta_tp = gumbel.theta.tp,
+                            
+                            theta_marginal_gx = gumbel.theta.AR2.marginal.gx
                             )
 
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
@@ -763,6 +771,7 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
                 log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_gx = log((gumbel.theta.AR2.marginal.gx/-log(0.01))^2) + 0.1,
                 #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
                 
                 log_lambda_phi = log((gumbel.theta.phi/-log(0.01))^2) + 0.1,
@@ -866,6 +875,24 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                    stepmin = 1e-10, stepmax = 1)
             )
 
+
+
+
+system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
+                                                   random = c("log_basepop_f","log_basepop_m",
+                                                              "log_fx_spline_params",
+                                                              "gx_f_spline_params","gx_m_spline_params",
+                                                              "tp_params",
+                                                              "log_phi_f_spline_params", "log_phi_m_spline_params",
+                                                              "log_psi_f_spline_params", "log_psi_m_spline_params",
+                                                              "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+                                                              "log_delta_f_spline_params", "log_delta_m_spline_params",
+                                                              "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+                                                              "log_A_f_spline_params", "log_A_m_spline_params",
+                                                              "log_B_f_spline_params", "log_B_m_spline_params"),
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2",
+                                                   stepmin = 1e-10, stepmax = 1)
+)
 
 save(thiele.f.loghump.oag.RW.ori, file=paste(params$country, "tau Gumbel P1 common sp.RData"))
 
@@ -1840,4 +1867,5 @@ fx.df %>% filter(model != "Initial Values", age %in% c(15,25,35,45)) %>%
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35),
         legend.key.width = unit(2,"cm")) +
   facet_wrap_paginate(~age, scale="free_y", nrow = 2, ncol = 2, page=1)
+
 
