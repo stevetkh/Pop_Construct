@@ -19,6 +19,7 @@ library(ggforce)
 library(stringr)
 library(Matrix)
 library(gridExtra)
+library(magic)
 
 require(devtools)
 require(httr)
@@ -634,6 +635,23 @@ full.penal.gx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.a
                       #0.5 * crossprod(diff(diag(no.basis.time))%x%diff(diag(no.basis.age))) +
                       1e-3 * diag(no.basis.time * no.basis.age), "sparseMatrix")
 
+AR2.PREC <- function(n, phi){
+  #sigma2 <- 1
+  #gamma0 <- (1-phi[2]) / (1+phi[2]) * sigma2 / ((1-phi[2])^2 - phi[1]^2)
+  
+  #gamma0 = 1, all variance = 1
+  sigma2 <- (1+phi[2]) / (1-phi[2]) * ((1-phi[2])^2 - phi[1]^2)
+  gamma.init <- matrix(c(1, phi[1] / (1-phi[2]), phi[1]/(1-phi[2]),1),2,2)
+  
+  VAR <- adiag(gamma.init, diag(rep(sigma2, n-2)))
+  T <- diag(n) - phi[1] * rbind(matrix(0, 2, n), cbind(rep(0, n-2), diag(n-2), rep(0, n-2))) - phi[2] * rbind(matrix(0, 2, n), cbind(diag(n-2), matrix(0, n-2, 2)))
+  
+  t(T) %*% solve(VAR) %*% T
+}
+
+full.penal.gx.AR2 <- as(0.5 * diag(no.basis.time) %x% AR2.PREC(no.basis.age, c(2*0.9, -0.9)) +
+                          0.5 * AR2.PREC(no.basis.time, c(2*0.9, -0.9)) %x% diag(no.basis.age), "sparseMatrix")
+
 full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
                       0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
                       1e-3 * diag(no.basis.time * no.basis.fert), "sparseMatrix")
@@ -646,7 +664,7 @@ full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e
 gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.2)
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
-gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(tcrossprod(te.spline)))) * 1.96 / 0.08 
+gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2) %*% t(te.spline)))) * 1.96 / 0.08 
   
 gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
@@ -935,22 +953,53 @@ tips.func <- function(x){
   exp(tp)
 }
 
-tp.df <- as_tibble(tips.func(thiele.f.loghump.oag.RW.ori)) %>% mutate(tips = 0:14)
-
-tp.var.df <-   as_tibble(t(apply(apply(thiele.par.sim, 1, function(i){
+tp.all <- apply(thiele.par.sim, 1, function(i){
   tp <- i %>% split(names(.)) %>% .$tp_params
   tp[6] <- tp[6] + i %>% split(names(.)) %>% .$tp_params_5
   tp[11] <- tp[11] + i %>% split(names(.)) %>% .$tp_params_10
   exp(tp)
-}), 1, quantile, c(0.025, 0.975)))) %>% mutate(tips = 0:14)
+}) %>%
+  `rownames<-`(0:14) %>%
+  reshape2::melt() %>% as_tibble() %>% 
+  select(tips = Var1, sim = Var2, value = value)
 
-tp.df %>% 
-  ggplot() + geom_line(aes(x = tips, y = value), lwd = 1.2, col="purple") + 
-  coord_flip() + xlab("TiPS") +
-  geom_ribbon(data = tp.var.df, aes(x = tips, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill="purple") +
-  ggtitle(paste0(country, "Estimated TiPS")) +
+tp.all %>%
+  ggplot() + stat_boxplot(geom="errorbar", aes(y = tips, x = value, group = tips), position=position_dodge(0), lwd = 0.8) +
+  geom_boxplot(aes(y = tips, x = value, group = tips), lwd = 0.8) +
+  ggtitle(paste(country, "Estimated TiPS")) +
   theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+# tp.df <- as_tibble(tips.func(thiele.f.loghump.oag.RW.ori)) %>% mutate(tips = 0:14)
+# 
+# tp.var.df <-   as_tibble(t(apply(apply(thiele.par.sim, 1, function(i){
+#   tp <- i %>% split(names(.)) %>% .$tp_params
+#   tp[6] <- tp[6] + i %>% split(names(.)) %>% .$tp_params_5
+#   tp[11] <- tp[11] + i %>% split(names(.)) %>% .$tp_params_10
+#   exp(tp)
+# }), 1, quantile, c(0.025, 0.975)))) %>% mutate(tips = 0:14)
+# 
+# tp.df %>% 
+#   ggplot() + geom_line(aes(x = tips, y = value), lwd = 1.2, col="purple") + 
+#   coord_flip() + xlab("TiPS") +
+#   geom_ribbon(data = tp.var.df, aes(x = tips, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill="purple") +
+#   ggtitle(paste0(country, "Estimated TiPS")) +
+#   theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
+#         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
+
+
+
+
+inner_join(tp.df, tp.var.df) %>%
+  ggplot() + geom_boxplot(aes(y = tips, x = value, xlower = `2.5%`, xupper = `97.5%`, group = tips), width=2)
+
+  scale_fill_manual(values=c("red","blue"),labels=c("De-heaped","Original"),guide=guide_legend(title="",override.aes = list(alpha=0.8)))+
+  scale_color_manual(values=c("red","blue"),guide=FALSE)+
+  theme(legend.position=c(0.9,0.2),legend.background=element_blank(),
+        legend.text=element_text(size=20),legend.key.size = unit(1,"cm"),
+        legend.key=element_blank(),axis.title=element_text(size=20),axis.text=element_text(size=15))+
+  xlab("Ratio (Relative to TiPS=2)")+ylab("TiPS")
+
 
 #plot par estimates####
 par.func <- function(x){

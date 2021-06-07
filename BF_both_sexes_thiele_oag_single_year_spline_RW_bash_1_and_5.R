@@ -4,7 +4,8 @@ print(args) #list the command line arguments.
 myvar <- as.numeric(args[1])
 
 .libPaths(c("C:/Users/ktang3/Documents/R/win-library/4.0", .libPaths()))
-setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5")
+#setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5")
+setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2")
 load("C:/Users/ktang3/Documents/cohort smooth 1900-2017.RData")
 skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
 joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
@@ -43,7 +44,8 @@ for (filename in filelist) {
 }
 rm(req, filelist, filename)
 
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -647,6 +649,8 @@ full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 1)) + 1e-3 * 
 gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.5)
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
+gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(tcrossprod(te.spline)))) * 1.96 / 0.08 
+
 gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
 gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
@@ -722,7 +726,9 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             theta_epsilon = gumbel.theta.epsilon,
                             theta_A = gumbel.theta.A,
                             theta_B = gumbel.theta.B,
-                            theta_tp = gumbel.theta.tp
+                            theta_tp = gumbel.theta.tp,
+                            
+                            theta_marginal_gx = gumbel.theta.AR2.marginal.gx
 )
 
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
@@ -748,6 +754,7 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
                 log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_gx = log((gumbel.theta.AR2.marginal.gx/-log(0.01))^2) + 0.1,
                 #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
                 
                 log_lambda_phi = log((gumbel.theta.phi/-log(0.01))^2) + 0.1,
@@ -765,6 +772,21 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
+# system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
+#                                                    random = c("log_basepop_f","log_basepop_m",
+#                                                               "log_fx_spline_params",
+#                                                               "gx_f_spline_params","gx_m_spline_params",
+#                                                               "tp_params",
+#                                                               "log_phi_f_spline_params", "log_phi_m_spline_params",
+#                                                               "log_psi_f_spline_params", "log_psi_m_spline_params",
+#                                                               "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+#                                                               "log_delta_f_spline_params", "log_delta_m_spline_params",
+#                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+#                                                               "log_A_f_spline_params", "log_A_m_spline_params",
+#                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
+#                                                    DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common",
+#                                                    stepmin = 1e-10, stepmax = 1)
+# )
 
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
                                                    random = c("log_basepop_f","log_basepop_m",
@@ -778,8 +800,8 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
                                                               "log_A_f_spline_params", "log_A_m_spline_params",
                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
-                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common",
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2",
                                                    stepmin = 1e-10, stepmax = 1)
 )
 
-save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," tau Gumbel.RData"))
+save(thiele.f.loghump.oag.RW.ori,file=paste0(params$country," tau Gumbel AR2.RData"))

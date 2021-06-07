@@ -29,7 +29,8 @@ rm(list=ls()[-which(ls()=="params")])
 #load(paste0("~/Zimbabwe spline err P2 + P1 P2 mid hump.RData"))
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele spline RData/",params$country," spline RW.RData"))
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_wrong_tips_and_priors/",params$country," tau Gumbel P1.RData"))
-load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5/",params$country," tau Gumbel.RData"))
+#load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5/",params$country," tau Gumbel.RData"))
+load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2/",params$country," tau Gumbel AR2.RData"))
 
 library(dplyr)
 library(tidyr)
@@ -65,7 +66,8 @@ rm(req, filelist, filename)
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline"))
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_ARIMA"))
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel"))
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -673,22 +675,22 @@ tips.func <- function(x){
   exp(tp)
 }
 
-tp.df <- as_tibble(tips.func(thiele.f.loghump.oag.RW.ori)) %>% mutate(tips = 0:14)
-
-tp.var.df <-   as_tibble(t(apply(apply(thiele.par.sim, 1, function(i){
+tp.all <- apply(thiele.par.sim, 1, function(i){
   tp <- i %>% split(names(.)) %>% .$tp_params
   tp[6] <- tp[6] + i %>% split(names(.)) %>% .$tp_params_5
   tp[11] <- tp[11] + i %>% split(names(.)) %>% .$tp_params_10
   exp(tp)
-}), 1, quantile, c(0.025, 0.975)))) %>% mutate(tips = 0:14)
+}) %>%
+  `rownames<-`(0:14) %>%
+  reshape2::melt() %>% as_tibble() %>% 
+  select(tips = Var1, sim = Var2, value = value)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.cap = "Estimated TiPS", out.height="0.3\\paperheight"}
-tp.df %>% 
-  ggplot() + geom_line(aes(x = tips, y = value), lwd = 1.2, col="purple") + 
-  coord_flip() + xlab("TiPS") +
-  geom_ribbon(data = tp.var.df, aes(x = tips, ymin = `2.5%`, ymax = `97.5%`), alpha=0.2, fill="purple") +
-  ggtitle(paste0(country, "Estimated TiPS")) +
+tp.all %>%
+  ggplot() + stat_boxplot(geom="errorbar", aes(y = tips, x = value, group = tips), position=position_dodge(0), lwd = 0.8) +
+  geom_boxplot(aes(y = tips, x = value, group = tips), lwd = 0.8) +
+  ggtitle(paste(country, "Estimated TiPS")) +
   theme(text = element_text(size=25), legend.key.size = unit(1.5,"cm"), strip.text = element_text(size=30),
         plot.title = element_text(hjust = 0.5, face = "bold", size = 35))
 ```
