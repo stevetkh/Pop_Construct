@@ -685,7 +685,7 @@ full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.f
   
 full.penal.fx.sum2zero <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
                       0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
-                      1e10 * tcrossprod(rep(1,no.basis.time * no.basis.fert)), "sparseMatrix")
+                      1e5 * tcrossprod(rep(1,no.basis.time * no.basis.fert)), "sparseMatrix")
 #exp(15) * tcrossprod(rep(1, no.basis.time * no.basis.fert)), "sparseMatrix")
 
 #full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 2)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
@@ -694,7 +694,7 @@ full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e
 
 gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
 
-gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.01)
+gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
 
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
