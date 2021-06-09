@@ -100,7 +100,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_SPARSE_MATRIX(full_penal_time);
 
-  DATA_SPARSE_MATRIX(full_penal_gx);
+  //DATA_SPARSE_MATRIX(full_penal_gx);
 
   DATA_SPARSE_MATRIX(full_penal_fx);
 
