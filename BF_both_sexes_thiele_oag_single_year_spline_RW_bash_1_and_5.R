@@ -5,14 +5,15 @@ myvar <- as.numeric(args[1])
 
 .libPaths(c("C:/Users/ktang3/Documents/R/win-library/4.0", .libPaths()))
 #setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5")
-setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2")
+setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2_tighter_prior")
 load("C:/Users/ktang3/Documents/cohort smooth 1900-2017.RData")
 skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
 joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
+
 params <- list(
   country = joint.countries[myvar], 
-  no.basis = 30,
-  no.basis.fert = 14
+  age.knot.space = 2.5,
+  year.knot.space = 2.5
 )
 
 library(dplyr)
@@ -29,6 +30,7 @@ library(DDSQLtools)
 library(ggforce)
 library(stringr)
 library(Matrix)
+library(magic)
 
 require(devtools)
 require(httr)
@@ -221,8 +223,6 @@ wpp.qx$name<-str_replace(wpp.qx$name,"United Republic of Tanzania","Tanzania")
 
 open.age <- 85
 n_ages <- open.age + 1
-no.basis <- params$no.basis
-no.basis.fert <- params$no.basis.fert
 interval <- 1 #just in case
 
 country <- params$country
@@ -316,30 +316,42 @@ for(i in 3:ncol(ddharm_bf_census_f)){
   
   stopifnot(length(unique(diff(dat.f$AgeStart))) == 1 | length(unique(diff(dat.m$AgeStart))) == 1)
   
-  smoothed.adult <- getSmoothedPop1(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "adult")
-  smoothed.child <- getSmoothedPop1(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "child")
+  #census_workflow_adjust_smooth
+  # 
+  # smoothed.adult <- getSmoothedPop1(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "adult")
+  # smoothed.child <- getSmoothedPop1(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "child")
+  # 
+  # adult.grad <- as.numeric(str_extract(smoothed.adult$best_smooth_method,"\\s\\d"))
+  # child.grad <- as.numeric(str_extract(smoothed.child$best_smooth_method,"\\s\\d"))
+  # 
+  # cat("adult bestGrad5 =",adult.grad,"; child bestGrad5 =",child.grad, "\n")
+  # 
+  # if(adult.grad >= child.grad){
+  #   ddharm_smoothed <- bind_rows(
+  #     ddharm_smoothed,
+  #     as_tibble(smoothed.adult$popM_smooth) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
+  #                                                      sex="male", year = as.numeric(names(ddharm_bf_census_f)[i])),
+  #     as_tibble(smoothed.adult$popF_smooth) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
+  #                                                      sex="female", year = as.numeric(names(ddharm_bf_census_m)[i]))
+  #   )} else{
+  #     ddharm_smoothed <- bind_rows(
+  #       ddharm_smoothed,
+  #       as_tibble(smoothed.child$popM_smooth) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
+  #                                                        sex="male", year = as.numeric(names(ddharm_bf_census_f)[i])),
+  #       as_tibble(smoothed.child$popF_smooth) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
+  #                                                        sex="female", year = as.numeric(names(ddharm_bf_census_m)[i]))
+  #     )
+  #   }
   
-  adult.grad <- as.numeric(str_extract(smoothed.adult$best_smooth_method,"\\s\\d"))
-  child.grad <- as.numeric(str_extract(smoothed.child$best_smooth_method,"\\s\\d"))
+  smoothed <- census_workflow_adjust_smooth(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2)
+  ddharm_smoothed <- bind_rows(
+    ddharm_smoothed,
+    as_tibble(smoothed$popM_smooth) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]],
+                                               sex="male", year = as.numeric(names(ddharm_bf_census_m)[i])),
+    as_tibble(smoothed$popF_smooth) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
+                                               sex="female", year = as.numeric(names(ddharm_bf_census_f)[i]))
+  )
   
-  cat("adult bestGrad5 =",adult.grad,"; child bestGrad5 =",child.grad, "\n")
-  
-  if(adult.grad >= child.grad){
-    ddharm_smoothed <- bind_rows(
-      ddharm_smoothed,
-      as_tibble(smoothed.adult$popM_smooth) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
-                                                       sex="male", year = as.numeric(names(ddharm_bf_census_f)[i])),
-      as_tibble(smoothed.adult$popF_smooth) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
-                                                       sex="female", year = as.numeric(names(ddharm_bf_census_m)[i]))
-    )} else{
-      ddharm_smoothed <- bind_rows(
-        ddharm_smoothed,
-        as_tibble(smoothed.child$popM_smooth) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
-                                                         sex="male", year = as.numeric(names(ddharm_bf_census_f)[i])),
-        as_tibble(smoothed.child$popF_smooth) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
-                                                         sex="female", year = as.numeric(names(ddharm_bf_census_m)[i]))
-      )
-    }
 }
 
 ddharm_smoothed_mat <- ddharm_smoothed %>% pivot_wider(names_from = year, values_from = value) %>% arrange(sex, age)
@@ -404,20 +416,30 @@ for(i in 3:ncol(ddharm_bf_census_f_5)){
   
   stopifnot(length(unique(diff(dat.f$AgeStart))) == 1 | length(unique(diff(dat.m$AgeStart))) == 1)
   
-  smoothed.adult <- getSmoothedPop5(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "adult")
-  smoothed.child <- getSmoothedPop5(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "child")
+  # smoothed.adult <- getSmoothedPop5(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "adult")
+  # smoothed.child <- getSmoothedPop5(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2, subgroup = "child")
+  # 
+  # adult.grad <- as.numeric(str_extract(smoothed.adult$best_smooth_method,"\\s\\d"))
+  # child.grad <- as.numeric(str_extract(smoothed.child$best_smooth_method,"\\s\\d"))
+  # 
+  # cat("adult bestGrad5 =",adult.grad,"; child bestGrad5 =",child.grad, "\n")
+  # 
+  # ddharm_smoothed_5 <- bind_rows(
+  #   ddharm_smoothed_5,
+  #   as_tibble(DemoTools::smooth_age_5(dat.m[[3]], dat.m[[1]], method="MAV", n=max(adult.grad, child.grad))) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
+  #                                                                                                                      sex="male", year = as.numeric(names(ddharm_bf_census_f_5)[i])),
+  #   as_tibble(DemoTools::smooth_age_5(dat.f[[3]], dat.f[[1]], method="MAV", n=max(adult.grad, child.grad))) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
+  #                                                                                                                      sex="female", year = as.numeric(names(ddharm_bf_census_m_5)[i]))
+  # )
   
-  adult.grad <- as.numeric(str_extract(smoothed.adult$best_smooth_method,"\\s\\d"))
-  child.grad <- as.numeric(str_extract(smoothed.child$best_smooth_method,"\\s\\d"))
-  
-  cat("adult bestGrad5 =",adult.grad,"; child bestGrad5 =",child.grad, "\n")
+  smoothed <- census_workflow_adjust_smooth(popM = dat.m[[3]], popF = dat.f[[3]], Age = dat.m[[1]], EduYrs = 2)
   
   ddharm_smoothed_5 <- bind_rows(
     ddharm_smoothed_5,
-    as_tibble(DemoTools::smooth_age_5(dat.m[[3]], dat.m[[1]], method="MAV", n=max(adult.grad, child.grad))) %>% mutate(age = dat.m[[1]], AgeLabel = dat.m[[2]], 
-                                                                                                                       sex="male", year = as.numeric(names(ddharm_bf_census_f_5)[i])),
-    as_tibble(DemoTools::smooth_age_5(dat.f[[3]], dat.f[[1]], method="MAV", n=max(adult.grad, child.grad))) %>% mutate(age = dat.f[[1]], AgeLabel = dat.f[[2]],
-                                                                                                                       sex="female", year = as.numeric(names(ddharm_bf_census_m_5)[i]))
+    as_tibble(smoothed$popM_smooth) %>% mutate(age = 1:length(smoothed$popM_smoothed)-1, AgeLabel = 1:length(smoothed$popM_smoothed)-1,
+                                               sex="male", year = as.numeric(names(ddharm_bf_census_m_5)[i])),
+    as_tibble(smoothed$popF_smooth) %>% mutate(age = 1:length(smoothed$popF_smoothed)-1, AgeLabel = 1:length(smoothed$popF_smoothed)-1,
+                                               sex="female", year = as.numeric(names(ddharm_bf_census_f_5)[i]))
   )
 }
 
@@ -501,33 +523,29 @@ bf.idx5<-projection_indices(period_start = 1960,
                             n_sexes = 2)
 
 #spline basis
-knots<-seq(0,1,length=no.basis-2)
-dk<-knots[2]-knots[1]	
-knots<-c(knots[1]-dk*(3:1),knots,knots[no.basis-2]+dk*(1:3))
-age<-seq(0,1,length=bf.idx1$n_ages)
-year<-seq(0,1,length=bf.idx1$n_periods)
+knots.age <- seq(-3 * params$age.knot.space, open.age + 3 * params$age.knot.space, by = params$age.knot.space)
+knots.time <- seq(-3 * params$year.knot.space + 1960, 2020 + 3 * params$year.knot.space, by = params$year.knot.space)
+no.basis.age <- length(knots.age) - 4
+no.basis.time <- length(knots.time) - 4
 
 A.age<-c()
-for(j in 1:no.basis) {
-  A.age<-cbind(A.age,bspline(age,knots,j))
+for(j in 1:no.basis.age) {
+  A.age<-cbind(A.age,bspline(bf.idx1$ages,knots.age,j))
 }
 
 A.year<-c()
-for(j in 1:no.basis) {
-  A.year<-cbind(A.year,bspline(year,knots,j))
+for(j in 1:no.basis.time) {
+  A.year<-cbind(A.year,bspline(bf.idx1$periods,knots.time,j))
 }
 
 te.spline<-A.year%x%A.age
 
-
-fert.knots<-seq(0,1,length=no.basis.fert-2)
-fert.dk<-fert.knots[2]-fert.knots[1]	
-fert.knots<-c(fert.knots[1]-fert.dk*(3:1),fert.knots,fert.knots[no.basis.fert-2]+fert.dk*(1:3))
-fert.age<-seq(0,1,length=bf.idx1$n_fx)
+knots.fert <- seq(-3 * params$age.knot.space + min(bf.idx1$fertility_ages), 3 * params$age.knot.space + max(bf.idx1$fertility_ages), by = params$age.knot.space)
+no.basis.fert <- length(knots.fert) - 4
 
 A.age.fert<-c()
 for(j in 1:no.basis.fert) {
-  A.age.fert<-cbind(A.age.fert,bspline(fert.age,fert.knots,j))
+  A.age.fert<-cbind(A.age.fert,bspline(bf.idx1$fertility_ages, knots.fert, j))
 }
 
 te.spline.fert <- A.year %x% A.age.fert 
@@ -626,38 +644,175 @@ data.f.5 <- if(!is.null(data.f)) {as.matrix(log(ddharm_bf_census_f_oag_5[,-1] %>
 if(country == "Zimbabwe"){
   data.f <- as.matrix(log(ddharm_bf_census_f_oag[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag[,-(1:2)]))
   data.f.5 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f))))); data.m.5 <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)] %>% select(!matches(colnames(data.f)))))
-  
+  #data.f.55 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)]))
 }
 
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
 init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.prior.m[5,1]; 
 
-full.penal.gx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis),differences=2)) +
-                      0.5 * crossprod(diff(diag(no.basis),differences=2)) %x% diag(no.basis) +
-                      #0.5 * crossprod(diff(diag(no.basis))%x%diff(diag(no.basis))) +
-                      1e-3 * diag(no.basis * no.basis), "sparseMatrix")
+if(length(unique(bf5.smooth$DHS)) == 1 || diff(as.numeric(str_extract(unique(bf5.smooth$DHS), "\\d+"))) > 14) {
+  load("C:/Users/ktang3/Documents/more countries final avg sex Rwanda.RData")
+  skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
+  joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
+  
+  all.list<-function(x,age.start,age.end,year.start,year.end){
+    no.basis = 15
+    knots<-seq(0,1,length=no.basis-2)
+    dk<-knots[2]-knots[1]	
+    knots<-c(knots[1]-dk*(3:1),knots,knots[no.basis-2]+dk*(1:3))
+    age<-seq(0,1,length=age.end-age.start+1)
+    year<-seq(0,1,length=year.end-year.start+1)
+    
+    A.age<-c()
+    for(j in 1:no.basis) {
+      A.age<-cbind(A.age,bspline(age,knots,j))
+    }
+    
+    A.year<-c()
+    for(j in 1:no.basis) {
+      A.year<-cbind(A.year,bspline(year,knots,j))
+    }
+    
+    te.spline<-A.year%x%A.age
+    
+    ind<-function(x){
+      aggr.mat.reduced<-x
+      data.mat.m<-aggr.mat.reduced[aggr.mat.reduced$mm1=="male" & aggr.mat.reduced$agegr %in% age.start:age.end & aggr.mat.reduced$period %in% year.start:year.end,c(7,5,3,2,4)]
+      data.mat.f<-aggr.mat.reduced[aggr.mat.reduced$mm1=="female" & aggr.mat.reduced$agegr %in% age.start:age.end & aggr.mat.reduced$period %in% year.start:year.end,c(7,5,3,2,4)]
+      
+      age.start.col<-min(which(A.age[min(data.mat.m[,3])-age.start+1,]!=0))
+      age.end.col<-max(which(A.age[max(data.mat.m[,3])-age.start+1,]!=0))
+      year.start.col<-min(which(A.year[min(data.mat.m[,4])-year.start+1,]!=0))
+      year.end.col<-max(which(A.year[max(data.mat.m[,4])-year.start+1,]!=0))
+      age.start<-min(data.mat.m[,3])
+      age.end<-max(data.mat.m[,3])
+      year.start<-min(data.mat.m[,4])
+      year.end<-max(data.mat.m[,4])
+      tp<-max(data.mat.m[,5],data.mat.f[,5])
+      
+      ind.place<-c(age.start.col,age.end.col,year.start.col,year.end.col,age.start,age.end,year.start,year.end,tp)
+      names(ind.place)<-c("age.start.col", "age.end.col","year.start.col","year.end.col","age.start","age.end","year.start","year.end","tp")
+      ind.place
+    }  
+    
+    
+    everything.func<-function(i){
+      age.seq<-as.numeric(ind.list[[i]][["age.start"]]:ind.list[[i]][["age.end"]])
+      year.seq<-as.numeric(ind.list[[i]][["year.start"]]:ind.list[[i]][["year.end"]])
+      
+      age.m<-A.age[age.seq-age.start+1,]%*%joint.countries.age.m[[i]]
+      age.f<-A.age[age.seq-age.start+1,]%*%joint.countries.age.f[[i]]
+      time.m<-A.year[year.seq-year.start+1,]%*%joint.countries.time.m[[i]]
+      time.f<-A.year[year.seq-year.start+1,]%*%joint.countries.time.f[[i]]
+      agetime.m<-matrix(te.spline[age.seq-age.start+1+rep((age.end-age.start+1)*(year.seq-year.start),each=length(age.seq)),]%*%joint.countries.2d.m[[i]],length(age.seq),length(year.seq))
+      agetime.f<-matrix(te.spline[age.seq-age.start+1+rep((age.end-age.start+1)*(year.seq-year.start),each=length(age.seq)),]%*%joint.countries.2d.f[[i]],length(age.seq),length(year.seq))
+      
+      mort.m<-joint.countries.avg.m[[i]]+t(apply(apply(agetime.m,2,function(x){x+age.m}),1,function(x){x+time.m}))
+      mort.f<-joint.countries.avg.f[[i]]+t(apply(apply(agetime.f,2,function(x){x+age.f}),1,function(x){x+time.f}))
+      rownames(age.m)<-rownames(age.f)<-rownames(agetime.m)<-rownames(agetime.f)<-rownames(mort.m)<-rownames(mort.f)<-age.seq
+      rownames(time.m)<-rownames(time.f)<-colnames(agetime.m)<-colnames(agetime.f)<-colnames(mort.m)<-colnames(mort.f)<-year.seq
+      
+      
+      if(i=="Rwanda"){
+        mort.m[,4:6]<-mort.m[,4:6]+matrix(rep.par.list$rwanda_geno_m,56,3,byrow=T)
+        mort.f[,4:6]<-mort.f[,4:6]+matrix(rep.par.list$rwanda_geno_f,56,3,byrow=T)
+      }
+      
+      tips<-joint.countries.tp.c[[i]]+tp.common
+      
+      list(tp=tips,avg.m=joint.countries.avg.m[[i]],avg.f=joint.countries.avg.f[[i]],age.m=age.m,age.f=age.f,time.m=time.m,time.f=time.f,agetime.m=agetime.m,agetime.f=agetime.f,mort.m=mort.m,mort.f=mort.f)
+    }
+    
+    ind.list<-lapply(aggr.mat.cohort.0[joint.countries],ind)
+    rep.par.list<-split(unname(x$env$last.par.best),names(x$env$last.par.best))
+    joint.countries.avg.m<-split(rep.par.list$avg_m,joint.countries)
+    joint.countries.avg.f<-split(rep.par.list$avg_f,joint.countries)
+    joint.countries.age.m<-split(rep.par.list$spline_params_m_age,rep(joint.countries,each=no.basis))
+    joint.countries.age.f<-split(rep.par.list$spline_params_f_age,rep(joint.countries,each=no.basis))
+    joint.countries.time.m<-split(rep.par.list$spline_params_m_time,rep(joint.countries,each=no.basis))
+    joint.countries.time.f<-split(rep.par.list$spline_params_f_time,rep(joint.countries,each=no.basis))
+    joint.countries.2d.m<-split(rep.par.list$spline_params_m_2d,rep(joint.countries,each=no.basis*no.basis))
+    joint.countries.2d.f<-split(rep.par.list$spline_params_f_2d,rep(joint.countries,each=no.basis*no.basis))
+    
+    joint.countries.tp.c<-split(rep.par.list$tips_params,rep(joint.countries,each=length(rep.par.list$tips_params_common)))
+    tp.common<-rep.par.list$tips_params_common
+    tp.common[6]<-tp.common[6]+rep.par.list$tp_common_5
+    tp.common[11]<-tp.common[11]+rep.par.list$tp_common_10
+    
+    
+    setNames(lapply(joint.countries,everything.func),joint.countries)
+  }
+  
+  more.countries.avg<-all.list(tmb.full.joint.common,age.start=10,age.end=65,year.start=1990,year.end=2017)
+  
+  for(i in 1:length(more.countries.avg)){
+    more.countries.avg[[i]]$avg.m<-more.countries.avg[[i]]$avg.m+unname(tmb.full.joint.common$env$last.par.best["avg_common_m"])
+    more.countries.avg[[i]]$avg.f<-more.countries.avg[[i]]$avg.f+unname(tmb.full.joint.common$env$last.par.best["avg_common_f"])
+    more.countries.avg[[i]]$mort.m<-more.countries.avg[[i]]$mort.m+unname(tmb.full.joint.common$env$last.par.best["avg_common_m"])
+    more.countries.avg[[i]]$mort.f<-more.countries.avg[[i]]$mort.f+unname(tmb.full.joint.common$env$last.par.best["avg_common_f"])
+  }
+  
+  tp.init <- more.countries.avg[[params$country]]$tp; map <- list(log_lambda_tp = factor(NA),
+                                                                  tp_params = factor(rep(NA,15)),
+                                                                  tp_slope = factor(NA),
+                                                                  tp_params_5 = factor(NA),
+                                                                  tp_params_10 = factor(NA))
+} else {tp.init <- rep(0,15); map <- list()}
 
-full.penal.fx <- as(0.5 * diag(no.basis) %x% crossprod(diff(diag(no.basis.fert))) +
-                      0.5 * crossprod(diff(diag(no.basis))) %x% diag(no.basis.fert) +
-                      1e-3 * diag(no.basis.fert * no.basis), "sparseMatrix")
 
-#full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 2)) + 1e-3 * diag(no.basis),"sparseMatrix")
-full.penal.time <- as(crossprod(diff(diag(no.basis), differences = 1)) + 1e-3 * diag(no.basis),"sparseMatrix")
+full.penal.gx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.age),differences=1)) +
+                      0.5 * crossprod(diff(diag(no.basis.time),differences=1)) %x% diag(no.basis.age) +
+                      #0.5 * crossprod(diff(diag(no.basis.time))%x%diff(diag(no.basis.age))) +
+                      1e-3 * diag(no.basis.time * no.basis.age), "sparseMatrix")
+
+AR2.PREC <- function(n, phi){
+  #sigma2 <- 1
+  #gamma0 <- (1-phi[2]) / (1+phi[2]) * sigma2 / ((1-phi[2])^2 - phi[1]^2)
+  
+  #gamma0 = 1, all variance = 1
+  sigma2 <- (1+phi[2]) / (1-phi[2]) * ((1-phi[2])^2 - phi[1]^2)
+  gamma.init <- matrix(c(1, phi[1] / (1-phi[2]), phi[1]/(1-phi[2]),1),2,2)
+  
+  VAR <- adiag(gamma.init, diag(rep(sigma2, n-2)))
+  T <- diag(n) - phi[1] * rbind(matrix(0, 2, n), cbind(rep(0, n-2), diag(n-2), rep(0, n-2))) - phi[2] * rbind(matrix(0, 2, n), cbind(diag(n-2), matrix(0, n-2, 2)))
+  
+  t(T) %*% solve(VAR) %*% T
+}
+ 
+# full.penal.gx.AR2 <- as(0.5 * diag(no.basis.time) %x% AR2.PREC(no.basis.age, c(2*0.9, -0.9)) +
+#                           0.5 * AR2.PREC(no.basis.time, c(2*0.9, -0.9)) %x% diag(no.basis.age), "sparseMatrix")
+
+full.penal.gx.AR2.tensor <- as(AR2.PREC(no.basis.age, c(2*0.9, -0.9)) %x% AR2.PREC(no.basis.time, c(2*0.9, -0.9)), "sparseMatrix")
+
+full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
+                      0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
+                      1e-3 * diag(no.basis.time * no.basis.fert), "sparseMatrix")
+
+# full.penal.fx.sum2zero <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
+#                                0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
+#                                1e5 * tcrossprod(rep(1,no.basis.time * no.basis.fert)), "sparseMatrix")
+
+#full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 2)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
+full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 
 
-gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.5)
+gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
+
+#gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
+
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
-gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(tcrossprod(te.spline)))) * 1.96 / 0.08 
+gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2.tensor) %*% t(te.spline)))) * 1.96 / 0.08 
+#gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2) %*% t(te.spline)))) * 1.96 / 0.08 
 
-gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
-gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
-gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
-gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.2)
+gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+gumbel.theta.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+gumbel.theta.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
 
 gumbel.theta.lambda <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
-gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(2)
+gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
 gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
 
 gumbel.theta.tp <- -log(0.01) * 1.96/1
@@ -681,10 +836,15 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             census_log_pop_f_5 = data.f.5, census_log_pop_m_5 = data.m.5,
                             census_year_idx_5 = match(bf.idx1$interval * floor(as.numeric(colnames(data.f.5)) / bf.idx1$interval), bf.idx1$periods_out),
-                            census_year_group_idx_5 = bf.idx1$ages %/% 5 + 1,
-                            n_agegrp_5 = bf.idx5$n_ages,
-                            pop_start_5 = rep(2, ncol(data.f.5)),
-                            pop_end_5 =  ifelse(apply(data.f.5, 2, function(i){length(na.omit(i))})-1 > 15, 15, apply(data.f.5, 2, function(i){length(na.omit(i))})-1),
+                            #census_year_group_idx_5 = bf.idx1$ages %/% 5 + 1,
+                            #n_agegrp_5 = bf.idx5$n_ages,
+                            #pop_start_5 = rep(2, ncol(data.f.5)),
+                            #pop_end_5 =  ifelse(apply(data.f.5, 2, function(i){length(na.omit(i))})-1 > 15, 15, apply(data.f.5, 2, function(i){length(na.omit(i))})-1),
+                            
+                            census_year_group_idx_5 = bf.idx1$ages + 1,
+                            n_agegrp_5 = bf.idx1$n_ages,
+                            pop_start_5 = rep(6, ncol(data.f.5)),
+                            pop_end_5 =  ifelse(apply(data.f.5, 2, function(i){length(na.omit(i))})-1 > 75 + 1, 75 + 1, apply(data.f.5, 2, function(i){length(na.omit(i))})-1),
                             
                             df = bf5.f.no0.smooth$adjusted, dm = bf5.m.no0.smooth$adjusted,
                             Ef = bf5.f.no0.smooth$pyears2, Em = bf5.m.no0.smooth$pyears2,
@@ -704,9 +864,10 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             
                             full_penal_time = full.penal.time,
                             
-                            full_penal_gx = full.penal.gx,
+                            full_penal_gx = full.penal.gx.AR2.tensor,
                             
                             full_penal_fx = full.penal.fx,
+                            #full_penal_fx = full.penal.fx.sum2zero,
                             
                             penal_tp = as(crossprod(diff(diag(15))), "sparseMatrix"), #only penalising the latter 14 coefficients 
                             penal_tp_0 = as(diag(c(1, rep(0, 14))), "sparseMatrix"),
@@ -718,6 +879,7 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             D_agetime_fert = as(te.spline.fert, "sparseMatrix"),
                             
                             theta_fx = gumbel.theta.fx,
+                            #theta_fx = gumbel.theta.fx.sum2zero,
                             theta_gx = gumbel.theta.gx,
                             theta_phi = gumbel.theta.phi,
                             theta_psi = gumbel.theta.psi,
@@ -734,25 +896,27 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 
                 log_basepop_f = log(basepop.f), log_basepop_m = log(basepop.m),
-                log_fx_spline_params = rep(0, no.basis.fert * no.basis),
-                gx_f_spline_params = rep(0, no.basis*no.basis), gx_m_spline_params = rep(0, no.basis*no.basis),
+                log_fx_spline_params = rep(0, no.basis.fert * no.basis.time),
+                log_fx_intercept = 0,
+                gx_f_spline_params = rep(0, no.basis.time * no.basis.age), gx_m_spline_params = rep(0, no.basis.time * no.basis.age),
                 
                 log_lambda_tp = 5,
-                tp_params = rep(0,15),
+                tp_params = tp.init,
                 
                 tp_slope = 0,
-                tp_params_5 = 0.3,
-                tp_params_10 = 0.3,
+                tp_params_5 = 0,
+                tp_params_10 = 0,
                 
-                log_phi_f_spline_params = rep(0, no.basis), log_phi_m_spline_params = rep(0, no.basis),
-                log_psi_f_spline_params = rep(0, no.basis), log_psi_m_spline_params = rep(0, no.basis),
-                log_lambda_f_spline_params = rep(0, no.basis), log_lambda_m_spline_params = rep(0, no.basis),
-                log_delta_f_spline_params = rep(0, no.basis), log_delta_m_spline_params = rep(0, no.basis),
-                log_epsilon_f_spline_params = rep(0, no.basis), log_epsilon_m_spline_params = rep(0, no.basis),
-                log_A_f_spline_params = rep(0, no.basis), log_A_m_spline_params = rep(0, no.basis),
-                log_B_f_spline_params = rep(0, no.basis), log_B_m_spline_params = rep(0, no.basis),
+                log_phi_f_spline_params = rep(0, no.basis.time), log_phi_m_spline_params = rep(0, no.basis.time),
+                log_psi_f_spline_params = rep(0, no.basis.time), log_psi_m_spline_params = rep(0, no.basis.time),
+                log_lambda_f_spline_params = rep(0, no.basis.time), log_lambda_m_spline_params = rep(0, no.basis.time),
+                log_delta_f_spline_params = rep(0, no.basis.time), log_delta_m_spline_params = rep(0, no.basis.time),
+                log_epsilon_f_spline_params = rep(0, no.basis.time), log_epsilon_m_spline_params = rep(0, no.basis.time),
+                log_A_f_spline_params = rep(0, no.basis.time), log_A_m_spline_params = rep(0, no.basis.time),
+                log_B_f_spline_params = rep(0, no.basis.time), log_B_m_spline_params = rep(0, no.basis.time),
                 
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
+                #log_lambda_fx = log((gumbel.theta.fx.sum2zero/-log(0.01))^2) + 0.1, 
                 log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
                 log_marginal_lambda_gx = log((gumbel.theta.AR2.marginal.gx/-log(0.01))^2) + 0.1,
                 #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
@@ -772,22 +936,6 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
-# system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
-#                                                    random = c("log_basepop_f","log_basepop_m",
-#                                                               "log_fx_spline_params",
-#                                                               "gx_f_spline_params","gx_m_spline_params",
-#                                                               "tp_params",
-#                                                               "log_phi_f_spline_params", "log_phi_m_spline_params",
-#                                                               "log_psi_f_spline_params", "log_psi_m_spline_params",
-#                                                               "log_lambda_f_spline_params", "log_lambda_m_spline_params",
-#                                                               "log_delta_f_spline_params", "log_delta_m_spline_params",
-#                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
-#                                                               "log_A_f_spline_params", "log_A_m_spline_params",
-#                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
-#                                                    DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common",
-#                                                    stepmin = 1e-10, stepmax = 1)
-# )
-
 system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
                                                    random = c("log_basepop_f","log_basepop_m",
                                                               "log_fx_spline_params",
@@ -801,6 +949,7 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                               "log_A_f_spline_params", "log_A_m_spline_params",
                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
                                                    DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2",
+                                                   map = map,
                                                    stepmin = 1e-10, stepmax = 1)
 )
 

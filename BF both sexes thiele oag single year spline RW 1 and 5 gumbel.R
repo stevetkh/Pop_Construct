@@ -1,5 +1,5 @@
 params <- list(
-  country = "Burkina Faso", 
+  country = "Eswatini", 
   age.knot.space = 2.5,
   year.knot.space = 2.5
 )
@@ -646,6 +646,115 @@ if(country == "Zimbabwe"){
   #data.f.55 <- as.matrix(log(ddharm_bf_census_f_oag_5[,-(1:2)])); data.m <- as.matrix(log(ddharm_bf_census_m_oag_5[,-(1:2)]))
 }
 
+if(length(unique(bf5.smooth$DHS)) == 1 || diff(as.numeric(str_extract(unique(bf5.smooth$DHS), "\\d+"))) > 14) {
+  load("~/more countries final avg sex Rwanda.RData")
+  skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
+  joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
+
+  all.list<-function(x,age.start,age.end,year.start,year.end){
+    no.basis = 15
+    knots<-seq(0,1,length=no.basis-2)
+    dk<-knots[2]-knots[1]	
+    knots<-c(knots[1]-dk*(3:1),knots,knots[no.basis-2]+dk*(1:3))
+    age<-seq(0,1,length=age.end-age.start+1)
+    year<-seq(0,1,length=year.end-year.start+1)
+    
+    A.age<-c()
+    for(j in 1:no.basis) {
+      A.age<-cbind(A.age,bspline(age,knots,j))
+    }
+    
+    A.year<-c()
+    for(j in 1:no.basis) {
+      A.year<-cbind(A.year,bspline(year,knots,j))
+    }
+    
+    te.spline<-A.year%x%A.age
+    
+    ind<-function(x){
+      aggr.mat.reduced<-x
+      data.mat.m<-aggr.mat.reduced[aggr.mat.reduced$mm1=="male" & aggr.mat.reduced$agegr %in% age.start:age.end & aggr.mat.reduced$period %in% year.start:year.end,c(7,5,3,2,4)]
+      data.mat.f<-aggr.mat.reduced[aggr.mat.reduced$mm1=="female" & aggr.mat.reduced$agegr %in% age.start:age.end & aggr.mat.reduced$period %in% year.start:year.end,c(7,5,3,2,4)]
+      
+      age.start.col<-min(which(A.age[min(data.mat.m[,3])-age.start+1,]!=0))
+      age.end.col<-max(which(A.age[max(data.mat.m[,3])-age.start+1,]!=0))
+      year.start.col<-min(which(A.year[min(data.mat.m[,4])-year.start+1,]!=0))
+      year.end.col<-max(which(A.year[max(data.mat.m[,4])-year.start+1,]!=0))
+      age.start<-min(data.mat.m[,3])
+      age.end<-max(data.mat.m[,3])
+      year.start<-min(data.mat.m[,4])
+      year.end<-max(data.mat.m[,4])
+      tp<-max(data.mat.m[,5],data.mat.f[,5])
+      
+      ind.place<-c(age.start.col,age.end.col,year.start.col,year.end.col,age.start,age.end,year.start,year.end,tp)
+      names(ind.place)<-c("age.start.col", "age.end.col","year.start.col","year.end.col","age.start","age.end","year.start","year.end","tp")
+      ind.place
+    }  
+    
+    
+    everything.func<-function(i){
+      age.seq<-as.numeric(ind.list[[i]][["age.start"]]:ind.list[[i]][["age.end"]])
+      year.seq<-as.numeric(ind.list[[i]][["year.start"]]:ind.list[[i]][["year.end"]])
+      
+      age.m<-A.age[age.seq-age.start+1,]%*%joint.countries.age.m[[i]]
+      age.f<-A.age[age.seq-age.start+1,]%*%joint.countries.age.f[[i]]
+      time.m<-A.year[year.seq-year.start+1,]%*%joint.countries.time.m[[i]]
+      time.f<-A.year[year.seq-year.start+1,]%*%joint.countries.time.f[[i]]
+      agetime.m<-matrix(te.spline[age.seq-age.start+1+rep((age.end-age.start+1)*(year.seq-year.start),each=length(age.seq)),]%*%joint.countries.2d.m[[i]],length(age.seq),length(year.seq))
+      agetime.f<-matrix(te.spline[age.seq-age.start+1+rep((age.end-age.start+1)*(year.seq-year.start),each=length(age.seq)),]%*%joint.countries.2d.f[[i]],length(age.seq),length(year.seq))
+      
+      mort.m<-joint.countries.avg.m[[i]]+t(apply(apply(agetime.m,2,function(x){x+age.m}),1,function(x){x+time.m}))
+      mort.f<-joint.countries.avg.f[[i]]+t(apply(apply(agetime.f,2,function(x){x+age.f}),1,function(x){x+time.f}))
+      rownames(age.m)<-rownames(age.f)<-rownames(agetime.m)<-rownames(agetime.f)<-rownames(mort.m)<-rownames(mort.f)<-age.seq
+      rownames(time.m)<-rownames(time.f)<-colnames(agetime.m)<-colnames(agetime.f)<-colnames(mort.m)<-colnames(mort.f)<-year.seq
+      
+      
+      if(i=="Rwanda"){
+        mort.m[,4:6]<-mort.m[,4:6]+matrix(rep.par.list$rwanda_geno_m,56,3,byrow=T)
+        mort.f[,4:6]<-mort.f[,4:6]+matrix(rep.par.list$rwanda_geno_f,56,3,byrow=T)
+      }
+      
+      tips<-joint.countries.tp.c[[i]]+tp.common
+      
+      list(tp=tips,avg.m=joint.countries.avg.m[[i]],avg.f=joint.countries.avg.f[[i]],age.m=age.m,age.f=age.f,time.m=time.m,time.f=time.f,agetime.m=agetime.m,agetime.f=agetime.f,mort.m=mort.m,mort.f=mort.f)
+    }
+    
+    ind.list<-lapply(aggr.mat.cohort.0[joint.countries],ind)
+    rep.par.list<-split(unname(x$env$last.par.best),names(x$env$last.par.best))
+    joint.countries.avg.m<-split(rep.par.list$avg_m,joint.countries)
+    joint.countries.avg.f<-split(rep.par.list$avg_f,joint.countries)
+    joint.countries.age.m<-split(rep.par.list$spline_params_m_age,rep(joint.countries,each=no.basis))
+    joint.countries.age.f<-split(rep.par.list$spline_params_f_age,rep(joint.countries,each=no.basis))
+    joint.countries.time.m<-split(rep.par.list$spline_params_m_time,rep(joint.countries,each=no.basis))
+    joint.countries.time.f<-split(rep.par.list$spline_params_f_time,rep(joint.countries,each=no.basis))
+    joint.countries.2d.m<-split(rep.par.list$spline_params_m_2d,rep(joint.countries,each=no.basis*no.basis))
+    joint.countries.2d.f<-split(rep.par.list$spline_params_f_2d,rep(joint.countries,each=no.basis*no.basis))
+    
+    joint.countries.tp.c<-split(rep.par.list$tips_params,rep(joint.countries,each=length(rep.par.list$tips_params_common)))
+    tp.common<-rep.par.list$tips_params_common
+    tp.common[6]<-tp.common[6]+rep.par.list$tp_common_5
+    tp.common[11]<-tp.common[11]+rep.par.list$tp_common_10
+    
+    
+    setNames(lapply(joint.countries,everything.func),joint.countries)
+  }
+  
+  more.countries.avg<-all.list(tmb.full.joint.common,age.start=10,age.end=65,year.start=1990,year.end=2017)
+  
+  for(i in 1:length(more.countries.avg)){
+    more.countries.avg[[i]]$avg.m<-more.countries.avg[[i]]$avg.m+unname(tmb.full.joint.common$env$last.par.best["avg_common_m"])
+    more.countries.avg[[i]]$avg.f<-more.countries.avg[[i]]$avg.f+unname(tmb.full.joint.common$env$last.par.best["avg_common_f"])
+    more.countries.avg[[i]]$mort.m<-more.countries.avg[[i]]$mort.m+unname(tmb.full.joint.common$env$last.par.best["avg_common_m"])
+    more.countries.avg[[i]]$mort.f<-more.countries.avg[[i]]$mort.f+unname(tmb.full.joint.common$env$last.par.best["avg_common_f"])
+  }
+  
+  tp.init <- more.countries.avg[[params$country]]$tp; map <- list(log_lambda_tp = factor(NA),
+                                                                  tp_params = factor(rep(NA,15)),
+                                                                  tp_slope = factor(NA),
+                                                                  tp_params_5 = factor(NA),
+                                                                  tp_params_10 = factor(NA))
+  } else {tp.init <- rep(0,15); map <- list()}
+
 init_lambda_f <- thiele.loghump.prior.f[3,1]; init_lambda_m <- thiele.loghump.prior.m[3,1]; 
 init_delta_f <- thiele.loghump.prior.f[4,1]; init_delta_m <- thiele.loghump.prior.m[4,1]; 
 init_epsilon_f <- thiele.loghump.prior.f[5,1]; init_epsilon_m <- thiele.loghump.prior.m[5,1]; 
@@ -685,8 +794,7 @@ full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.f
   
 full.penal.fx.sum2zero <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.fert))) +
                       0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
-                      1e5 * tcrossprod(rep(1,no.basis.time * no.basis.fert)), "sparseMatrix")
-#exp(15) * tcrossprod(rep(1, no.basis.time * no.basis.fert)), "sparseMatrix")
+                      exp(15) * tcrossprod(rep(1, no.basis.time * no.basis.fert)), "sparseMatrix")
 
 #full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 2)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
@@ -694,7 +802,7 @@ full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e
 
 gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
 
-gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
+gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.05)
 
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
 
@@ -816,11 +924,11 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 gx_f_spline_params = rep(0, no.basis.time * no.basis.age), gx_m_spline_params = rep(0, no.basis.time * no.basis.age),
                 
                 log_lambda_tp = 5,
-                tp_params = rep(0,15),
+                tp_params = tp.init,
                 
                 tp_slope = 0,
-                tp_params_5 = 0.3,
-                tp_params_10 = 0.3,
+                tp_params_5 = 0,
+                tp_params_10 = 0,
 
                 log_phi_f_spline_params = rep(0, no.basis.time), log_phi_m_spline_params = rep(0, no.basis.time),
                 log_psi_f_spline_params = rep(0, no.basis.time), log_psi_m_spline_params = rep(0, no.basis.time),
@@ -953,7 +1061,8 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                               "log_A_f_spline_params", "log_A_m_spline_params",
                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
                                                    DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2",
-                                                   stepmin = 1e-10, stepmax = 1)
+                                                   stepmin = 1e-10, stepmax = 1,
+                                                   map = map)
 )
 
 
