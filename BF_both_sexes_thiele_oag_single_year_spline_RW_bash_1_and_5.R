@@ -5,7 +5,7 @@ myvar <- as.numeric(args[1])
 
 .libPaths(c("C:/Users/ktang3/Documents/R/win-library/4.0", .libPaths()))
 #setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5")
-setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2_tighter_prior")
+setwd("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2_all")
 load("C:/Users/ktang3/Documents/cohort smooth 1900-2017.RData")
 skip<-c("Ethiopia","Central African Republic","Comoros","Sao Tome and Principe","Botswana","Cape Verde","Equatorial Guinea","Eritrea","Nigeria (Ondo State)","Ghana","Mauritania","Sudan")
 joint.countries<-names(aggr.mat.cohort.0)[!names(aggr.mat.cohort.0)%in%skip]
@@ -47,7 +47,8 @@ for (filename in filelist) {
 rm(req, filelist, filename)
 
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common"))
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
+#dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_all"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
@@ -773,7 +774,7 @@ AR2.PREC <- function(n, phi){
   #gamma0 = 1, all variance = 1
   sigma2 <- (1+phi[2]) / (1-phi[2]) * ((1-phi[2])^2 - phi[1]^2)
   gamma.init <- matrix(c(1, phi[1] / (1-phi[2]), phi[1]/(1-phi[2]),1),2,2)
-  
+    
   VAR <- adiag(gamma.init, diag(rep(sigma2, n-2)))
   T <- diag(n) - phi[1] * rbind(matrix(0, 2, n), cbind(rep(0, n-2), diag(n-2), rep(0, n-2))) - phi[2] * rbind(matrix(0, 2, n), cbind(diag(n-2), matrix(0, n-2, 2)))
   
@@ -793,18 +794,16 @@ full.penal.fx <- as(0.5 * diag(no.basis.time) %x% crossprod(diff(diag(no.basis.f
 #                                0.5 * crossprod(diff(diag(no.basis.time))) %x% diag(no.basis.fert) +
 #                                1e5 * tcrossprod(rep(1,no.basis.time * no.basis.fert)), "sparseMatrix")
 
+full.penal.fx.AR2.tensor <- as(AR2.PREC(no.basis.time, c(2*0.9, -0.9)) %x% AR2.PREC(no.basis.fert, c(2*0.9, -0.9)), "sparseMatrix")
+
 #full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 2)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 full.penal.time <- as(crossprod(diff(diag(no.basis.time), differences = 1)) + 1e-3 * diag(no.basis.time),"sparseMatrix")
 
 
 gumbel.theta.fx <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
-
 #gumbel.theta.fx.sum2zero <- -log(0.01) * sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.sum2zero) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
 
 gumbel.theta.gx <- -log(0.01) *  sqrt(mean(diag(te.spline %*% solve(full.penal.gx) %*% t(te.spline)))) * 1.96 / 0.08
-
-gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2.tensor) %*% t(te.spline)))) * 1.96 / 0.08 
-#gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2) %*% t(te.spline)))) * 1.96 / 0.08 
 
 gumbel.theta.phi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
 gumbel.theta.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
@@ -816,6 +815,22 @@ gumbel.theta.delta <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %
 gumbel.theta.epsilon <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(3)
 
 gumbel.theta.tp <- -log(0.01) * 1.96/1
+
+gumbel.theta.AR2.marginal.fx <- sqrt(mean(diag(te.spline.fert %*% solve(full.penal.fx.AR2.tensor) %*% t(te.spline.fert)))) * 1.96 / log(1.1)
+gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2.tensor) %*% t(te.spline)))) * 1.96 / 0.08 
+#gumbel.theta.AR2.marginal.gx <- sqrt(mean(diag(te.spline %*% solve(full.penal.gx.AR2) %*% t(te.spline)))) * 1.96 / 0.08 
+
+gumbel.theta.AR2.marginal.phi <- 
+  gumbel.theta.AR2.marginal.psi <-
+  gumbel.theta.AR2.marginal.A <-
+  gumbel.theta.AR2.marginal.B <- -log(0.01) *  sqrt(mean(diag(A.year %*% solve(AR2.PREC(no.basis.time, c(2*0.9, -0.9))) %*% t(A.year))))  * 1.96 / log(1.1)
+# gumbel.theta.AR2.marginal.psi <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+# gumbel.theta.AR2.marginal.A <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+# gumbel.theta.AR2.marginal.B <- -log(0.01) * sqrt(mean(A.year %*% solve(full.penal.time) %*% t(A.year))) * 1.96 / log(1.1)
+
+gumbel.theta.AR2.marginal.lambda <- 
+  gumbel.theta.AR2.marginal.delta <- 
+  gumbel.theta.AR2.marginal.epsilon <- -log(0.01) *  sqrt(mean(diag(A.year %*% solve(AR2.PREC(no.basis.time, c(2*0.9, -0.9))) %*% t(A.year)))) * 1.96 / log(3)
 
 data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                             log_fx_mean = log_fx_mean,
@@ -890,7 +905,15 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             theta_B = gumbel.theta.B,
                             theta_tp = gumbel.theta.tp,
                             
-                            theta_marginal_gx = gumbel.theta.AR2.marginal.gx
+                            theta_marginal_gx = gumbel.theta.AR2.marginal.gx,
+                            theta_marginal_fx = gumbel.theta.AR2.marginal.fx,
+                            theta_marginal_phi = gumbel.theta.AR2.marginal.phi,
+                            theta_marginal_psi = gumbel.theta.AR2.marginal.psi,
+                            theta_marginal_lambda = gumbel.theta.AR2.marginal.lambda,
+                            theta_marginal_delta = gumbel.theta.AR2.marginal.delta,
+                            theta_marginal_epsilon = gumbel.theta.AR2.marginal.epsilon,
+                            theta_marginal_A = gumbel.theta.AR2.marginal.A,
+                            theta_marginal_B = gumbel.theta.AR2.marginal.B
 )
 
 par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
@@ -918,9 +941,7 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 log_lambda_fx = log((gumbel.theta.fx/-log(0.01))^2) + 0.1, 
                 #log_lambda_fx = log((gumbel.theta.fx.sum2zero/-log(0.01))^2) + 0.1, 
                 log_lambda_gx = log((gumbel.theta.gx/-log(0.01))^2) + 0.1,
-                log_marginal_lambda_gx = log((gumbel.theta.AR2.marginal.gx/-log(0.01))^2) + 0.1,
-                #log_lambda_gx = rep(log((gumbel.theta.gx/-log(0.01))^2) + 0.1 , 2),
-                
+ 
                 log_lambda_phi = log((gumbel.theta.phi/-log(0.01))^2) + 0.1,
                 log_lambda_psi = log((gumbel.theta.psi/-log(0.01))^2) + 0.1,
                 log_lambda_A = log((gumbel.theta.A/-log(0.01))^2) + 0.1,
@@ -931,8 +952,18 @@ par.vec <- list(log_tau2_logpop_f = c(2,3), log_tau2_logpop_m = c(2,3),
                 log_lambda_epsilon = log((gumbel.theta.epsilon/-log(0.01))^2) + 0.1,
                 
                 log_tau2_logpop = c(log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2), log(1.96^2/log(1.5)^2), log(1.96^2/log(2)^2)),
-                log_dispersion = c(1.3, 1.3)
-)
+                log_dispersion = c(1.3, 1.3),
+                
+                log_marginal_lambda_gx = log((gumbel.theta.AR2.marginal.gx/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_fx = log((gumbel.theta.AR2.marginal.fx/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_phi = log((gumbel.theta.AR2.marginal.phi/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_psi = log((gumbel.theta.AR2.marginal.psi/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_A = log((gumbel.theta.AR2.marginal.A/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_B = log((gumbel.theta.AR2.marginal.B/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_lambda = log((gumbel.theta.AR2.marginal.lambda/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_delta = log((gumbel.theta.AR2.marginal.delta/-log(0.01))^2) + 0.1,
+                log_marginal_lambda_epsilon = log((gumbel.theta.AR2.marginal.epsilon/-log(0.01))^2) + 0.1
+                )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
 
@@ -948,7 +979,7 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                               "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
                                                               "log_A_f_spline_params", "log_A_m_spline_params",
                                                               "log_B_f_spline_params", "log_B_m_spline_params"),
-                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2",
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_all",
                                                    map = map,
                                                    stepmin = 1e-10, stepmax = 1)
 )
