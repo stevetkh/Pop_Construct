@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  14 JUN 2021 14:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  16 JUN 2021 19:39
 entering extended mode
 **./19.tex
 (19.tex
@@ -772,38 +772,54 @@ Underfull \hbox (badness 10000) in paragraph at lines 78--79
  []
 
 
+! LaTeX Error: There's no line here to end.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.91 ...different variance for the HIV period} \\~
+                                                  \\
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+[2] [3]
+
 Package caption Warning: Unused \captionsetup[sub] on input line 18.
 See the caption package documentation for explanation.
 
-[2] (19.aux) ) 
+[4] (19.aux) ) 
 Here is how much of TeX's memory you used:
  17596 strings out of 479321
  357484 string characters out of 2856107
- 670454 words of memory out of 3000000
+ 686454 words of memory out of 3000000
  34703 multiletter control sequences out of 15000+600000
  415493 words of font info for 64 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,13n,103p,1316b,160s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 102i,18n,103p,1316b,219s stack positions out of 5000i,500n,10000p,200000b,80000s
 {C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/ba
 se/8r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cmextra/cmbsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/t
-ype1/public/amsfonts/cm/cmbx12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKT
-eX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/ktang3/AppData/Local/Prog
-rams/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/ktang3/AppData/
-Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/ktang
-3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Us
-ers/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.p
-fb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
-m/cmmib10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public
-/amsfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/typ
-e1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/AppData/Local/Program
-s/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/ktang3/AppData/Loca
-l/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/ktang3/AppData/Loc
-al/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
-Output written on 19.pdf (2 pages, 136249 bytes).
+fonts/cm/cmbsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cmextra/cmbsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiK
+TeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/ktang3/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/ktang3/AppData
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/ktan
+g3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/
+Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6
+.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmmib10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/amsfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTe
+X/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/ktang3/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Loca
+l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/Ap
+pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/
+ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users
+/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
+Output written on 19.pdf (4 pages, 171585 bytes).
 PDF statistics:
- 69 PDF objects out of 1000 (max. 8388607)
+ 83 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 
