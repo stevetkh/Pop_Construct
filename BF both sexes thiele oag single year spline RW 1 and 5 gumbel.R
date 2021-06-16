@@ -56,6 +56,7 @@ dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_
 compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_phi_hivvar_all.cpp")
 dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_phi_hivvar_all"))
 
+compile("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/trial.cpp")
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
   
@@ -864,6 +865,9 @@ d.rho <- function(rho, n) {
   sqrt( (1-n)*log(1+3*rho) + (3-2*n)*log(1-rho) + n*log(1+rho) )
 }
 
+upper.gamma <- 5
+hiv.cut <- 8
+
 data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mean_m = log(basepop.m),
                             log_fx_mean = log_fx_mean,
                             srb = rep(1.05, bf.idx1$n_periods),
@@ -968,7 +972,10 @@ data.loghump.vec.RW <- list(log_basepop_mean_f = log(basepop.f), log_basepop_mea
                             theta_rho_fx_age = -log(0.01)/d.rho(0.9, no.basis.fert),
                             theta_rho_fx_time = -log(0.01)/d.rho(0.9, no.basis.time),
                             theta_rho_gx_age = -log(0.01)/d.rho(0.9, no.basis.age),
-                            theta_rho_gx_time = -log(0.01)/d.rho(0.9, no.basis.time)
+                            theta_rho_gx_time = -log(0.01)/d.rho(0.9, no.basis.time),
+                            
+                            upper_gamma = upper.gamma,
+                            hiv_var_cut = hiv.cut
                             )
 
 par.vec <- list(log_tau2_logpop_f = c(-2*log(log(1.5)/1.96),-2*log(log(1.5)/1.96)), log_tau2_logpop_m = c(-2*log(log(1.5)/1.96),-2*log(log(1.5)/1.96)),
@@ -1040,7 +1047,11 @@ par.vec <- list(log_tau2_logpop_f = c(-2*log(log(1.5)/1.96),-2*log(log(1.5)/1.96
                 logit_rho_fx_age = 0,
                 logit_rho_fx_time = 0,
                 logit_rho_gx_age = 0,
-                logit_rho_gx_time = 0
+                logit_rho_gx_time = 0,
+                
+                log_gamma_lambda = log(4),
+                log_gamma_delta = log(4),
+                log_gamma_epsilon = log(4)
                 )
 
 input.thiele.loghump.oag.vec.RW <- list(data = data.loghump.vec.RW, par_init = par.vec, model = "ccmpp_vr_tmb")
@@ -1197,6 +1208,25 @@ system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.
                                                    stepmin = 1e-10, stepmax = 1
                                                    )
             )
+
+system.time(thiele.f.loghump.oag.RW.ori <- fit_tmb(input.thiele.loghump.oag.vec.RW, inner_verbose=TRUE,
+                                                   random = c("log_basepop_f","log_basepop_m",
+                                                              "log_fx_spline_params",
+                                                              "gx_f_spline_params","gx_m_spline_params",
+                                                              "tp_params",
+                                                              "log_phi_f_spline_params", "log_phi_m_spline_params",
+                                                              "log_psi_f_spline_params", "log_psi_m_spline_params",
+                                                              "log_lambda_f_spline_params", "log_lambda_m_spline_params",
+                                                              "log_delta_f_spline_params", "log_delta_m_spline_params",
+                                                              "log_epsilon_f_spline_params", "log_epsilon_m_spline_params",
+                                                              "log_A_f_spline_params", "log_A_m_spline_params",
+                                                              "log_B_f_spline_params", "log_B_m_spline_params"),
+                                                   DLL="ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_phi_hivvar_all",
+                                                   #map = append(map, list(log_tau2_logpop = factor(c(NA, 1, NA, 2)))),
+                                                   stepmin = 1e-10, stepmax = 1
+)
+)
+
 
 save(thiele.f.loghump.oag.RW.ori, file=paste(params$country, "tau Gumbel common sp AR2 phi.RData"))
 

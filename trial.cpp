@@ -22,10 +22,12 @@ Type objective_function<Type>::operator() ()
 DATA_VECTOR(aa);
 DATA_IVECTOR(bb);
 DATA_INTEGER(c);
+DATA_SCALAR(d);
+
 
 Type nll=0.0;
 
-vector<Type> haha = sumByAG1D(aa, bb, c);
+Type e = sqrt(d*d);
 
 return Type(nll);
 }

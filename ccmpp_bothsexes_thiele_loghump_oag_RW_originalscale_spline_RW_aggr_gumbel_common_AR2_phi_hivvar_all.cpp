@@ -114,12 +114,15 @@ Type logdd_gamma(const Type& gamma, const Type& rho, const Type& n)
   Type ll = 0.0;
   Type chunk = 0.0;
   Type denom = 0.0;
-  
+  Type chunk_abs = 0.0;
+
   denom += (Type(1.0) + Type(3.0) * rho) * (Type(1.0) - rho) * (Type(1.0) - rho) * sqrt(gamma);
 
   chunk += n * (Type(1.0) - Type(1.0) / gamma) - (Type(1.0) - sqrt(gamma)) * Type(2.0) * rho * rho * (Type(3.0) - rho) / denom;
 
-  ll += log(Type(0.5)) - log(d_gamma(gamma, rho, n)) + log(chunk);
+  chunk_abs = sqrt(chunk * chunk);
+
+  ll += log(Type(0.5)) - log(d_gamma(gamma, rho, n)) + log(chunk_abs);
 
   return ll;
 }
