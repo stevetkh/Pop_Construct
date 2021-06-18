@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  16 JUN 2021 19:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.3) (preloaded format=pdflatex 2021.4.8)  18 JUN 2021 17:56
 entering extended mode
 **./19.tex
 (19.tex
@@ -784,42 +784,588 @@ Your command was ignored.
 Type  I <command> <return>  to replace it with another command,
 or  <return>  to continue without it.
 
-[2] [3]
+[2] [3] [4]
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 1
+97.
+
+(C:\Users\ktang3\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
+File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
+)
+
+! LaTeX Error: There's no line here to end.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.202 ...rent variance on the AR2 inoovations} \\~
+                                                  \\
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+<recently read> ^
+                 
+l.211 \end{align*}
+                  
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=33, 61
+4.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf  used on input line 238.
+(pdftex.def)             Requested size: 614.29349pt x 794.96806pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf  used on input line 238.
+(pdftex.def)             Requested size: 614.29349pt x 794.96806pt.
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=36, pa
+ge=1, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+1>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page1 used on input line 238.
+(pdftex.def)             Requested size: 614.29349pt x 794.96806pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+1>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page1 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+[5]
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+1>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page1 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+1>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page1 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+1>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page1 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+ [6 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=62, pa
+ge=2, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+2>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page2 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+2>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page2 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+2>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page2 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[7 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=72, pa
+ge=3, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+3>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page3 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+3>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page3 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+3>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page3 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[8 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=93, pa
+ge=4, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+4>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page4 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+4>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page4 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+4>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page4 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[9 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=109, p
+age=5, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+5>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page5 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+5>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page5 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+5>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page5 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[10 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=143, p
+age=6, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+6>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page6 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+6>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page6 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+6>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page6 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[11 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=158, p
+age=7, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+7>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page7 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+7>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page7 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+7>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page7 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[12 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=173, p
+age=8, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+8>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page8 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+8>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page8 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+8>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page8 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[13 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=188, p
+age=9, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+9>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page9 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+9>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page9 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+9>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page9 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[14 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=210, p
+age=10, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+10>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page10 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+10>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page10 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+10>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page10 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[15 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=233, p
+age=11, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+11>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page11 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+11>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page11 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+11>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page11 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[16 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=257, p
+age=12, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+12>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page12 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+12>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page12 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+12>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page12 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[17 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
+<../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, id=281, p
+age=13, 614.295pt x 794.97pt>
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+13>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page13 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+13>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page13 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+File: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf Graph
+ic file (type pdf)
+<use ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf, page 
+13>
+Package pdftex.def Info: ../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all
+/Zimbabwe.pdf , page13 used on input line 238.
+(pdftex.def)             Requested size: 597.78697pt x 773.60669pt.
+
+[18 <../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf>]
 
 Package caption Warning: Unused \captionsetup[sub] on input line 18.
 See the caption package documentation for explanation.
 
-[4] (19.aux) ) 
+(19.aux) ) 
 Here is how much of TeX's memory you used:
- 17596 strings out of 479321
- 357484 string characters out of 2856107
- 686454 words of memory out of 3000000
- 34703 multiletter control sequences out of 15000+600000
- 415493 words of font info for 64 fonts, out of 8000000 for 9000
+ 17668 strings out of 479321
+ 361692 string characters out of 2856107
+ 686456 words of memory out of 3000000
+ 34768 multiletter control sequences out of 15000+600000
+ 415807 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 102i,18n,103p,1316b,219s stack positions out of 5000i,500n,10000p,200000b,80000s
-{C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/ba
-se/8r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmbsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1
-/public/amsfonts/cmextra/cmbsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiK
-TeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/ktang3/AppData/Local/Pr
-ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/ktang3/AppData
-/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/ktan
-g3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/
-Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6
-.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts
-/cm/cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public
-/amsfonts/cm/cmmib10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/t
-ype1/public/amsfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTe
-X/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/ktang3/AppData/Local/Progra
-ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Loca
-l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/Ap
-pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/
+ 102i,18n,103p,1316b,425s stack positions out of 5000i,500n,10000p,200000b,80000s
+{C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8
+r.enc}<C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
+s/cm/cmbsy10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/pub
+lic/amsfonts/cmextra/cmbsy8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/ktang3/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/ktang3/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/ktang3/A
+ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/User
+s/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb
+><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
+cmmi8.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmmib10.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmr12.pfb><C:/Users/ktang3/AppData/Local/Programs/MiKTeX/fo
+nts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/ktang3/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/ktang3/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/ktang3/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/ktan
+g3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/kta
+ng3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb><C:/Users/k
+tang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/
+ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/
+ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/k
+tang3/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/
 ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users
 /ktang3/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb>
-Output written on 19.pdf (4 pages, 171585 bytes).
+Output written on 19.pdf (18 pages, 1440349 bytes).
 PDF statistics:
- 83 PDF objects out of 1000 (max. 8388607)
+ 361 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 93 words of extra memory for PDF output out of 10000 (max. 10000000)
 

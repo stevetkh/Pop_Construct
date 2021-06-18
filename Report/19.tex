@@ -73,7 +73,7 @@ Thus, PC prior for $\rho$ is
 &= \lambda_{\rho} e^{-\lambda_{\rho} d(\rho)} \, \frac{\partial d(\rho)}{\partial \rho}
 \end{align*}
 
-To determine the decay rate $\lambda_{\rho}$, the authors suggested inferring from a interpretable probability statement $P(Q(\rho) > U) = \alpha$ for some $\alpha$ as the tail probability. Here I plan to directly work on the $\rho$ scale, e.g. specifying $P(\rho > 0.999) = 0.01$ as a loose PC prior. Since $d(\rho)$ is a monotonically increasing one-to-one mapping, the upper bound specified on $\rho$ can be translated into an upper for $d(\rho)$ as $P(d(\rho) > d(U)) = 0.01$. Knowing the tail probability of an exponential R.V $P(X > x) = 1 - \text{c.d.f}(x) = e^{-\lambda x}$, $\lambda_\rho$ can be derived from $e^{-\lambda_{\rho} d(U)} = 0.01 \implies \lambda_\rho = -\log(0.01) / d(U)$.
+To determine the decay rate $\lambda_{\rho}$, the authors suggested inferring from a interpretable probability statement $P(Q(\rho) > U) = \alpha$ for some $\alpha$ as the tail probability. Here I plan to directly work on the $\rho$ scale, e.g. specifying $P(\rho > 0.99) = 0.01$ as a loose PC prior. Since $d(\rho)$ is a monotonically increasing one-to-one mapping, the upper bound specified on $\rho$ can be translated into an upper for $d(\rho)$ as $P(d(\rho) > d(U)) = 0.01$. Knowing the tail probability of an exponential R.V $P(X > x) = 1 - \text{c.d.f}(x) = e^{-\lambda x}$, $\lambda_\rho$ can be derived from $e^{-\lambda_{\rho} d(U)} = 0.01 \implies \lambda_\rho = -\log(0.01) / d(U)$.
 
 \paragraph{PC prior for $\tau$} \\~\\
 
@@ -189,7 +189,52 @@ d(\gamma | \rho) &= \sqrt{2KLD((f_1 \Vert f_0))} \\
 \begin{align*}
 \pi(\gamma | \rho) = \pi(d(\gamma | \rho)) \Big\vert \frac{\partial d(\gamma | \rho)}{\partial \gamma} \Big\vert
 \end{align*}
-where $\pi(d(\gamma | \rho)) \sim Exp (\lambda_{\gamma})$ with $\lambda_{\gamma}$ set a priori as $-\log(0.01) / d(U_{\gamma})$ and $U_{\gamma}$ specifies an upper bound for the ratio of the marginal variance in the HIV period to the pre-HIV era.
+where $\pi(d(\gamma | \rho)) \sim Exp (\lambda_{\gamma})$ with $\lambda_{\gamma}$ set a priori as $-\log(0.01) / d(U_{\gamma})$ and $U_{\gamma}$ \textcolor{red}{(this is under-stating the tail probability! still working it out)} specifies an upper bound for the ratio of the marginal variance in the HIV period to the pre-HIV era.
 
 When fitting to the model, I expect $\gamma$ to be $ > 1 $ most of the time since the HIV epidemics should introduce more variability.
+
+\begin{itemize}
+\item \textcolor{red}{Relationship to ARCH model?}
+\item \textcolor{red}{Relationship to regime switch model?}
+\end{itemize}
+
+
+\paragraph{Alternative parameterisation of the PC prior for a different variance on the AR2 innovations} \\~\\
+Consider that instead of acting on the marginal variances $\tau^{-1}$, the $\gamma$ now acts directly on the variances of the AR2 innovations $\boldsymbol{\epsilon}$. This has a cleaner derivation of the PC prior, but of course the interpretation of $\gamma$ might be tricky. Knowing that the marginal variances will eventually converge to $\gamma \tau^{-1}$ after some time, $\gamma$ can still be interpreted as the ratio of the marginal variance in the later period to the beginning, but now the marginal variance at the cut-off point is not exactly $\gamma \tau^{-1}$, but some value in between.
+
+This parameterisation is also independent of $\rho$, hence the PC prior could be set outside TMB (i.e. the decay rate does not depend on $\rho$).
+
+\begin{align*}
+KLD_{\gamma}(f_1 \Vert f_0) &= \frac{1}{2} \left( \text{tr}(\boldsymbol{\Sigma_0^{-1} \Sigma_0}) - n - \log\Big(\frac{\vert \boldsymbol{\Sigma_1}\vert}{\vert \boldsymbol{\Sigma_0} \vert}\Big) \right) \\
+&= \frac{1}{2} \left( \text{tr} \Big( \big( \boldsymbol{P^{-1}VP^{-1}'}^{-1} \big) \big( \boldsymbol{P^{-1}WVP^{-1}'} \big)  \Big)  - n - \log \Big( \vert \boldsymbol{W} \vert \Big) \right) \\
+&= \frac{1}{2}\left( \sum \boldsymbol{W}_{ii} - n - \sum \log(\boldsymbol{W}_{ii}) \right)
+\end{align*}
+
+Set 
+\begin{align*}
+\boldsymbol{W} = \begin{pmatrix} 1 & 0 & 0 & 0 & 0 & \dots \\
+0 & 1 & 0 & 0 & 0 & \dots \\
+\vdots & &\ddots & & & \\
+& 0 & 0.25\gamma + 0.75 & 0 & 0 & \dots\\
+& 0 & 0 & 0.5\gamma + 0.5 & 0 & \dots \\
+& 0 & 0 & 0& 0.75\gamma + 0.25 & \dots \\
+& & & \ddots & & \\
+& & & & 0 & \gamma 
+\end{pmatrix}
+\end{align*}
+
+Then 
+\begin{align*}
+d_{\gamma} &= \sqrt{2KLD_{\gamma}(f_1 \Vert f_0)} \\
+&= \sqrt{(\gamma-1)(n_{\gamma} - 1.5) - (n_{\gamma} - 3)\log(\gamma) - \log(0.25\gamma + 0.75) - \log(0.5\gamma + 0.5) - \log(0.75\gamma + 0.25)},
+\end{align*}
+where $\gamma$ is the number of weights not equal to 1, i.e. number of $\gamma$'s + 3.
+
+\begin{align*}
+\frac{\partial d_{\gamma}}{\partial \gamma} &= \frac{1}{2d_{\gamma}} \left( n_{\gamma} - 1.5 - \frac{n_{\gamma} - 3}{\gamma} - \frac{0.25}{0.25\gamma + 0.75} - \frac{0.5}{0.5\gamma + 0.5} - \frac{0.75}{0.75\gamma + 0.25}\right),\\
+> 0 \quad &\forall \gamma > 1, \qquad \qquad < 0 \quad \forall \gamma < 1
+\end{align*}
+
+\includepdf[pages=-]{"../thiele_RW_Gumbel_1_and_5_common_AR2_phi_hiv_var_all/Zimbabwe.pdf"}
+
 \end{document}

@@ -2,7 +2,7 @@
 output: pdf_document
 geometry: margin=2cm
 params:
-  country: "Eswatini"
+  country: "Burkina Faso"
 ---
 
 ---
@@ -34,7 +34,7 @@ rm(list=ls()[-which(ls()=="params")])
 
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2_tighter_prior/",params$country," tau Gumbel AR2.RData"))
 
-load(paste0("C:/Users/ktang3/Documents/",params$country," tau Gumbel common sp AR2 phi.RData"))
+load(paste0("C:/Users/ktang3/Documents/",params$country," tau Gumbel common sp AR2 phi hiv var.RData"))
 
 #load(paste0("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/thiele_RW_Gumbel_1_and_5_common_AR2_all/",params$country," tau Gumbel AR2.RData"))
 
@@ -77,7 +77,7 @@ rm(req, filelist, filename)
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2"))
 #dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_all"))
 
-dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_phi_all"))
+dyn.load(dynlib("C:/Users/ktang3/Desktop/Imperial/Pop_Construct/ccmpp_bothsexes_thiele_loghump_oag_RW_originalscale_spline_RW_aggr_gumbel_common_AR2_phi_hivvar_all"))
 
 projection_indices <- function(period_start,  period_end, interval, n_ages,
                                fx_idx, n_fx, n_sexes = 1) {
